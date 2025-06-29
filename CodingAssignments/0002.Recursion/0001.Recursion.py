@@ -15,6 +15,11 @@ def factorial_loop(n):
     return result
 print("Q1. Factorial of 5:", factorial_loop(5))  # Expected: 120
 # TODO: Rewrite using recursion
+def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    return n * factorial(n-1)
+print(factorial(5))
 
 # Question 2: Sum of first n natural numbers
 def sum_natural_loop(n):
