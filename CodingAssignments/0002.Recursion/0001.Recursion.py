@@ -25,6 +25,20 @@ def sum_natural_loop(n):
     return total
 print("Q2. Sum of first 5 natural numbers:", sum_natural_loop(5))  # Expected: 15
 # TODO: Rewrite using recursion
+def SumOfNumber(n):
+    # Base Condition 
+    # if n ==1:
+    #     return 1
+    # # Function Call
+    
+    # return n + SumOfNumber(n-1) 
+    
+    if n > 5:
+        return 0 
+    return n + SumOfNumber(n+1)
+
+print(SumOfNumber(1))
+
 
 # Question 3: Calculate nth Fibonacci number (0-based index)
 def fibonacci_loop(n):
@@ -47,7 +61,16 @@ def power_loop(base, exponent):
     return result
 print("Q4. 2^3:", power_loop(2, 3))  # Expected: 8
 # TODO: Rewrite using recursion
+#  2 ^3 == 2 * 2 *2 = 8
 
+def power_loop(base , exponent):
+    if exponent == 0:
+        return 1
+    
+    return base * power_loop(base,exponent-1)
+
+# 2 4 
+print(power_loop(3,4))
 # Question 5: Sum of digits in a number
 def sum_digits_loop(n):
     """Returns sum of digits in n (e.g., 123 -> 1 + 2 + 3)"""
