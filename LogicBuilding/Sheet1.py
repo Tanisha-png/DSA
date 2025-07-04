@@ -3,12 +3,19 @@ print("Hello, World!")
 
 # Write a program to print your name 5 times.
 
+my_name = "Tanisha"
+for i in range(5):
+    print(my_name)
 
 # Write a program to display the current date (hardcode it for now).
 
 
-# Write a program to add two hardcoded numbers and print the result.
 
+# Write a program to add two hardcoded numbers and print the result.
+x = 11
+y = 19
+z = x + y
+print(z)
 
 # Write a program to print a simple pattern like Z using * .
 
