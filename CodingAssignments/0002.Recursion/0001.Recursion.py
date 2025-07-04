@@ -15,6 +15,11 @@ def factorial_loop(n):
     return result
 print("Q1. Factorial of 5:", factorial_loop(5))  # Expected: 120
 # TODO: Rewrite using recursion
+def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    return n * factorial(n-1)
+print(factorial(5))
 
 # Question 2: Sum of first n natural numbers
 def sum_natural_loop(n):
@@ -81,6 +86,26 @@ def sum_digits_loop(n):
     return total
 print("Q5. Sum of digits in 123:", sum_digits_loop(123))  # Expected: 6
 # TODO: Rewrite using recursion
+
+# / -- Division Operator
+
+# % -- Modulus Operator
+
+# 1234 -- count number of digits 
+
+# Convert the number into String and use len()
+# print(1234//10)
+# print(1234%10)
+
+def SumOfDigit(n):
+    if n == 0:
+        return 1
+    count += 1
+    return SumOfDigit(n//10)
+    # return n % 10 + SumOfDigit(n//10)
+print(SumOfDigit(1234))
+
+
 
 # Question 6: Count digits in a number
 def count_digits_loop(n):
