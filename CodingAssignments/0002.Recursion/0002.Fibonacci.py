@@ -11,10 +11,10 @@ Fibonacci Series Coding Questions
 # Examples:
 #     Input: n = 5
 #     Output: [0, 1, 1, 2, 3] or [1, 1, 2, 3, 5]
-# Follow-up: Modify the function to return the series as an array.
+# Follow-up: Modify bonacci Number
+# ------------------the function to return the series as an array.
 
-# 2. Find the Nth Fibonacci Number
-# --------------------------------
+# 2. Find the Nth Fi--------------
 # Description: Write a function to compute the Nth Fibonacci number.
 # Constraints:
 #     - 0 <= n <= 10^5
