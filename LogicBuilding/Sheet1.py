@@ -8,7 +8,9 @@ for i in range(5):
     print(my_name)
 
 # Write a program to display the current date (hardcode it for now).
+current_date = "2025-07-10"
 
+print("Today's date is:", current_date)
 
 
 # Write a program to add two hardcoded numbers and print the result.
