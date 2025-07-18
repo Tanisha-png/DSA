@@ -118,13 +118,60 @@ print(GreaterDigits(123874,3))
 
 # Assignment --- 15-07-2025
 # Find the largest Digit in a number 
+def largest_digit(number):
+    return max(int(digit) for digit in str(abs(number)))
+
+num = 792615
+print("Largest digit:", largest_digit(num))
+
+
 # Count the freq of a specific digit
+def count_digit_frequency(number, target_digit):
+    return str(abs(number)).count(str(target_digit))
+
+num = 44792464
+digit = 4
+
+print(f"Digit {digit} appears {count_digit_frequency(num, digit)} times.")
+
 # Count the factors of a number 
+
 # Count the composite and Prime Numbers 
+
 # COunt the freq of each and every digit
+
 # Average of sum of digits 
+def average_of_digits(number):
+    digits = [int(d) for d in str(abs(number))] 
+    total = sum(digits)
+    avg = total / len(digits)
+    return avg
+
+num = 753
+print(f"Average of digits in {num} is {average_of_digits(num)}")
+
 # Count multiples of a number
+
 # Sum of Even and Odd digits  
+def sum_even_odd_digits(number):
+    number = abs(number)  
+    even_sum = 0
+    odd_sum = 0
+    
+    for digit in str(number):
+        d = int(digit)
+        if d % 2 == 0:
+            even_sum += d
+        else:
+            odd_sum += d
+
+    return even_sum, odd_sum
+
+num = 58374
+even, odd = sum_even_odd_digits(num)
+print(f"Even digit sum: {even}")
+print(f"Odd digit sum: {odd}")
+
 
 # AlternateDigitSum --
 
