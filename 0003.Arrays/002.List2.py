@@ -154,6 +154,18 @@ print(factor_num(12))
 
 # Average of sum of digits 
 
+def avg_sum(nums):
+    result = 1
+    while nums != 0:
+        temp = nums % 10
+        if temp % 2 == 0:
+            result += temp
+        nums = nums // 10
+
+    return result
+
+print(avg_sum(24689))
+
 
 
 # Count multiples of a number
