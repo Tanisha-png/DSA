@@ -155,16 +155,16 @@ print(factor_num(12))
 # Average of sum of digits 
 
 def avg_sum(nums):
-    result = 1
+    total = 0
+    count = 0
     while nums != 0:
         temp = nums % 10
-        if temp % 2 == 0:
-            result += temp
+        total += temp
+        count += 1
         nums = nums // 10
+    return total / count 
 
-    return result
-
-print(avg_sum(24689))
+print(avg_sum(13579))
 
 
 
