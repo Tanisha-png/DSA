@@ -135,6 +135,7 @@ digit = 4
 print(f"Digit {digit} appears {count_digit_frequency(num, digit)} times.")
 
 # Count the factors of a number 
+
 def factor_num(nums):
     result = 1
     while nums != 0:
@@ -148,41 +149,34 @@ print(factor_num(12))
 
 # Count the composite and Prime Numbers 
 
+
 # COunt the freq of each and every digit
 
 # Average of sum of digits 
-def average_of_digits(number):
-    digits = [int(d) for d in str(abs(number))] 
-    total = sum(digits)
-    avg = total / len(digits)
-    return avg
 
-num = 753
-print(f"Average of digits in {num} is {average_of_digits(num)}")
+
 
 # Count multiples of a number
 
 # Sum of Even and Odd digits  
-def sum_even_odd_digits(number):
-    number = abs(number)  
-    even_sum = 0
-    odd_sum = 0
+# def sum_even_odd_digits(number):
+#     number = abs(number)  
+#     even_sum = 0
+#     odd_sum = 0
     
-    for digit in str(number):
-        d = int(digit)
-        if d % 2 == 0:
-            even_sum += d
-        else:
-            odd_sum += d
+#     for digit in str(number):
+#         d = int(digit)
+#         if d % 2 == 0:
+#             even_sum += d
+#         else:
+#             odd_sum += d
 
-    return even_sum, odd_sum
+#     return even_sum, odd_sum
 
-num = 58374
-even, odd = sum_even_odd_digits(num)
-print(f"Even digit sum: {even}")
-print(f"Odd digit sum: {odd}")
+# num = 58374
+# even, odd = sum_even_odd_digits(num)
+# print(f"Even digit sum: {even}")
+# print(f"Odd digit sum: {odd}")
 
 
 # AlternateDigitSum --
-
-
