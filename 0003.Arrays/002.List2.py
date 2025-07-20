@@ -135,6 +135,16 @@ digit = 4
 print(f"Digit {digit} appears {count_digit_frequency(num, digit)} times.")
 
 # Count the factors of a number 
+def factor_num(nums):
+    result = 1
+    while nums != 0:
+        temp = nums % 10
+        result *= temp
+        nums = nums // 10
+
+    return result
+
+print(factor_num(12))
 
 # Count the composite and Prime Numbers 
 
