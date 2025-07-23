@@ -150,7 +150,11 @@ print(factor_num(12))
 # Count the composite and Prime Numbers 
 
 
+
 # COunt the freq of each and every digit
+
+
+
 
 # Average of sum of digits 
 
