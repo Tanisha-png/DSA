@@ -66,3 +66,41 @@ full_name = first_name + " " + last_name
 print(full_name)
 
 '''
+
+
+
+# print("-------- Cartoon Character -------")
+
+print("""
+Select one option:
+    1. Bugs Bunny
+    2. Daffy Duck
+    3. Porky Pig
+    4. Foghorn Leghorn
+    5. Sylvester the Cat
+    6. Tweety Bird
+    7. Speedy Gonzales
+    8. Road Runner
+""")
+
+choice = input("Enter looney tune character: ")
+
+if choice == "1":
+    print("Eh, what's up, doc")
+elif choice == "2":
+    print("You're despicable!")
+elif choice == "3":
+    print("Th-th-th-that's all folks!")
+elif choice == "4":
+    print("That’s a joke, son!")
+elif choice == "5":
+    print("Sufferin' succotash!")
+elif choice == "6":
+    print("I tawt I taw a puddy tat!")
+elif choice == "7":
+    print("¡Ándale! ¡Ándale! ¡Arriba! ¡Arriba!")
+elif choice == "8":
+    print("Beep beep!")
+else:
+    print("Invalid choice")
+
