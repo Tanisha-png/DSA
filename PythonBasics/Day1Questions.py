@@ -71,6 +71,7 @@ print(full_name)
 
 # print("-------- Cartoon Character -------")
 
+'''
 print("""
 Select one option:
     1. Bugs Bunny
@@ -103,4 +104,5 @@ elif choice == "8":
     print("Beep beep!")
 else:
     print("Invalid choice")
+'''
 
