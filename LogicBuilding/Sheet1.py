@@ -23,7 +23,8 @@ print(z)
 
 
 # Write a program to print numbers from 1 to 10 in a single line.
-
+for i in range(1, 11):
+    print(i, end='')
 
 # Write a program to print 'Even' if a number is even, otherwise print 'Odd' (use a hardcoded number).
 
