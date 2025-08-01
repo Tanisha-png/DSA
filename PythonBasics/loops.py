@@ -84,9 +84,38 @@
 
 
 # if else for while -- W3schools 
+'''
+a = 50
+b = 10
+
+if a > b:
+    print("Hello World!")
+'''
+
+'''
+a = 5
+b = 5
+
+if a == b:
+    print("Yes")
+else:
+    print("No")
+'''
+
+'''
+a = 50
+b = 10
+
+if a == b:
+    print("1")
+elif a > b:
+    print("2")
+else:
+    print("3")
+'''
 
 
-myList = [2,3,56,78,90,12,31,43]
+# myList = [2,3,56,78,90,12,31,43]
 
 # Find the sum of all elements of the list
 # result = 0
@@ -134,12 +163,12 @@ myList = [2,3,56,78,90,12,31,43]
 # print(myList)
 
 # return all the even elements from the list
-myList = [2,3,56,78,90,12,31,43]
-newList =[]
-for i in myList:
-    if i%2==0:
-        newList.append(i)
-print(newList)
+# myList = [2,3,56,78,90,12,31,43]
+# newList =[]
+# for i in myList:
+#     if i%2==0:
+#         newList.append(i)
+# print(newList)
 
 # Sets , Dictionary , Lists , Tuples -- Create , Add , Iterate , update , Delete , clear , copy 
 
