@@ -57,10 +57,13 @@ for i in range(1, 11):
 
 
 # Write a program to store a person's name and age in variables and print them together.
+
+'''
 friend_name = "Jack Hunter"
 friend_age = 41
 
 print(f"{friend_name} is {friend_age} years old.")
+'''
 
 
 
@@ -69,6 +72,12 @@ print(f"{friend_name} is {friend_age} years old.")
 
 # Write a program to concatenate two strings (e.g., 'Hello' and 'World').
 
+'''
+greeting_1 = "Hello"
+greeting_2 = "World"
+
+print(greeting_1 + " " + greeting_2)
+'''
 
 # Write a program to multiply a float and an integer and print the result.
 
