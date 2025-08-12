@@ -171,6 +171,70 @@ else:
 # print(newList)
 
 # Sets , Dictionary , Lists , Tuples -- Create , Add , Iterate , update , Delete , clear , copy 
+'''
+i = 2
+while i < 5:
+    print(i)
+    i += 1
+'''
 
+'''
+i = 1 
+while i < 10:
+    print(i)
+    i += 1
+'''
 
-    
+'''
+i = 1
+while i < 6:
+    print(i)
+    if i == 3:
+        break
+    i += 1
+'''
+
+'''
+i = 1
+while i < 6:
+    i += 1
+    if i == 3:
+        continue
+    print(i)
+'''
+
+'''
+i = 1 
+while i > 6:
+    print(i)
+    i += 1
+else:
+    print("i is no longer less than 6")
+'''
+
+'''
+candy = ["snickers", "payday", "milky-way"]
+for x in candy:
+    print(x)
+'''
+
+'''
+for x in "chocolate":
+    print(x)
+'''
+
+'''
+sports = ["basketball", "baseball", "football"]
+for x in sports:
+    print(x)
+    if x == "basketball":
+        break
+'''
+
+'''
+names = ["Michael", "Reggie", "Tyrone"]
+for x in names:
+    if x == "Tyrone":
+        break
+    print(x)
+'''

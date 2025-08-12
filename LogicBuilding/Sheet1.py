@@ -1,30 +1,39 @@
 # Write a program to print 'Hello, World!' on the screen.
+'''
 print("Hello, World!")
+'''
 
 # Write a program to print your name 5 times.
-
+'''
 my_name = "Tanisha"
 for i in range(5):
     print(my_name)
+'''
 
 # Write a program to display the current date (hardcode it for now).
+'''
 current_date = "2025-07-10"
 
 print("Today's date is:", current_date)
+'''
 
 
 # Write a program to add two hardcoded numbers and print the result.
+'''
 x = 11
 y = 19
 z = x + y
 print(z)
+'''
 
 # Write a program to print a simple pattern like Z using * .
 
 
 # Write a program to print numbers from 1 to 10 in a single line.
+'''
 for i in range(1, 11):
     print(i, end='')
+'''
 
 # Write a program to print 'Even' if a number is even, otherwise print 'Odd' (use a hardcoded number).
 
@@ -49,12 +58,26 @@ for i in range(1, 11):
 
 # Write a program to store a person's name and age in variables and print them together.
 
+'''
+friend_name = "Jack Hunter"
+friend_age = 41
+
+print(f"{friend_name} is {friend_age} years old.")
+'''
+
+
 
 # Write a program to calculate the area of a rectangle using two variables for length and width.
 
 
 # Write a program to concatenate two strings (e.g., 'Hello' and 'World').
 
+'''
+greeting_1 = "Hello"
+greeting_2 = "World"
+
+print(greeting_1 + " " + greeting_2)
+'''
 
 # Write a program to multiply a float and an integer and print the result.
 
