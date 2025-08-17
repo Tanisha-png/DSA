@@ -106,3 +106,45 @@ else:
     print("Invalid choice")
 '''
 
+# Lists
+'''
+my_list = ["fries", "onion rings", "wings"]
+print(my_list)
+'''
+
+'''
+my_list = ["fries", "onion rings", "wings"]
+print(len(my_list))
+'''
+
+'''
+fav_athletes = ["Paige", "Angel", "Aja"]
+print(fav_athletes[1])
+'''
+
+'''
+this_list = ["apple", "banana", "cherry", "orange", "mango", "melon"]
+print(this_list[1:5])
+'''
+
+'''
+this_list = ["banana", "apple", "cherry", "orange", "kiwi", "mango"]
+print(this_list[:3])
+'''
+
+'''
+this_list = ["banana", "apple", "cherry", "orange", "kiwi", "mango"]
+print(this_list[3:])
+'''
+
+'''
+my_friends = ["Reggie", "Rena", "Marlene", "Tyrone", "Andrea", "Flip", "Meg"]
+if "Marlene" in my_friends:
+    print("Yes, she is my friend from high school.")
+'''
+
+'''
+fav_people = ["Rena", "Reggie", "Tyrone", "Marlene", "Andrea", "Bob"]
+if "Reggie" in fav_people:
+    print("Yes, Reggie is my wonderful husband.")
+'''
