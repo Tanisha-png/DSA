@@ -148,3 +148,46 @@ fav_people = ["Rena", "Reggie", "Tyrone", "Marlene", "Andrea", "Bob"]
 if "Reggie" in fav_people:
     print("Yes, Reggie is my wonderful husband.")
 '''
+
+# Sets
+
+'''
+this_set = {"cardio", "weights", "rest"}
+print(this_set)
+'''
+
+'''
+this_set = {"cardio", "weights", "rest"}
+print(len(this_set))
+'''
+
+'''
+set_1 = {"cardio", "weights", "calisthenics"}
+set_2 = {1, 5, 7, 9, 2}
+set_3 = {True, False, True}
+
+print(set_1)
+print(set_2)
+print(set_3)
+'''
+
+'''
+fav_singers = {"Michael Jackson", "Aaliyah", "Whitney Houston", "Madonna", "Mariah Carey"}
+print(type(fav_singers))
+'''
+
+'''
+fav_fruits = {"apples", "strawberries", "cherries", "pears", "oranges"}
+for x in fav_fruits:
+    print(x)
+'''
+
+'''
+fav_fruits = {"apples", "strawberries", "cherries", "pears", "oranges"}
+print("apples" in fav_fruits)
+'''
+
+'''
+fav_fruits = {"apples", "strawberries", "cherries", "pears", "oranges"}
+print("mangos" not in fav_fruits)
+'''
