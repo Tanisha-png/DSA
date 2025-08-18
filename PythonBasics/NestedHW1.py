@@ -112,6 +112,7 @@ myData= {
 # --------------------------------------------
 
 # Print the tutor name , Bootcamp.
+print(myData["Tutor"])
 
 # Print the student’s name, age, and email from studentProfile.personalInfo.
 
