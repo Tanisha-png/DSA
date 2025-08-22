@@ -31,15 +31,9 @@ def sum_natural_loop(n):
 print("Q2. Sum of first 5 natural numbers:", sum_natural_loop(5))  # Expected: 15
 # TODO: Rewrite using recursion
 def SumOfNumber(n):
-    # Base Condition 
-    # if n ==1:
-    #     return 1
-    # # Function Call
+    if n >5:
+        return 
     
-    # return n + SumOfNumber(n-1) 
-    
-    if n > 5:
-        return 0 
     return n + SumOfNumber(n+1)
 
 print(SumOfNumber(1))
@@ -85,7 +79,14 @@ def sum_digits_loop(n):
         n //= 10
     return total
 print("Q5. Sum of digits in 123:", sum_digits_loop(123))  # Expected: 6
-# TODO: Rewrite using recursion
+
+def sum_digits(n):
+    if n == 0:
+        return 0
+    
+    return n%10 + sum_digits(n//10)
+
+print(sum_digits(12345))
 
 # / -- Division Operator
 
@@ -150,7 +151,13 @@ def sum_list_loop(lst):
     return total
 print("Q9. Sum of [1, 2, 3, 4]:", sum_list_loop([1, 2, 3, 4]))  # Expected: 10
 # TODO: Rewrite using recursion
-
+def sumElem(nums):
+    if len(nums)==0:
+        return 0
+    return nums[0] + sumElem(nums[1:])
+    
+nums = [1,3,5,6,2,7,4]
+print(sumElem(nums))
 # Question 10: Find maximum in a list
 def max_list_loop(lst):
     """Returns maximum element in lst"""

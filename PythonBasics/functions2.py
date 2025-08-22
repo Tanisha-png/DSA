@@ -15,8 +15,6 @@
 
 # First()
 
-
-
 # Recursion -- A function calls itself.
 
 # There are two ways to write code -- iterative (Loops)  and Recursive (Functions)
@@ -53,6 +51,7 @@
 
 
 # 
+"""
 def SumOfNumbers(n):
     total = 0
     if n >=10:
@@ -61,3 +60,41 @@ def SumOfNumbers(n):
     return total
 
 print(SumOfNumbers(1))
+
+"""
+
+# Recursion 
+
+# base condition 
+# call to the same function 
+
+# def PrintNum(n):
+#     if n >=10:
+#         return 
+#     print(n)
+#     PrintNum(n+1)
+
+# PrintNum(0)
+
+
+# def PrintNum(n):
+#     if n < 0:
+#         return 
+#     print(n)
+#     PrintNum(n-1)
+
+# PrintNum(9)
+
+# 8 <- 9 -> 10
+
+# 5! = 5*4*3*2*1 = 120
+# def Factorial(n):
+#     if n==1 or n==0:
+#         return 1 
+    
+#     return n*Factorial(n-1)
+
+# print(Factorial(5))
+
+
+# 
