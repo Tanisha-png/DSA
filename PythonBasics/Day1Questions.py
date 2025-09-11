@@ -460,3 +460,26 @@ if x > 10:
         print("but not above 20.")
 '''
 
+"""
+my_first_name = "Tanisha";
+my_last_name = "Thompson-Jones";
+
+print(my_first_name + my_last_name);
+"""
+
+"""
+my_fullname = "Tanisha Thompson-Jones";
+txt = f"My name is {my_fullname}";
+
+print(txt);
+"""
+
+"""
+my_name = "Tanisha";
+fav_food = "pizza";
+
+txt = f"Hello, my name is {my_name}. My favorite food is {fav_food}.";
+
+print(txt);
+"""
+
