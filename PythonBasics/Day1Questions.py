@@ -483,3 +483,13 @@ txt = f"Hello, my name is {my_name}. My favorite food is {fav_food}.";
 print(txt);
 """
 
+'''
+a = 38;
+b = 54;
+
+my_solution = (b - a);
+
+print(my_solution);
+
+'''
+
