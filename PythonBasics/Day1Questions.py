@@ -493,3 +493,23 @@ print(my_solution);
 
 '''
 
+'''
+def my_function(first_name, last_name):
+    print(first_name + " " + last_name);
+
+my_function("Tanisha", "Thompson");
+'''
+
+'''
+def my_age(a,b):
+    print(a - b);
+
+my_age(2025, 1987);
+'''
+
+'''
+def my_husband(first_name, last_name):
+    print(first_name + " " + last_name);
+
+my_husband("Reginald", "Jones");
+'''
