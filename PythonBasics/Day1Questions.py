@@ -513,3 +513,24 @@ def my_husband(first_name, last_name):
 
 my_husband("Reginald", "Jones");
 '''
+
+'''
+my_name = 'Tanisha'
+print(len(my_name))
+'''
+
+'''
+my_lastname = "Thompson"
+print(len(my_lastname))
+'''
+
+'''
+greeting = 'Hello World'
+print(greeting.upper())
+'''
+
+'''
+my_husband = 'Reggie Jones'
+print(my_husband.lower())
+'''
+
