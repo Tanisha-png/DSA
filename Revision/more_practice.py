@@ -110,6 +110,7 @@ print(age(my_dict))
 
 # Write a function that returns a list of all the numbers greater than five
 
+'''
 my_list = [7,8,9,10,13,2,4,1]
 
 def great_5(li):
@@ -121,3 +122,4 @@ def great_5(li):
     return result
 
 print(great_5(my_list))
+'''
