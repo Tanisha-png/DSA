@@ -176,3 +176,53 @@ function printTenToOneIterative() {
     }
 }
 printTenToOneIterative();
+
+
+// Takes one or more function as arguments 
+
+// Returns a function as an output
+
+// function multiply(factor){
+//     return function(number){
+//         return number*factor
+//     }
+// }
+
+// const result = multiply(4)
+// console.log(result)
+// console.log(result(10))
+
+
+// Taking as an argument 
+
+// function greet(name){
+//     return "Hello " + name;
+// }
+
+// function NewGreet(func , value){
+//     return func(value);
+// }
+// console.log(NewGreet(greet,"Alice"))
+
+// console.log(greet("Tanisha"))
+
+
+// function NumberPrint(n){
+//     if( n > 5){
+//         return 
+//     }
+//     console.log(n)
+//     return NumberPrint(n+1)
+// }
+
+// NumberPrint(1)
+
+
+
+
+
+
+
+
+
+
