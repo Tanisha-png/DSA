@@ -10,6 +10,8 @@ function reverseString(str) {
     for (let char of str) {
         stack.push(char);
     }
+    console.log(stack.length);
+    console.log(stack[stack.length - 1]);
 
     let reversedString = ""
     while (stack.length > 0) {
