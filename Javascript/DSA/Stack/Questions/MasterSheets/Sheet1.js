@@ -5,8 +5,21 @@
 // Input: Array of numbers
 // Output: Printed stack from top to bottom
 function stackArrayPushDisplay(inputArray) {
+    // Create a variable and assign it to an empty array
+    const stack = [];
 
+    // Iterate through the array using a for loop
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i])
+    }
+    console.log("Stack from top to bottom");
+
+    for (let i = stack.length - 1; i >= 0; i--) {
+        console.log(stack[i])
+    }
 }
+
+// stackArrayPushDisplay([2,4,6,8])
 
 // ===============================================
 // 2. Stack Pop All Elements
@@ -15,8 +28,19 @@ function stackArrayPushDisplay(inputArray) {
 // Input: Array of numbers
 // Output: Elements popped in order
 function stackPopAll(inputArray) {
+    // 
+    let stack = [];
 
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i]);
+    };
+
+    while (stack.length > 0) {
+        console.log(stack.pop())
+    }
 }
+
+// stackPopAll([10,20,30,40])
 
 // ===============================================
 // 3. Peek Top Element
@@ -25,8 +49,22 @@ function stackPopAll(inputArray) {
 // Input: Array of numbers
 // Output: Top element
 function stackPeekTop(inputArray) {
+    let stack = []
 
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i]);
+    }
+
+    if (stack.length === 0) {
+        console.log("Stack is empty")
+        return null;
+    }
+    return stack[stack.length - 1]
 }
+
+// console.log(stackPeekTop([20, 30, 40, 50, 60]))
+
+
 
 // ===============================================
 // 4. Check isEmpty
@@ -35,8 +73,19 @@ function stackPeekTop(inputArray) {
 // Input: Array
 // Output: Boolean
 function isEmptyCheck(inputArray) {
+    let stack = [];
 
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i]);
+    }
+
+    if (stack.length === 0) {
+        return true;
+    }
+    return false;
 }
+
+// console.log(isEmptyCheck([]))
 
 // ===============================================
 // 5. Check Size
@@ -45,8 +94,15 @@ function isEmptyCheck(inputArray) {
 // Input: Array
 // Output: Number
 function sizeCheck(inputArray) {
+    let stack = [];
 
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i]);
+    }
+    return stack.length;
 }
+
+// console.log(sizeCheck([2,4,6,8,10]))
 
 // ===============================================
 // 6. Handle Overflow
@@ -55,8 +111,20 @@ function sizeCheck(inputArray) {
 // Input: Array and capacity
 // Output: Stack overflow message or updated stack
 function overflowHandling(inputArray, capacity) {
+    let stack = [];
 
+    for (let i = 0; i < inputArray.length; i++) {
+        if (stack.length === capacity) {
+            console.log("Stack overflow")
+            return
+        }
+
+        stack.push(inputArray[i]);
+    }
+    console.log(stack)
 }
+
+// overflowHandling([1,3,5,7,9], 4)
 
 // ===============================================
 // 7. Handle Underflow
@@ -65,8 +133,19 @@ function overflowHandling(inputArray, capacity) {
 // Input: Array
 // Output: Underflow message
 function underflowHandling(inputArray) {
+    let stack = [];
 
+    for (let i = 0; i < inputArray.length; i++) {
+        if (stack.length === 0) {
+            console.log("Underflow")
+            return
+        }
+        stack.pop()
+    }
+    console.log(stack);
 }
+
+// underflowHandling([1,2,3,4,5])
 
 // ===============================================
 // 8. Stack Using Linked List
@@ -95,8 +174,20 @@ function dynamicResizeStack(inputArray) {
 // Input: Array
 // Output: Reversed array
 function reverseUsingStackOps(inputArray) {
+    let stack = [];
+    let reversedArr = []
 
+    for (let i = 0; i < inputArray.length; i++) {
+        stack.push(inputArray[i])
+    }
+    while (stack.length > 0) {
+        reversedArr.push(stack.pop());
+    }
+    return reversedArr;
 }
+
+const result = reverseUsingStackOps([10,20,30,40,50])
+console.log(result);
 
 // ===============================================
 // 11. Two Independent Stacks
