@@ -182,3 +182,54 @@ insertAtPosition(position, data) {
 
     return true;
 }
+
+function deleteAtPosition(position) {
+    // if the linked list is empty
+    if (this.isEmpty()) {
+        console.log("List is empty")
+        return null
+    }
+    // if the position is invalid
+    if (position < 0 || position >= this.size) {
+        console.log("Invalid position")
+        return null
+    }
+    // if the position equal to zero
+    if (position === 0) {
+        return this.deletedFirst()
+    }
+    // for any other positions
+    let temp = this.head
+    let prev = null
+    let count = 0
+
+    while (count < position) {
+        prev = temp
+        temp = temp.next
+        count++
+    }
+
+    prev.next = temp.next
+    return temp.data
+}
+
+function search(value) {
+    // check if the linked list is empty
+    if (this.isEmpty()) {
+        console.log("List is empty")
+        return -1
+    }
+    // traverse the linked list
+    let temp = this.head
+    let index = 0
+
+    while (temp !== null) {
+        if (temp.data === value) {
+            console.log("Found")
+            return index
+        }
+        temp = temp.next
+        index++
+    }
+    return -1
+}
