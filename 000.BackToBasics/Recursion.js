@@ -110,10 +110,11 @@ function PrintNumbers(n) {
         return;
     }
 
-    console.log(n);
+    // console.log(n);
 
     // Recursive Call
     PrintNumbers(n + 1);
+    console.log(n);
 }
 
 PrintNumbers(1);
