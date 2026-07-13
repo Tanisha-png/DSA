@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Defines the character encoding used by the webpage -->
+    <meta charset="UTF-8">
+
+    <!-- Makes the webpage responsive on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Title displayed on the browser tab -->
+    <title>CSS - Intro</title>
+
+    <!--
+        External CSS
+
+        This line connects the HTML file with an external CSS file.
+        The browser loads style.css and applies all the styles written there.
+
+        href  -> Path of CSS file
+        rel   -> Relationship (stylesheet)
+    -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <!--
+        Heading
+
+        This heading will become RED because of the CSS rule
+        written in style.css.
+
+        h1 {
+            color: red;
+        }
+    -->
+    <h1>This is Intro to CSS</h1>
+
+
+    <!-- ===================================================== -->
+    <!--              INTERNAL CSS (Style Tag)                 -->
+    <!-- ===================================================== -->
+
+    <!--
+
+        Internal CSS is written inside the <style> tag.
+
+        It is generally placed inside the <head> section.
+
+        It affects only the current HTML page.
+
+        The code is commented so it is not executed.
+
+    -->
+
+    <!--
+    <style>
+
+        p {
+
+            // Changes text color
+            color: green;
+
+            // Makes font size 30 pixels
+            font-size: 30px;
+
+        }
+
+    </style>
+    -->
+
+
+    <!--
+        Paragraph
+
+        Since the internal CSS is commented,
+        these paragraphs are styled using
+        the external CSS file.
+
+    -->
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit, amet?</p>
+
+    <p>Lorem ipsum dolor sit amet.</p>
+
+</body>
+
+</html>
