@@ -1,0 +1,37 @@
+/*
+
+This is an External CSS file.
+
+Every rule has two parts.
+
+Selector
+{
+    Property : Value;
+}
+
+*/
+
+/*
+Selector -> p
+
+This rule targets every paragraph (<p>) element.
+*/
+p {
+
+    /* Changes the text color */
+    color: green;
+
+    /* Makes the font size 30 pixels */
+    font-size: 30px;
+}
+
+/*
+Selector -> h1
+
+This rule targets every <h1> element.
+*/
+h1 {
+
+    /* Makes heading red */
+    color: red;
+}

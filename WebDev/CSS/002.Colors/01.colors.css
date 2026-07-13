@@ -1,0 +1,186 @@
+/*
+==================================================
+CSS COLORS
+==================================================
+
+CSS supports several ways to define colors.
+
+1. Color Keywords
+2. Hexadecimal
+3. RGB
+4. RGBA
+5. HSL
+6. HSLA
+
+Only one method is generally used at a time.
+*/
+
+
+
+/*=========================================
+1. COLOR KEYWORDS
+=========================================*/
+
+/*
+
+CSS supports around 148 predefined color names.
+
+Examples
+
+red
+green
+blue
+black
+white
+tomato
+gold
+orange
+purple
+pink
+
+*/
+
+/*
+
+h1{
+
+    color:tomato;
+
+    background:green;
+
+}
+
+a{
+
+    background:red;
+
+    border:2px solid black;
+
+}
+
+*/
+
+
+
+/*=========================================
+2. HEXADECIMAL COLORS
+=========================================*/
+
+/*
+
+Hex colors always begin with #
+
+Example
+
+#ffffff
+#000000
+#ff0000
+
+*/
+
+/*
+
+h1{
+
+    color:#345efa;
+
+    background:green;
+
+}
+
+*/
+
+/*
+
+a{
+
+    background:#ab2ef1;
+
+    color:#345fa2;
+
+    border:2px solid black;
+
+}
+
+*/
+
+
+
+/*=========================================
+3. RGB COLORS
+=========================================*/
+
+/*
+
+RGB stands for
+
+Red
+Green
+Blue
+
+Each value ranges from
+
+0 to 255
+
+Syntax
+
+rgb(red, green, blue)
+
+*/
+
+/*
+
+p{
+
+    color:rgb(219,30,200);
+
+    background:rgb(100,200,50);
+
+    border:2px solid rgb(255,20,10);
+
+}
+
+*/
+
+
+
+/*=========================================
+4. RGBA COLORS
+=========================================*/
+
+/*
+
+RGBA adds one extra value
+
+Alpha
+
+Alpha controls transparency.
+
+0     Completely Transparent
+
+0.5   50% Visible
+
+1     Fully Visible
+
+Syntax
+
+rgba(red, green, blue, alpha)
+
+*/
+
+
+p{
+
+    color:rgba(174,221,35,0.4);
+
+    font-size:40px;
+
+    /*
+
+    background:rgb(100,200,50);
+
+    border:2px solid rgb(255,20,10);
+
+    */
+
+}
