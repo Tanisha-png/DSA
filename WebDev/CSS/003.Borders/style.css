@@ -1,0 +1,289 @@
+/*
+=====================================================
+                CSS BORDERS
+=====================================================
+
+A border is a line drawn around an HTML element.
+
+Almost every HTML element can have a border.
+
+Examples
+
+Heading
+Paragraph
+Image
+Table
+Form
+List
+Div
+Span
+Link
+
+A border requires THREE properties.
+
+1. Width
+2. Style
+3. Color
+
+Syntax
+
+border: width style color;
+
+Example
+
+border: 4px solid blue;
+
+=====================================================
+*/
+
+
+
+
+/*
+=====================================================
+                HEADING
+=====================================================
+*/
+
+h1{
+
+    color:#1F2937;
+
+    /*
+    Long Method
+
+    border-width:4px;
+    border-style:solid;
+    border-color:#2563EB;
+    */
+
+    /*
+    Shorthand Method
+
+    border: width style color;
+    */
+
+    border:4px solid #2563EB;
+
+}
+
+
+
+
+/*
+=====================================================
+                PARAGRAPH
+=====================================================
+*/
+
+p{
+
+    color:#374151;
+
+    border:3px solid #10B981;
+
+}
+
+
+
+
+/*
+=====================================================
+                BORDER WIDTH
+=====================================================
+
+Controls the thickness of the border.
+
+Examples
+
+border-width:1px;
+
+border-width:3px;
+
+border-width:6px;
+
+Larger value means a thicker border.
+
+Try changing the width yourself.
+
+*/
+
+
+
+
+/*
+=====================================================
+                BORDER STYLE
+=====================================================
+
+A border will NOT appear until
+a border style is provided.
+
+Common Border Styles
+
+solid
+
+dashed
+
+dotted
+
+double
+
+groove
+
+ridge
+
+inset
+
+outset
+
+none
+
+Example
+
+border-style:solid;
+
+Try replacing "solid"
+with every style listed above.
+
+*/
+
+
+
+
+/*
+=====================================================
+                BORDER COLOR
+=====================================================
+
+Defines the color of the border.
+
+You can use
+
+Color Name
+
+border-color:red;
+
+Hex Value
+
+border-color:#2563EB;
+
+RGB
+
+border-color:rgb(37,99,235);
+
+HSL
+
+border-color:hsl(221,83%,53%);
+
+*/
+
+
+
+
+/*
+=====================================================
+                INDIVIDUAL SIDES
+=====================================================
+
+Each side of the border can be
+controlled separately.
+
+Top
+
+border-top:4px solid #2563EB;
+
+Right
+
+border-right:4px dashed #10B981;
+
+Bottom
+
+border-bottom:4px dotted #F97316;
+
+Left
+
+border-left:4px double #8B5CF6;
+
+Example
+
+Comment the paragraph code above
+and try this example.
+
+p{
+
+    color:#374151;
+
+    border-top:4px solid #2563EB;
+
+    border-right:4px dashed #10B981;
+
+    border-bottom:4px dotted #F97316;
+
+    border-left:4px double #8B5CF6;
+
+}
+
+*/
+
+
+
+
+/*
+=====================================================
+                BORDER RADIUS
+=====================================================
+
+Border Radius makes the corners rounded.
+
+Round Every Corner
+
+border-radius:10px;
+
+border-radius:20px;
+
+border-radius:40px;
+
+Round Individual Corners
+
+border-top-left-radius:30px;
+
+border-top-right-radius:30px;
+
+border-bottom-left-radius:30px;
+
+border-bottom-right-radius:30px;
+
+Example 1
+
+Comment the paragraph code above
+and try this.
+
+p{
+
+    color:#374151;
+
+    border:4px solid #2563EB;
+
+    border-radius:20px;
+
+}
+
+Example 2
+
+Comment the paragraph code above
+and try this.
+
+p{
+
+    color:#374151;
+
+    border:4px solid #2563EB;
+
+    border-top-right-radius:30px;
+
+    border-bottom-left-radius:30px;
+
+}
+
+*/
