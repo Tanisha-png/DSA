@@ -1,0 +1,59 @@
+body {
+    background: antiquewhite;
+}
+
+img {
+    display: block;
+    margin: auto;
+    border-radius: 45%;
+}
+
+h1 {
+    border: 2px solid black;
+    padding: 4px;
+    background-color: burlywood;
+    border-radius: 5px 5px 5px 5px;
+    text-align: center;
+}
+
+h2 {
+    border: 2px solid black;
+    padding: 4px;
+    background-color: burlywood;
+    border-radius: 5px 5px 5px 5px;
+    text-align: center;
+}
+
+ul {
+    border: 2px solid black;
+    padding: 4px;
+    text-align: center;
+    list-style: none;
+    background-color: bisque;
+}
+
+.container {
+    text-align: center;
+    border: 2px solid black;
+    background-color: bisque;
+    margin: 0 auto;          /* centers the table itself */
+        text-align: center;      /* centers text inside the table */
+        border-collapse: collapse
+}
+
+.container th,
+.container td {
+    padding: 10px;
+    border: 1px solid #3a3434;
+}
+
+h3 {
+    border: 2px solid black;
+    background-color: burlywood;
+    text-align: center;
+    padding: 4px;
+}
+
+
+
+
