@@ -1,0 +1,50 @@
+/* =====================================
+   ELEMENT SELECTOR
+   Selects all paragraphs (<p>)
+===================================== */
+
+p{
+    color: blue;
+}
+
+
+/* =====================================
+   CLASS SELECTORS
+   Starts with a dot (.)
+   Can be reused multiple times
+===================================== */
+
+.hero-section{
+    background-color: lightblue;
+}
+
+.hero-heading{
+    color: darkblue;
+}
+
+.hero-para{
+    color: green;
+}
+
+.cta-btn{
+    background-color: orange;
+}
+
+.main-image{
+    border: 2px solid green;
+}
+
+.second-para{
+    color: purple;
+}
+
+
+/* =====================================
+   ID SELECTOR
+   Starts with a hash (#)
+   Used for a unique element
+===================================== */
+
+#second-section{
+    background-color: lightyellow;
+}

@@ -1,25 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layout</title>
+    <link rel="stylesheet" href="layout.css">
 </head>
+
 <body>
-    <div>
-        <h1>Welcome to Lorem</h1>
-        <img src="images/meditation.jpg" alt="yoga">
 
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis ratione delectus labore? Exercitationem, et. Facere, error quas illum voluptas nulla necessitatibus a vel quo quam exercitationem. Fugiat vitae veniam eos!</p>
+    <div class="main-section">
+        <div class="hero-section">
+            <h1 id="hero-heading">Welcome to Lorem</h1>
+            <div class="hero-left">
+                <h3>This is <span id="unique-hero">Hero</span> Left Section</h3>
+                <p class="first-para">Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis ratione delectus
+                    labore?
+                    Exercitationem,
+                    et. Facere, error quas illum voluptas nulla necessitatibus a vel quo quam exercitationem. Fugiat
+                    vitae
+                    veniam eos!</p>
 
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta excepturi tempora obcaecati natus id in magnam delectus omnis, libero quis debitis sint rem accusantium itaque porro atque reiciendis enim totam reprehenderit non consequatur quibusdam? Nemo ipsam nesciunt quisquam voluptate laborum!</p>
+                <p class="second-para">Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta excepturi tempora
+                    obcaecati natus id
+                    in
+                    magnam delectus omnis, libero quis debitis sint rem accusantium itaque porro atque reiciendis enim
+                    totam
+                    reprehenderit non consequatur quibusdam? Nemo ipsam nesciunt quisquam voluptate laborum!</p>
+                <button class="hero-btn">Read More</button>
+            </div>
+            <div class="hero-right">
+                <img class="hero-image" src="images/meditation.jpg" alt="yoga">
+            </div>
+        </div>
+        <div class="clear" style="clear:both;">
 
-        <h2>Attention-Training</h2>
-        <ul>
-            <li>Focused Attention</li>
-            <li>Open Monitoring</li>
-            <li>Mantra Meditation</li>
-        </ul>
+        </div>
+        <div class="courses-section">
+
+            <h2 class="courses-heading">Attention-Training</h2>
+            <ul class="courses-list">
+                <li>Focused Attention</li>
+                <li>Open Monitoring</li>
+                <li>Mantra Meditation</li>
+            </ul>
+        </div>
 
         <h2>Awareness-Expanding Techniques</h2>
         <ul>
@@ -36,4 +62,5 @@
         </ul>
     </div>
 </body>
+
 </html>
