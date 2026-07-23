@@ -181,10 +181,59 @@
 //  6. Level Order Traversal (BFS)
 //  https://leetcode.com/problems/binary-tree-level-order-traversal/
 
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.left = null;
+        this.right = null;
+    }
+}
 
+function levelOrderTraversal(root) {
+    if (!root) {
+        return [];
+    }
+
+    const queue = [root];
+    const result = [];
+
+    // queue -   C , D , E , F 
+    // result - R , A , B , 
+    // level - 
+    while (queue.length > 0) {
+        const level = [];
+        // const size = queue.length;
+        for (let i = 0; i < queue.length; i++) {
+            const node = queue.shift();
+            level.push(node.value);
+
+            if (node.left) {
+                queue.push(node.left);
+            }
+            if (node.right) {
+                queue.push(node.right);
+            }
+
+        }
+        result.push(...level)
+
+
+    }
+    return result;
+}
 
 //  7. Count Nodes
 //  https://leetcode.com/problems/count-complete-tree-nodes/ (normal O(n) version first)
+
+function countNodes(root) {
+    if (!root) {
+        return 0;
+    }
+    return 1 + countNodes(root.left) + countNodes(root.right);
+}
+
+// R -- 1 + 3 and B 
+
 
 //  8. Height of Binary Tree
 //  https://leetcode.com/problems/maximum-depth-of-binary-tree/
