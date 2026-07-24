@@ -181,56 +181,56 @@
 //  6. Level Order Traversal (BFS)
 //  https://leetcode.com/problems/binary-tree-level-order-traversal/
 
-class Node {
-    constructor(value) {
-        this.value = value;
-        this.left = null;
-        this.right = null;
-    }
-}
+// class Node {
+//     constructor(value) {
+//         this.value = value;
+//         this.left = null;
+//         this.right = null;
+//     }
+// }
 
-function levelOrderTraversal(root) {
-    if (!root) {
-        return [];
-    }
+// function levelOrderTraversal(root) {
+//     if (!root) {
+//         return [];
+//     }
 
-    const queue = [root];
-    const result = [];
+//     const queue = [root];
+//     const result = [];
 
-    // queue -   C , D , E , F 
-    // result - R , A , B , 
-    // level - 
-    while (queue.length > 0) {
-        const level = [];
-        // const size = queue.length;
-        for (let i = 0; i < queue.length; i++) {
-            const node = queue.shift();
-            level.push(node.value);
+//     // queue -   C , D , E , F 
+//     // result - R , A , B , 
+//     // level - 
+//     while (queue.length > 0) {
+//         const level = [];
+//         // const size = queue.length;
+//         for (let i = 0; i < queue.length; i++) {
+//             const node = queue.shift();
+//             level.push(node.value);
 
-            if (node.left) {
-                queue.push(node.left);
-            }
-            if (node.right) {
-                queue.push(node.right);
-            }
+//             if (node.left) {
+//                 queue.push(node.left);
+//             }
+//             if (node.right) {
+//                 queue.push(node.right);
+//             }
 
-        }
-        result.push(...level)
+//         }
+//         result.push(...level)
 
 
-    }
-    return result;
-}
+//     }
+//     return result;
+// }
 
 //  7. Count Nodes
 //  https://leetcode.com/problems/count-complete-tree-nodes/ (normal O(n) version first)
 
-function countNodes(root) {
-    if (!root) {
-        return 0;
-    }
-    return 1 + countNodes(root.left) + countNodes(root.right);
-}
+// function countNodes(root) {
+//     if (!root) {
+//         return 0;
+//     }
+//     return 1 + countNodes(root.left) + countNodes(root.right);
+// }
 
 // R -- 1 + 3 and B 
 
@@ -246,6 +246,56 @@ function countNodes(root) {
 
 //  11. Print All Root to Leaf Paths
 //  https://leetcode.com/problems/binary-tree-paths/
+
+// class Node {
+//     constructor(val) {
+//         this.val = val
+//         this.left = null
+//         this.right = null
+//     }
+// }
+
+// var binaryTreePaths = function (root) {
+//     if (!root) {
+//         return [];
+//     }
+
+//     const result = [];
+//     function dfs(node, path) {
+//         path.push(node.val)
+
+//         if (!node.left && !node.right) {
+//             result.push(path.join("->"))
+//         }
+
+//         if (node.left) {
+//             dfs(node.left, path)
+//         }
+//         if (node.right) {
+//             dfs(node.right, path)
+//         }
+
+//         path.pop();
+
+//     }
+//     dfs(root, []);
+//     return result;
+
+// }
+
+// Depth First Search
+// const root = new Node(100);
+// root.left = new Node(50)
+
+// root.right = new Node(80)
+
+// root.left.left = new Node(40)
+// root.left.right = new Node(30)
+
+// root.right.left = new Node(70)
+// root.right.right = new Node(90)
+
+// console.log(binaryTreePaths(root))
 
 //  12. Maximum Root to Leaf Path Sum
 //  https://leetcode.com/problems/binary-tree-maximum-path-sum/ (simplified version)
