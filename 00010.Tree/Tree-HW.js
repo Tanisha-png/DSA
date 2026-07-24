@@ -19,7 +19,7 @@ const countNodes = (root) => {
     if (!root) {
         return 0;
     }
-    return 1 + countNodes(root.left) + countNodes(root.right);
+    return root.val + countNodes(root.left) + countNodes(root.right);
 }
 
 const root = new Node(20);

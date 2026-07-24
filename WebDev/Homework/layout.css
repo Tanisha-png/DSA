@@ -6,13 +6,13 @@
     box-sizing: border-box;
 } 
 /* Main Section Starts */
-.main-section{
+/* .main-section{
     /* background-color: antiquewhite; */
-}
+/* } */
 /* Main Section Ends */
-.hero-section{
+/* .hero-section{ */
 /* background-color: aquamarine; */
-}
+/* } */ 
 
  /* Hero Heading */
  #hero-heading{
@@ -103,3 +103,10 @@
     list-style-type:square;
 }
 /* courses section ends*/
+
+/* techniques section begins */
+.techniques-section {
+   padding: 30px 50px;
+   
+}
+/* techniques section ends */
