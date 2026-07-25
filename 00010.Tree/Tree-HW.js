@@ -1,6 +1,6 @@
 // 7.A: Find sum of all nodes
 
-class Node{
+class Node {
     constructor(val) {
         this.val = val;
         this.left = null;
@@ -15,11 +15,28 @@ class Node{
 //     return 1 + countNodes(root.left) + countNodes(root.right);
 // }
 
+// const countNodes = (root) => {
+//     if (!root) {
+//         return 0;
+//     }
+
+//     if (!root.left && !root.right) {
+//         return 0;
+//     }
+//     return root.val + countNodes(root.left) + countNodes(root.right);
+// }
+
+
+
 const countNodes = (root) => {
     if (!root) {
         return 0;
     }
-    return root.val + countNodes(root.left) + countNodes(root.right);
+
+    if (!root.left && !root.right) {
+        return root.val;
+    }
+    return countNodes(root.left) + countNodes(root.right);
 }
 
 const root = new Node(20);
