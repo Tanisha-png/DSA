@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-Index CSS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .container {
+            position: relative;
+            height: 550px;
+            border: 3px solid black;
+            background-color: #f5f5f5;
+        }
+
+        .box {
+            position: absolute;
+            padding: 20px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* ================================= */
+        /* Box 1 */
+        /* ================================= */
+
+        .first {
+            width: 250px;
+            height: 250px;
+
+            background-color: crimson;
+
+            top: 20px;
+            left: 20px;
+
+            z-index: 1;
+        }
+
+        /* ================================= */
+        /* Box 2 */
+        /* ================================= */
+
+        .second {
+            width: 250px;
+            height: 250px;
+
+            background-color: royalblue;
+
+            top: 80px;
+            left: 80px;
+
+            z-index: 2;
+        }
+
+        /* ================================= */
+        /* Box 3 */
+        /* ================================= */
+
+        .third {
+            width: 250px;
+            height: 250px;
+
+            background-color: seagreen;
+
+            top: 140px;
+            left: 140px;
+
+            z-index: 3;
+        }
+
+        /* ================================= */
+        /* Box 4 */
+        /* ================================= */
+
+        .fourth {
+            width: 250px;
+            height: 250px;
+
+            background-color: orange;
+
+            top: 200px;
+            left: 200px;
+
+            z-index: 0;
+        }
+
+        /* ================================= */
+        /* Box 5 */
+        /* ================================= */
+
+        .fifth {
+            width: 250px;
+            height: 250px;
+
+            background-color: purple;
+
+            top: 260px;
+            left: 260px;
+
+            z-index: -1;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>CSS Z-Index</h1>
+
+    <p>
+        Higher <strong>z-index</strong> values appear above lower values.
+        Negative z-index places the element behind other positioned elements.
+    </p>
+
+    <br>
+
+    <div class="container">
+
+        <div class="box first">
+            z-index : 1
+        </div>
+
+        <div class="box second">
+            z-index : 2
+        </div>
+
+        <div class="box third">
+            z-index : 3
+        </div>
+
+        <div class="box fourth">
+            z-index : 0
+        </div>
+
+        <div class="box fifth">
+            z-index : -1
+        </div>
+
+    </div>
+
+</body>
+
+</html>
