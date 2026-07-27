@@ -225,12 +225,12 @@
 //  7. Count Nodes
 //  https://leetcode.com/problems/count-complete-tree-nodes/ (normal O(n) version first)
 
-// function countNodes(root) {
-//     if (!root) {
-//         return 0;
-//     }
-//     return 1 + countNodes(root.left) + countNodes(root.right);
-// }
+function countNodes(root) {
+    if (!root) {
+        return 0;
+    }
+    return 1 + countNodes(root.left) + countNodes(root.right);
+}
 
 // R -- 1 + 3 and B 
 

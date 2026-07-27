@@ -214,26 +214,219 @@ console.log(postorder(root));
 //! /  6. Level Order Traversal (BFS)
 //!  https://leetcode.com/problems/binary-tree-level-order-traversal/
 
+// I need help with this one
+
 
 
 //!  7. Count Nodes
 //!  https://leetcode.com/problems/count-complete-tree-nodes/ (normal O(n) version first)
 
+/** 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function countNodes(root) {
+    if (!root) return 0;
+
+    if (!root.left && !root.right) return 0;
+
+    return root.val + countNodes(root.left) + countNodes(root.right);
+}
+
+const root = new Node(20);
+root.left = new Node(18)
+root.right = new Node(22)
+
+root.left.right = new Node(5)
+root.left.left = new Node(12)
+
+root.right.left = new Node(25)
+root.right.right = new Node(30)
+
+console.log(countNodes(root));
+*/
 
 
 //!  8. Height of Binary Tree
 //!  https://leetcode.com/problems/maximum-depth-of-binary-tree/
 
+/** 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function maxDepth(root) {
+    if (!root) return 0;
+
+    return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+};
+
+const root = new Node(70);
+root.left = new Node(10);
+root.right = new Node(20);
+
+root.left.left = new Node(5);
+root.left.right = new Node(10);
+
+root.right.right = new Node(30);
+root.right.left = new Node(18);
+
+console.log(maxDepth(root));
+*/
+
 //!  9. Count Leaf / Full Nodes
+
+/** 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function countNodes(root) {
+    if (!root) {
+        return 0;
+    }
+    return 1 + countNodes(root.left) + countNodes(root.right);
+}
+
+const root = new Node(70);
+root.left = new Node(10);
+root.right = new Node(20);
+
+root.left.left = new Node(5);
+root.left.right = new Node(10);
+
+root.right.right = new Node(30);
+root.right.left = new Node(18);
+
+console.log(countNodes(root))
+*/
 
 //!  10. Sum of Leaf Nodes
 
+/** 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
 
+const sumOfNodes = (root) => {
+    if (!root) {
+        return 0;
+    }
+
+    if (!root.left && !root.right) {
+        return root.val;
+    }
+    return sumOfNodes(root.left) + sumOfNodes(root.right);
+}
+
+const root = new Node(20);
+root.left = new Node(18)
+root.right = new Node(22)
+
+root.left.right = new Node(5)
+root.left.left = new Node(12)
+
+root.right.left = new Node(25)
+root.right.right = new Node(30)
+
+console.log(sumOfNodes(root));
+*/
 
 //!  11. Print All Root to Leaf Paths
 //!  https://leetcode.com/problems/binary-tree-paths/
+
+/** 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function binaryTreePaths(root) {
+    if (!root) return [];
+
+    const result = [];
+        function dfs(node, path) {
+            path.push(node.val)
+
+            if (!node.left && !node.right) {
+                result.push(path.join("->"))
+            }
+
+            if (node.left) {
+                dfs(node.left, path)
+            }
+            if (node.right) {
+                dfs(node.right, path)
+            }
+
+            path.pop();
+
+        }
+        dfs(root, []);
+        return result;
+
+    }
+
+const root = new Node(100);
+root.left = new Node(50)
+
+root.right = new Node(80)
+
+root.left.left = new Node(40)
+root.left.right = new Node(30)
+
+root.right.left = new Node(70)
+root.right.right = new Node(90)
+
+console.log(binaryTreePaths(root))
+*/
 
 
 //!  12. Maximum Root to Leaf Path Sum
 //!  https://leetcode.com/problems/binary-tree-maximum-path-sum/ (simplified version)
 
+class Node {
+    constructor(val) {
+        this.val = val;
+        this.left = null;
+        this.right = null;
+    }
+}
+
+function maxPathSum(root) {
+    if (!root) return 0;
+
+    return root.val + maxPathSum(root.left) + maxPathSum(root.right);
+}
+
+const root = new Node(88);
+root.left = new Node(70);
+root.right = new Node(90);
+
+root.left.left = new Node(55);
+root.left.right = new Node(40);
+
+root.right.right = new Node(50);
+root.right.left = new Node(20);
+
+console.log(maxPathSum(root));
