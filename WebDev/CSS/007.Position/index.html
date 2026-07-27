@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Position — Simple & Complete Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>CSS Position — The Simple Complete Guide</h1>
+    <p class="subtitle">Every position value explained with clear examples. No JavaScript, just pure CSS.</p>
+
+    <!-- ========== 1. STATIC ========== -->
+    <h2>1. Static (default)</h2>
+    <p>The element stays in the normal document flow. <code>top</code>, <code>left</code>, <code>right</code>,
+        <code>bottom</code> and <code>z-index</code> have <strong>no effect</strong>.
+    </p>
+    <div class="demo">
+        <div class="demo-label">position: static;</div>
+        <div class="box static-box">
+            <h3>I'm a static box</h3>
+            <p>I sit exactly where I'm written. Offsets are ignored.</p>
+        </div>
+    </div>
+
+    <!-- ========== 2. RELATIVE ========== -->
+    <h2>2. Relative</h2>
+    <p>The element moves <strong>relative to its original position</strong>. It keeps its original space – other
+        elements don't move.</p>
+    <div class="demo">
+        <div class="demo-label">position: relative; top: 20px; left: 30px;</div>
+        <div class="box relative-box">
+            <h3>Relative Box</h3>
+            <p>I shifted down 20px and right 30px from where I would normally be.</p>
+        </div>
+        <div class="relative-note">The space I originally occupied is still there (dashed outline).</div>
+    </div>
+
+    <!-- ========== 3. ABSOLUTE ========== -->
+    <h2>3. Absolute</h2>
+    <p>Removed from the flow. Positioned relative to the <strong>nearest positioned ancestor</strong> (an element with
+        <code>position: relative</code>, <code>absolute</code>, <code>fixed</code>, or <code>sticky</code>). If none
+        exists, it uses the <code>&lt;html&gt;</code> element.
+    </p>
+    <div class="demo">
+        <div class="demo-label">Parent: position: relative; (the positioning context)</div>
+        <div class="absolute-parent">
+            <div style="font-weight:600; color:#336;">Parent (relative)</div>
+            <div class="box absolute-box">
+                <h3>Absolute Box</h3>
+                <p>top: 20px; left: 30px; – inside the dashed parent.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 4. Z-INDEX ========== -->
+    <h2>4. Z‑Index (stacking order)</h2>
+    <p>Controls which element appears on top when they overlap. Only works on <strong>positioned elements</strong> (not
+        static). Higher number = on top.</p>
+    <div class="demo">
+        <div class="demo-label">Box 1 (z‑index: 1) &amp; Box 2 (z‑index: 2)</div>
+        <div class="z-container">
+            <div class="box z-box1">
+                <h3>Box 1</h3>
+                <p>z-index: 1</p>
+            </div>
+            <div class="box z-box2">
+                <h3>Box 2</h3>
+                <p>z-index: 2</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 5. STICKY ========== -->
+    <h2>5. Sticky</h2>
+    <p>A hybrid – behaves like <code>relative</code> until the scroll reaches a threshold (e.g., <code>top: 0</code>),
+        then it sticks like <code>fixed</code> within its parent.</p>
+    <div class="demo" style="padding:0; overflow:visible;">
+        <div class="sticky-demo">
+            Sticky header – scroll inside the box below
+        </div>
+        <div class="tall-content">
+            <p>Start scrolling inside this container…</p>
+            <p>The green bar will stick at the top when you scroll past it.</p>
+            <p>Keep scrolling – it stays visible while the rest moves.</p>
+            <p>It un-sticks when its parent scrolls out of view.</p>
+            <p>Perfect for section headers or navigation.</p>
+            <p>Still scrolling? You'll see the sticky effect clearly.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+            <p>End of scrollable area – the sticky bar will release soon.</p>
+        </div>
+    </div>
+
+    <!-- ========== 6. FIXED ========== -->
+    <h2>6. Fixed</h2>
+    <p>Completely removed from the document flow. Positioned relative to the <strong>browser viewport</strong>. It stays
+        in the same place even when the page scrolls.</p>
+    <div class="demo" style="background:#f4f8fd; min-height:100px;">
+        <p>Look at the <strong>bottom‑right corner</strong> of the screen. The blue circle is fixed there and will never
+            move.</p>
+    </div>
+
+    <!-- Fixed element (visible always) -->
+    <div class="fixed-box" style="font-size:14px;">Top</div>
+
+    <!-- ========== COMPARISON TABLE ========== -->
+    <hr>
+    <h2>Quick Reference Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Value</th>
+                <th>In document flow?</th>
+                <th>Offsets work?</th>
+                <th>Positioned relative to…</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>static</strong></td>
+                <td class="positive">✔ Yes</td>
+                <td class="negative">✘ No</td>
+                <td>Normal flow</td>
+            </tr>
+            <tr>
+                <td><strong>relative</strong></td>
+                <td class="positive">✔ Yes (space kept)</td>
+                <td class="positive">✔ Yes</td>
+                <td>Its own original position</td>
+            </tr>
+            <tr>
+                <td><strong>absolute</strong></td>
+                <td class="negative">✘ Removed</td>
+                <td class="positive">✔ Yes</td>
+                <td>Nearest positioned ancestor</td>
+            </tr>
+            <tr>
+                <td><strong>sticky</strong></td>
+                <td class="positive">✔ Yes (until stuck)</td>
+                <td class="positive">✔ Yes (threshold)</td>
+                <td>Scroll container + viewport</td>
+            </tr>
+            <tr>
+                <td><strong>fixed</strong></td>
+                <td class="negative">✘ Removed</td>
+                <td class="positive">✔ Yes</td>
+                <td>Viewport (browser window)</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>

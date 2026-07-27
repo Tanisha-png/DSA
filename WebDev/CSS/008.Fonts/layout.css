@@ -1,0 +1,415 @@
+/* ======================================================= */
+/* GOOGLE FONTS */
+/* ======================================================= */
+
+/* Elegant Serif Font */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+/* Modern Sans Serif Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+
+/* Handwriting Font */
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+/* Monospace Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+
+/* ======================================================= */
+/* CSS RESET */
+/* ======================================================= */
+
+* {
+   padding: 0;
+   margin: 0;
+   box-sizing: border-box;
+}
+
+/* ======================================================= */
+/* FONT FALLBACK */
+/*
+Browser checks fonts from left to right.
+
+1. Poppins
+2. Arial
+3. Helvetica
+4. Any Sans Serif Font
+*/
+/* ======================================================= */
+
+body {
+
+   font-family:
+      "Poppins",
+      Arial,
+      Helvetica,
+      sans-serif;
+
+   font-weight: 400;
+   font-style: normal;
+}
+
+
+/* ======================================================= */
+/* MAIN SECTION */
+/* ======================================================= */
+
+/* .main-section{
+   background-color: antiquewhite;
+} */
+
+
+/* ======================================================= */
+/* HERO SECTION */
+/* ======================================================= */
+
+/* .hero-section{
+   background-color:aquamarine;
+} */
+
+
+/* ======================================================= */
+/* HERO HEADING */
+/* ======================================================= */
+
+#hero-heading {
+
+   text-align: center;
+
+   font-size: 60px;
+
+   text-transform: uppercase;
+
+   padding-top: 50px;
+
+   margin-bottom: 20px;
+
+   letter-spacing: 4px;
+
+   color: rgb(25, 75, 17);
+
+   font-family:
+      "Playfair Display",
+      Georgia,
+      "Times New Roman",
+      serif;
+
+}
+
+
+/* ======================================================= */
+/* HERO HIGHLIGHT */
+/* ======================================================= */
+
+#unique-hero {
+
+   color: rgb(226, 41, 236);
+
+   font-style: normal;
+
+   font-family:
+      "Pacifico",
+      cursive;
+
+}
+
+
+/* ======================================================= */
+/* HERO LEFT */
+/* ======================================================= */
+
+.hero-left {
+
+   float: left;
+
+   width: 70%;
+
+   padding: 20px 40px;
+
+}
+
+
+/* ======================================================= */
+/* HERO SUB HEADING */
+/* ======================================================= */
+
+.hero-left h3 {
+
+   color: rgb(34, 58, 236);
+
+   font-style: oblique;
+
+   margin-top: 10px;
+
+   margin-bottom: 10px;
+
+   font-size: 30px;
+
+   font-family:
+      "Pacifico",
+      cursive;
+
+}
+
+
+/* ======================================================= */
+/* HERO PARAGRAPHS */
+/* ======================================================= */
+
+.hero-left p {
+
+   font-size: 20px;
+
+   text-align: justify;
+
+   color: rgb(14, 48, 7);
+
+   line-height: 1.8;
+
+   font-family:
+      "Poppins",
+      Arial,
+      Helvetica,
+      sans-serif;
+
+}
+
+
+/* ======================================================= */
+/* HERO BUTTON */
+/* ======================================================= */
+
+.hero-left .hero-btn {
+
+   padding: 10px 15px;
+
+   margin-top: 20px;
+
+   margin-bottom: 20px;
+
+   background-color: rgb(9, 29, 1);
+
+   color: rgb(231, 118, 235);
+
+   font-size: 20px;
+
+   border-radius: 5px;
+
+   cursor: pointer;
+
+   font-family:
+      "Roboto Mono",
+      Consolas,
+      monospace;
+
+}
+
+
+/* ======================================================= */
+/* HERO RIGHT */
+/* ======================================================= */
+
+.hero-right {
+
+   float: right;
+
+   width: 30%;
+
+}
+
+.hero-right .hero-image {
+
+   padding: 50px;
+
+   width: 400px;
+
+   height: 400px;
+
+   border-radius: 50%;
+
+}
+
+.hero-left .first-para {
+
+   margin-top: 10px;
+
+   margin-bottom: 15px;
+
+}
+
+
+/* ======================================================= */
+/* COURSES SECTION */
+/* ======================================================= */
+
+.courses-section {
+
+   background-color: rgb(218, 159, 130);
+
+}
+
+.courses-hero {
+
+   padding: 30px 50px;
+
+}
+
+.courses-section #courses-heading {
+
+   font-size: 40px;
+
+   font-style: italic;
+
+   color: rgb(1, 88, 201);
+
+   font-family:
+      "Playfair Display",
+      Georgia,
+      serif;
+
+}
+
+
+/* ======================================================= */
+/* TRAINING */
+/* ======================================================= */
+
+#training {
+
+   color: orangered;
+
+   font-style: normal;
+
+   text-transform: uppercase;
+
+   text-decoration: underline;
+
+   font-family:
+      "Pacifico",
+      cursive;
+
+}
+
+.courses-section ul {
+
+   color: blueviolet;
+
+   padding: 10px 15px;
+
+   font-size: 20px;
+
+   list-style-type: square;
+
+}
+
+
+/* ======================================================= */
+/* TECHNIQUES SECTION */
+/* ======================================================= */
+
+.techniques-section {
+
+   background-color: rgb(166, 244, 11);
+
+}
+
+.techniques-heading {
+
+   color: rgb(237, 9, 9);
+
+   text-transform: uppercase;
+
+   font-family:
+      "Playfair Display",
+      Georgia,
+      serif;
+
+}
+
+.techniques-section ul {
+
+   color: rgb(240, 83, 5);
+
+   padding: 20px 40px;
+
+   margin-top: 10px;
+
+   font-size: 20px;
+
+   list-style-type: square;
+
+}
+
+
+/* ======================================================= */
+/* AWARENESS */
+/* ======================================================= */
+
+#awareness {
+
+   color: blue;
+
+   text-decoration: underline;
+
+   font-family:
+      "Poppins",
+      Arial,
+      Helvetica,
+      sans-serif;
+
+}
+
+
+/* ======================================================= */
+/* BODY SECTION */
+/* ======================================================= */
+
+.body-section {
+
+   background-color: violet;
+
+}
+
+.body-heading {
+
+   color: cyan;
+
+   padding: 30px;
+
+   font-family:
+      "Roboto Mono",
+      Consolas,
+      monospace;
+
+}
+
+
+/* ======================================================= */
+/* BODY BASED */
+/* ======================================================= */
+
+#body-based {
+
+   color: greenyellow;
+
+   font-style: italic;
+
+   text-transform: uppercase;
+
+   text-decoration: underline;
+
+   font-family:
+      "Pacifico",
+      cursive;
+
+}
+
+.body-list {
+
+   color: azure;
+
+   padding: 20px 40px;
+
+   font-size: 20px;
+
+}
