@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox - Layouts</title>
+</head>
+<style>
+    * {
+        padding: 0px;
+        margin: 0px;
+        box-sizing: border-box;
+    }
+
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        background-color: rgb(73, 73, 232);
+
+    }
+
+    .logo {
+        padding: 5px 8px;
+        margin: 5px 8px;
+        color: azure;
+        cursor: pointer;
+    }
+
+    .social-links {
+        display: flex;
+        flex-direction: row;
+        /* width: 200px; */
+        justify-content: space-around;
+        color: azure;
+        /* gap: 5px; */
+
+
+    }
+
+    .social-links li {
+        list-style: none;
+        padding: 5px 8px;
+        margin: 5px 8px;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <section class="navbar">
+        <div class="logo">FlexBox</div>
+
+        <div class="navlinks">
+            <ul class="social-links">
+                <li>Home</li>
+                <li>About</li>
+                <li>Services</li>
+                <li>Contact</li>
+            </ul>
+
+        </div>
+    </section>
+</body>
+
+</html>

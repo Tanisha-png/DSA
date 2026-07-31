@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox Layout - 2 </title>
+</head>
+<style>
+    * {
+        padding: 0px;
+        margin: 0px;
+        box-sizing: border-box;
+    }
+
+    .hero-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: rgb(243, 237, 159);
+    }
+
+    #code {
+        font-style: italic;
+        color: rgb(255, 157, 0);
+    }
+
+    #jungle {
+        color: rgb(34, 55, 4);
+    }
+</style>
+
+<body>
+    <section class="hero-section">
+
+        <h1 class="hero-heading">Welcome to <span id="code">Code</span> <span id="jungle">Jungle</span></h1>
+        <p class="hero-para">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam ducimus neque esse
+            recusandae sunt quasi
+            modi quidem corporis laborum porro!</p>
+        <button class="cta-btn">Read More</button>
+    </section>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+.flex{
+    display:flex;
+    flex-direction: column;
+ 
+    /* flex-direction: row-reverse; */
+    /* flex-direction: column; */
+    /* flex-direction: column-reverse; */
+    /* flex-wrap: nowrap; */
+    flex-wrap: wrap;
+    /* justify-content: center; */
+    align-items: center;
+
+}
+.first{
+    height:100px;
+    width:100px;
+    background-color: aqua;
+    color:red;
+    font-size: large;
+    margin:10px;
+    border:2px solid red;
+
+
+}

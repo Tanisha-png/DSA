@@ -1,0 +1,29 @@
+h1{
+    /* display:block; */
+    /* display:block; */
+    /* width:200px; */
+}
+p{
+    display:inline;
+}
+
+ul li{
+    /* display:inline; */
+    /* display:none; */
+   /* visibility: hidden; */
+}
+
+/* important question - Diff. between visibility hidden and display none */
+
+a{
+    display:inline-block;
+    
+    height:200px;
+    width:100px;
+}
+
+/*  */
+h1{
+    display:inline-block;
+    width:400px;
+}
