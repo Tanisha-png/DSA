@@ -307,13 +307,55 @@ function countNodes(root) {
 
 //  13. Insert into BST
 //  https://leetcode.com/problems/insert-into-a-binary-search-tree/
+function InsertIntoBST(root, val) {
 
+    if (!root) {
+        return new TreeNode(val)
+    }
+
+    if (val < root.val) {
+        root.left = InsertIntoBST(root.left, val)
+    } else {
+        root.right = InsertIntoBST(root.right, val)
+    }
+    return root;
+}
 
 //  14. Search in BST
 //  https://leetcode.com/problems/search-in-a-binary-search-tree/
+function serachBST(root, val) {
+    if (!root) {
+        return null;
+    }
+
+    if (root.val === val) {
+        return root;
+    }
+    if (val < root.val) {
+        return serachBST(root.left, val)
+    } else {
+        return serachBST(root.right, val)
+    }
+
+}
+
 
 //  15. Min & Max in BST
 //  https://leetcode.com/problems/minimum-absolute-difference-in-bst/ (use min/max logic)
+function MinBST(root) {
+    while (root.left) {
+        root = root.left
+    }
+    return root.val
+
+}
+
+function MaxBST(root) {
+    while (root.right) {
+        root = root.right
+    }
+    return root.val
+}
 
 //  16. Sorted Array to Balanced BST
 //  https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/
