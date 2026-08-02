@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox - layout 2</title>
+</head>
+<style>
+    .navbar {
+        background-color: rgb(151, 200, 184);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .logo {
+        background-color: aqua;
+    }
+
+
+    .nav-links {
+        background-color: rgb(221, 169, 106);
+    }
+
+    .nav-link-items {
+        display: flex;
+
+    }
+
+    .nav-link-items li {
+        list-style-type: none;
+        padding: 5px 8px;
+    }
+
+    .aboutUs {
+        display: flex;
+        width: 100%;
+        height: 400px;
+        /* background-color: aqua; */
+    }
+
+    .about-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+
+    }
+
+    .about-image img {
+        border-radius: 50%;
+    }
+
+    .about-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+    }
+</style>
+
+<body>
+    <section class="navbar">
+        <div class="logo"> MyWeb</div>
+        <div class="nav-links">
+            <ul class="nav-link-items">
+                <li>Home</li>
+                <li>About</li>
+                <li>Services</li>
+                <li>Contact</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="aboutUs">
+        <div class="about-image">
+            <img src="https://img.magnific.com/premium-photo/about-us-word-blue-computer-keyboard-key_136875-1878.jpg?semt=ais_hybrid&w=740&q=80"
+                alt="About Image" height="300px" width="300px">
+        </div>
+        <div class="about-text">
+            <h2 class="about-heading">About Us</h2>
+            <p class="about-para">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quos fugit assumenda commodi
+                suscipit officia perferendis. Sunt, magni repudiandae voluptatum vel odit modi adipisci accusamus
+                maiores reprehenderit quod. Ducimus, magnam inventore?</p>
+            <button class="cta-btn">Contact US</button>
+        </div>
+    </section>
+
+    <style>
+        .cards {
+            display: flex;
+            justify-content: space-evenly;
+
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(194, 239, 78);
+            width: 30%;
+            border: 2px solid black;
+            border-radius: 10px;
+            align-items: center;
+        }
+    </style>
+    <section class="cards">
+        <div class="card1 card">
+            <h3>Course</h3>
+            <p>Data Structures</p>
+            <p>Python</p>
+            <p>English</p>
+        </div>
+        <div class="card2 card">
+            <h3>Course</h3>
+            <p>Data Structures</p>
+            <p>Python</p>
+            <p>English</p>
+        </div>
+        <div class="card3 card">
+            <h3>Course</h3>
+            <p>Data Structures</p>
+            <p>Python</p>
+            <p>English</p>
+        </div>
+    </section>
+    <style>
+        * {
+            padding: 0px;
+            margin: 0px;
+            box-sizing: border-box;
+        }
+
+        .footer {
+            background-color: rgb(66, 51, 239);
+            color: white;
+            display: flex;
+            justify-content: space-around;
+        }
+    </style>
+    <section class="footer">
+        <div class="footer-item1">
+            <h2>Info</h2>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Service</li>
+            </ul>
+        </div>
+        <div class="footer-item2">
+            <h2>Info</h2>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Service</li>
+            </ul>
+        </div>
+        <div class="footer-item3">
+            <h2>Info</h2>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Service</li>
+            </ul>
+        </div>
+        <div class="footer-item4">
+            <h2>Info</h2>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Service</li>
+            </ul>
+        </div>
+    </section>
+</body>
+
+</html>
