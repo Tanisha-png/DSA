@@ -430,3 +430,16 @@ root.right.right = new Node(50);
 root.right.left = new Node(20);
 
 console.log(maxPathSum(root));
+
+function maxPathSum2(root) {
+    let maxSum = -Infinity;
+
+    function dfs(node) {
+        if (!node) return 0;
+        maxSum = Math.max(maxSum, node.val + Math.max(0, dfs(node.left) + Math.max(0, dfs(node.right))));
+
+        return node.val + Math.max(Math.max(0, dfs(node.left), Math.max(0, dfs(node.right))));
+    }
+    dfs(root);
+    return maxSum;
+}

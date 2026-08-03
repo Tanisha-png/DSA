@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 3</title>
+</head>
+
+<style>
+    .navbar {
+        display: flex;
+        background-color: aqua;
+        justify-content: space-between;
+    }
+
+    .logo {
+        background-color: blueviolet;
+        padding: 5px 8px;
+    }
+
+    .nav-links {
+        background-color: rgb(10, 196, 134);
+    }
+
+    .nav-items {
+        display: flex;
+    }
+
+    .nav-items li {
+        list-style-type: none;
+        padding: 5px 8px;
+    }
+
+    .about-us {
+        display: flex;
+        width: 100%;
+        height: 400px;
+    }
+
+    .about-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+    }
+
+    .about-image img {
+        border-radius: 50%;
+    }
+
+    .about-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+    }
+
+    .footer {
+        background-color: blueviolet;
+        color: pink;
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .footer-item li {
+        list-style-type: circle;
+    }
+
+</style>
+
+<body>
+    <section class="navbar">
+        <div class="logo">My Page</div>
+        <div class="nav-links">
+            <ul class="nav-items">
+                <li>Home</li>
+                <li>About</li>
+                <li>Services</li>
+                <li>Contact</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="about-us">
+        <div class="about-image">
+            <img src="https://img.magnific.com/premium-photo/about-us-word-blue-computer-keyboard-key_136875-1878.jpg?semt=ais_hybrid&w=740&q=80" alt="about" height="300px" width="300px">
+        </div>
+        <div class="about-text">
+            <h2 class="about-heading">About Us</h2>
+            <p class="about-para">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Distinctio neque iusto animi sed. Temporibus ad iure, sapiente rem illo in enim quasi voluptas reiciendis vitae saepe, praesentium omnis ea consequuntur?
+            </p>
+            <button class="btn">Contact Us</button>
+        </div>
+    </section>
+
+    <section class="footer">
+        <div class="footer-item">
+            <h2>Info</h2>
+            <ul>
+                <li>Home</li>
+                <li>About</li>
+                <li>Services</li>
+            </ul>
+        </div>
+    </section>
+
+</body>
+</html>
