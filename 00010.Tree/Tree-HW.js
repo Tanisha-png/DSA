@@ -443,3 +443,13 @@ function maxPathSum2(root) {
     dfs(root);
     return maxSum;
 }
+
+
+//!  =============================================================================
+//!  SECTION 2: BEGINNER BST
+//!  =============================================================================
+
+//!  13. Insert into BST
+//!  https://leetcode.com/problems/insert-into-a-binary-search-tree/
+
+

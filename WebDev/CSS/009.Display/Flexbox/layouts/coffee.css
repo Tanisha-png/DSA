@@ -1,0 +1,74 @@
+body {
+    background-color: #99582a;
+}
+
+/* Navigation Container */
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #432818;
+}
+
+span {
+    padding: 20px;
+}
+
+/* Navigation */
+
+.nav-bar {
+    display: flex;
+    align-items: center;
+}
+
+.nav-items {
+    display: flex;
+    list-style-type: none;
+    color: white;
+    gap: 30px;
+    padding: 0;
+    margin: 0;
+}
+
+/* Navigation ends */
+
+/* Hero */
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #bc8a5f;
+}
+
+.hero-section {
+    flex: 1;
+}
+
+.image {
+    flex: 1;
+}
+
+/* Hero ends */
+
+/* Logo */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.tagline {
+    display: flex;
+    gap: 10px;
+}
+
+/* Logo ends */
+

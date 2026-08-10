@@ -360,11 +360,51 @@ function MaxBST(root) {
 //  16. Sorted Array to Balanced BST
 //  https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/
 
+var sortedArrayToBTS = function(nums) {
+    // nums - 2 5 8 10 14 26 30
+    // left = 0 right = length - 1 = 6
+    function buildBST(left, right) {
+        if (left > right) return null;
+
+        const mid = Math.floor(left + right / 2); 
+        const root = new TreeNode(nums[mid])
+
+        root.left = buildBST(left, mid-1); // 2 5 8
+        root.right = buildBST(mid+1, right); // 14 26 30
+
+        return root;
+    }
+    return buildBST(0, nums.length - 1);
+}
+
 //  17. Validate Binary Search Tree
 //  https://leetcode.com/problems/validate-binary-search-tree/
 
+var isValidBST = function(root) {
+    function dfs(node, low, high) {
+        if (!node) return true;
+        if(node.val <= low || node.val >= high) return false;
+        return dfs(node.left, low, node.val) && dfs(node.right, node.val, high);
+    }
+    return dfs(root, -Infinity, Infinity);
+}
+
 //  18. Kth Smallest Element in BST
 //  https://leetcode.com/problems/kth-smallest-element-in-a-bst/
+function kthSmallest(root, k) {
+    const inorder = [];
+
+    function dfs(node) {
+        if (!node) return;
+
+        dfs(node.left);
+        inorder.push(node.val);
+        dfs(node.right);
+    }
+    dfs(root);
+
+    return inorder[k - 1];
+}
 
 //  =============================================================================
 //  SECTION 3: LOWER INTERMEDIATE
@@ -372,6 +412,19 @@ function MaxBST(root) {
 
 //  19. Symmetric Tree
 //  https://leetcode.com/problems/symmetric-tree/
+
+function isSymmetric(root) {
+    if (!root) return true;
+    
+    function isMirror(t1, t2) {
+        if (!t1 && !t2) return true;
+        if (!t1 || !t2) return false;
+
+        return (t1.val === t2.val) && isMirror(t1.left, t2.right) && isMirror(t1.right, t2.left);
+        
+    }
+    return isMirror(root.left, root.right);
+}
 
 //  20. Balanced Binary Tree
 //  https://leetcode.com/problems/balanced-binary-tree/
