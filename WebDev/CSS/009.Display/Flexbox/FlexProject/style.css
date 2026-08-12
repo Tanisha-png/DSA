@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sofia&display=swap');
+*{
+    padding:0%;
+    margin:0%;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: #FFEAC5;
+}
+/* Utility Classes */
+.links{
+    text-decoration: none;
+    color:whitesmoke;
+}
+
+ul li{
+    list-style-type: none;
+}
+
+/* Navbar Starts */
+
+.navbar{
+    height:70px;
+    background-color: #603F26;
+    /* padding:20px 40px; */
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding:0px 40px;
+}
+/* Navbar Ends */
+
+/* Logo Starts */
+.logo{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+.theme-coffee{
+    color:#FFDBB5;
+}
+.theme-cafe{
+    color:whitesmoke;
+}
+/* Logo Ends */
+
+/* Nav Links */
+.nav-list{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap:15px;
+    text-transform: uppercase;
+}
+
+
+/* Hero Section starts */
+
+.hero-section{
+    /* background-image: url('https://png.pngtree.com/thumb_back/fh260/background/20230411/pngtree-coffee-beans-coffee-plant-background-vintage-poster-image_2267692.jpg'); */
+    background-image:url('https://t3.ftcdn.net/jpg/07/38/76/00/360_F_738760043_gtdfSF1vMevJ4fiYY4t7H1I6FK8EbwYp.jpg') ;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    height:95vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-heading{
+    font-size: 60px;
+    color:#603F26;
+    font-weight: bolder;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom:20px;
+    font-family: "Sofia", cursive;
+    font-weight: 900;
+    font-style:italic;
+}
+
+.hero-text{
+    width:70%;
+    text-align: center;
+    color:#603F26;
+    font-size: 20px;
+    line-height: 1.5;
+    margin-bottom:30px;
+}
+
+.hero-cta{
+    color:#FFDBB5;
+    background-color: #603F26;
+    padding:15px 30px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+/* Menu Section */
+.menu-section{
+    height: 200px;
+    display: flex;
+    justify-content: space-around;
+    padding:40px;
+}
+
+.menu-section .menu-image img{
+    height:180px;
+    /* width:180px; */
+}
+.menu-image{
+    /* flex-grow:1; */
+}
+.cold-coffee{
+    background-color: #9aeae3;
+    flex-grow:1;
+}
+.hot-coffee{
+    background-color: #9aeae3;
+    flex-grow:1;
+}
+
+.soft-drinks{
+    background-color: #9aeae3;
+    flex-grow:1;
+}
+.coffee-items{
+    color:#603F26;
+    font-family: "Sofia", cursive;
+
+}

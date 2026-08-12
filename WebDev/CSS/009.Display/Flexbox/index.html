@@ -5,21 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flexbox in CSS</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
 </head>
+<style>
+    .flex {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .box {
+        height: 100px;
+        width: 100px;
+        background-color: aqua;
+        color: red;
+        font-size: large;
+        margin: 10px;
+        border: 2px solid red;
+
+
+    }
+
+    .para-parent {
+        display: flex;
+    }
+</style>
 
 <body>
 
     <div class="flex">
-        <div class="first">
+        <div class="box">
             1
         </div>
-        <div class="first">
-            2
+        <div class="box para-parent">
+            <p>Hello</p>
+            <p>World</p>
         </div>
-        <div class="first">
+        <!-- <div class="box">
             3
-        </div>
+        </div> -->
     </div>
 
 </body>
