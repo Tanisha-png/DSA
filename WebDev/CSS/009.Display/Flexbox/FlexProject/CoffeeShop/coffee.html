@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Coffee & Beans | Cozy Coffee House</title>
+
+    <style>
+        /* =========================================================
+           BASIC
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background: #efe3d0;
+            color: #352017;
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        input,
+        textarea,
+        select,
+        button {
+            font-family: inherit;
+        }
+
+
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
+        header {
+            height: 86px;
+            padding: 0 7%;
+
+            background: #291710;
+
+            color: #f4e7d3;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            position: sticky;
+            top: 0;
+
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+
+            border: 1px solid #c49367;
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 21px;
+        }
+
+        .brand-text h1 {
+            font-size: 23px;
+            letter-spacing: 1px;
+        }
+
+        .brand-text p {
+            color: #bda28c;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        nav a {
+            color: #dbc8b4;
+            font-size: 13px;
+
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: #d19a6b;
+        }
+
+        .nav-order {
+            border: 1px solid #8d5c3b;
+            padding: 10px 17px;
+        }
+
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .hero {
+            min-height: 680px;
+
+            padding: 80px 7%;
+
+            background:
+                radial-gradient(circle at 78% 35%,
+                    #70462d 0,
+                    #4a2b1d 28%,
+                    #2a1811 65%);
+
+            color: #f8ead8;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 80px;
+        }
+
+        .hero-content {
+            width: 54%;
+        }
+
+        .eyebrow {
+            color: #d19a6b;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            letter-spacing: 5px;
+
+            margin-bottom: 22px;
+        }
+
+        .hero h2 {
+            font-size: 76px;
+
+            line-height: 0.98;
+
+            font-weight: normal;
+
+            margin-bottom: 30px;
+        }
+
+        .hero h2 em {
+            color: #d29a6c;
+            font-style: italic;
+        }
+
+        .hero-description {
+            width: 550px;
+
+            color: #cdb8a4;
+
+            font-size: 17px;
+
+            margin-bottom: 35px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .button {
+            display: inline-block;
+
+            padding: 14px 25px;
+
+            font-size: 13px;
+
+            transition: 0.3s;
+        }
+
+        .button-main {
+            background: #a7653d;
+            color: #fff;
+
+            border: 1px solid #a7653d;
+        }
+
+        .button-main:hover {
+            background: #c17e51;
+        }
+
+        .button-light {
+            color: #e7d5c2;
+
+            border-bottom: 1px solid #a7653d;
+        }
+
+        .button-light:hover {
+            color: #d19a6b;
+        }
+
+
+        /* =========================================================
+           HERO COFFEE VISUAL
+        ========================================================= */
+
+        .coffee-scene {
+            width: 390px;
+            height: 430px;
+
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glow {
+            position: absolute;
+
+            width: 330px;
+            height: 330px;
+
+            border-radius: 50%;
+
+            background: #70452c;
+
+            filter: blur(2px);
+
+            opacity: 0.5;
+        }
+
+        .cup {
+            width: 220px;
+            height: 145px;
+
+            background: #dfc5a8;
+
+            border-radius: 20px 20px 70px 70px;
+
+            position: relative;
+
+            z-index: 2;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            box-shadow:
+                0 35px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .coffee {
+            width: 175px;
+            height: 95px;
+
+            background: #422216;
+
+            border-radius: 50%;
+
+            position: absolute;
+            top: -20px;
+        }
+
+        .cup::after {
+            content: "";
+
+            width: 65px;
+            height: 65px;
+
+            border: 14px solid #dfc5a8;
+
+            border-left: none;
+
+            border-radius: 0 50% 50% 0;
+
+            position: absolute;
+            right: -55px;
+            top: 30px;
+        }
+
+        .steam {
+            position: absolute;
+
+            color: #d7c0a8;
+
+            font-size: 45px;
+
+            top: 65px;
+
+            z-index: 4;
+
+            opacity: 0.45;
+        }
+
+        .steam-one {
+            left: 125px;
+        }
+
+        .steam-two {
+            right: 125px;
+        }
+
+        .hero-note {
+            position: absolute;
+
+            bottom: 10px;
+            right: 0;
+
+            background: #f0dfc8;
+            color: #43271b;
+
+            padding: 15px 20px;
+
+            z-index: 5;
+
+            transform: rotate(-4deg);
+
+            box-shadow: 8px 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-note strong {
+            display: block;
+
+            font-size: 20px;
+
+            font-style: italic;
+        }
+
+        .hero-note span {
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+
+        /* =========================================================
+           INTRO STRIP
+        ========================================================= */
+
+        .intro {
+            background: #d6b995;
+
+            padding: 25px 7%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            color: #392217;
+        }
+
+        .intro-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .intro-icon {
+            font-size: 21px;
+        }
+
+        .intro-item span {
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+
+        /* =========================================================
+           COMMON SECTION
+        ========================================================= */
+
+        section:not(.hero):not(.intro) {
+            padding: 100px 7%;
+        }
+
+        .section-title {
+            margin-bottom: 55px;
+        }
+
+        .section-title small {
+            color: #a7653d;
+
+            font-size: 11px;
+            font-weight: bold;
+
+            letter-spacing: 4px;
+        }
+
+        .section-title h2 {
+            font-size: 50px;
+
+            font-weight: normal;
+
+            line-height: 1.1;
+
+            margin-top: 10px;
+        }
+
+        .section-title h2 em {
+            color: #a7653d;
+            font-style: italic;
+        }
+
+
+        /* =========================================================
+           ABOUT
+        ========================================================= */
+
+        .about {
+            background: #f3e8d7;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 90px;
+        }
+
+        .about-art {
+            width: 46%;
+            min-height: 480px;
+
+            background: #4b2d1e;
+
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-art::before {
+            content: "";
+
+            width: 80%;
+            height: 80%;
+
+            border: 1px solid #a97650;
+
+            position: absolute;
+        }
+
+        .art-circle {
+            width: 230px;
+            height: 230px;
+
+            border-radius: 50%;
+
+            background: #b4774f;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 95px;
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+        .art-label {
+            position: absolute;
+
+            bottom: 30px;
+            left: 30px;
+
+            color: #ead8c3;
+
+            font-size: 12px;
+
+            letter-spacing: 3px;
+        }
+
+        .about-content {
+            width: 47%;
+
+            padding-top: 20px;
+        }
+
+        .about-content p {
+            color: #6e5545;
+
+            margin-bottom: 20px;
+
+            font-size: 16px;
+        }
+
+        .about-quote {
+            border-left: 3px solid #a7653d;
+
+            padding-left: 20px;
+
+            margin-top: 30px;
+
+            color: #492c20;
+
+            font-size: 20px;
+
+            font-style: italic;
+        }
+
+
+        /* =========================================================
+           MENU
+        ========================================================= */
+
+        .menu {
+            background: #e4d2ba;
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+
+            margin-bottom: 50px;
+        }
+
+        .menu-header p {
+            width: 320px;
+
+            color: #735c4b;
+
+            font-size: 14px;
+        }
+
+        .menu-layout {
+            display: flex;
+
+            gap: 25px;
+        }
+
+        .menu-box {
+            background: #f8efe1;
+
+            width: 50%;
+
+            padding: 35px;
+        }
+
+        .menu-box h3 {
+            font-size: 26px;
+
+            font-weight: normal;
+
+            margin-bottom: 25px;
+
+            color: #5a3524;
+        }
+
+        .menu-item {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 18px 0;
+
+            border-bottom: 1px dashed #c9b39b;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item h4 {
+            font-size: 16px;
+            font-weight: normal;
+        }
+
+        .menu-item p {
+            color: #806a58;
+            font-size: 12px;
+        }
+
+        .menu-price {
+            color: #9c5e38;
+
+            font-size: 15px;
+
+            white-space: nowrap;
+        }
+
+
+        /* =========================================================
+           BOOKING
+        ========================================================= */
+
+        .booking {
+            background: #342016;
+
+            color: #f2dfc8;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 80px;
+        }
+
+        .booking-content {
+            width: 43%;
+        }
+
+        .booking-content p {
+            color: #c2aa94;
+
+            margin-top: 20px;
+        }
+
+        .booking-form {
+            width: 50%;
+
+            background: #f3e4d1;
+
+            padding: 40px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 15px;
+        }
+
+        .booking-form h3 {
+            color: #4b2c1e;
+
+            font-size: 25px;
+
+            font-weight: normal;
+
+            margin-bottom: 5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row input,
+        .form-row select {
+            width: 50%;
+        }
+
+        .booking-form input,
+        .booking-form select {
+            height: 48px;
+
+            border: 1px solid #d2bca5;
+
+            background: #fffaf2;
+
+            padding: 0 14px;
+
+            color: #503527;
+
+            outline: none;
+        }
+
+        .booking-form input:focus,
+        .booking-form select:focus {
+            border-color: #a7653d;
+        }
+
+
+        /* =========================================================
+           ONLINE ORDER
+        ========================================================= */
+
+        .order {
+            background: #f3e8d7;
+
+            text-align: center;
+        }
+
+        .order-cards {
+            display: flex;
+
+            gap: 25px;
+
+            justify-content: center;
+        }
+
+        .order-card {
+            width: 32%;
+
+            background: #e5d1b6;
+
+            padding: 40px 30px;
+
+            position: relative;
+
+            transition: 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-7px);
+        }
+
+        .order-card:nth-child(2) {
+            background: #d3b18d;
+        }
+
+        .order-card:nth-child(3) {
+            background: #c39b73;
+        }
+
+        .order-number {
+            font-size: 11px;
+
+            letter-spacing: 3px;
+
+            color: #78543d;
+        }
+
+        .order-card .icon {
+            font-size: 45px;
+
+            margin: 20px 0;
+        }
+
+        .order-card h3 {
+            font-size: 23px;
+
+            font-weight: normal;
+
+            margin-bottom: 10px;
+        }
+
+        .order-card p {
+            color: #684c3b;
+
+            font-size: 13px;
+
+            margin-bottom: 25px;
+        }
+
+        .order-card a {
+            color: #653a26;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+        }
+
+
+        /* =========================================================
+           CONTACT
+        ========================================================= */
+
+        .contact {
+            background: #dbc3a4;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 70px;
+        }
+
+        .contact-info {
+            width: 45%;
+        }
+
+        .contact-info>p {
+            color: #6b5140;
+
+            margin-bottom: 35px;
+        }
+
+        .details {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 20px;
+        }
+
+        .detail {
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+        }
+
+        .detail-icon {
+            width: 45px;
+            height: 45px;
+
+            background: #f3e5d3;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail h4 {
+            font-size: 14px;
+        }
+
+        .detail p {
+            color: #765d4b;
+
+            font-size: 12px;
+        }
+
+        .contact-form {
+            width: 47%;
+
+            background: #f6ead9;
+
+            padding: 40px;
+        }
+
+        .contact-form h3 {
+            font-size: 25px;
+
+            font-weight: normal;
+
+            margin-bottom: 25px;
+        }
+
+        .contact-form form {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 14px;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+
+            border: 1px solid #d1bba1;
+
+            background: #fffaf2;
+
+            padding: 14px;
+
+            outline: none;
+        }
+
+        .contact-form input {
+            height: 48px;
+        }
+
+        .contact-form textarea {
+            resize: none;
+        }
+
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        footer {
+            background: #291710;
+
+            color: #d8c2ad;
+
+            padding: 55px 7% 20px;
+        }
+
+        .footer-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 50px;
+
+            padding-bottom: 40px;
+
+            border-bottom: 1px solid #4d3325;
+        }
+
+        .footer-brand {
+            width: 35%;
+        }
+
+        .footer-brand h2 {
+            color: #f2e0cb;
+
+            font-size: 27px;
+
+            font-weight: normal;
+
+            margin-bottom: 10px;
+        }
+
+        .footer-brand p {
+            color: #9e8775;
+
+            font-size: 13px;
+        }
+
+        .footer-links {
+            display: flex;
+
+            gap: 30px;
+
+            align-items: center;
+        }
+
+        .footer-links a {
+            color: #bba390;
+
+            font-size: 12px;
+        }
+
+        .footer-links a:hover {
+            color: #d19a6b;
+        }
+
+        .copyright {
+            text-align: center;
+
+            color: #735e50;
+
+            font-size: 11px;
+
+            padding-top: 20px;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         HEADER
+    ========================================================= -->
+
+    <header>
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ☕
+            </div>
+
+            <div class="brand-text">
+
+                <h1>
+                    Hearth & Bean
+                </h1>
+
+                <p>
+                    Coffee • Comfort • Conversations
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <nav>
+
+            <a href="#home">
+                Home
+            </a>
+
+            <a href="#about">
+                About
+            </a>
+
+            <a href="#menu">
+                Menu
+            </a>
+
+            <a href="#book">
+                Book a Table
+            </a>
+
+            <a href="#order">
+                Online Order
+            </a>
+
+            <a href="#contact">
+                Contact
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =========================================================
+         HOME
+    ========================================================= -->
+
+    <section id="home" class="hero">
+
+        <div class="hero-content">
+
+            <p class="eyebrow">
+                YOUR LITTLE CORNER OF CALM
+            </p>
+
+            <h2>
+                Slow mornings.<br>
+                Warm coffee.<br>
+                <em>Good company.</em>
+            </h2>
+
+            <p class="hero-description">
+                A cozy little coffee house tucked away from
+                the noise of the city. Come in, stay awhile,
+                and let the world wait.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="#menu" class="button button-main">
+                    Explore Our Menu
+                </a>
+
+                <a href="#book" class="button button-light">
+                    Find a Table →
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="coffee-scene">
+
+            <div class="glow"></div>
+
+            <div class="steam steam-one">
+                〰
+            </div>
+
+            <div class="steam steam-two">
+                〰
+            </div>
+
+            <div class="cup">
+
+                <div class="coffee"></div>
+
+            </div>
+
+            <div class="hero-note">
+
+                <strong>
+                    Made slowly.
+                </strong>
+
+                <span>
+                    SERVED WARMLY
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         INTRO STRIP
+    ========================================================= -->
+
+    <div class="intro">
+
+        <div class="intro-item">
+
+            <div class="intro-icon">
+                ☕
+            </div>
+
+            <span>
+                Freshly roasted every morning
+            </span>
+
+        </div>
+
+
+        <div class="intro-item">
+
+            <div class="intro-icon">
+                ♡
+            </div>
+
+            <span>
+                Made with care
+            </span>
+
+        </div>
+
+
+        <div class="intro-item">
+
+            <div class="intro-icon">
+                ✦
+            </div>
+
+            <span>
+                A place to slow down
+            </span>
+
+        </div>
+
+
+        <div class="intro-item">
+
+            <div class="intro-icon">
+                ◌
+            </div>
+
+            <span>
+                Open every day
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         ABOUT
+    ========================================================= -->
+
+    <section id="about" class="about">
+
+        <div class="about-art">
+
+            <div class="art-circle">
+                ☕
+            </div>
+
+            <div class="art-label">
+                EST. 2016 • HANDCRAFTED DAILY
+            </div>
+
+        </div>
+
+
+        <div class="about-content">
+
+            <div class="section-title">
+
+                <small>
+                    OUR LITTLE STORY
+                </small>
+
+                <h2>
+                    Coffee tastes better<br>
+                    when life feels <em>slow.</em>
+                </h2>
+
+            </div>
+
+            <p>
+                Hearth & Bean was born from a simple thought:
+                coffee should never feel rushed.
+            </p>
+
+            <p>
+                We wanted to create a place where you could
+                put your phone away, settle into a comfortable
+                chair, hear the gentle sound of coffee being
+                brewed and simply enjoy the moment.
+            </p>
+
+            <p>
+                Every cup is prepared with carefully selected
+                beans, fresh milk and a little bit of patience.
+            </p>
+
+            <div class="about-quote">
+                "A good coffee is not just a drink.
+                It's a little pause in the day."
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         MENU
+    ========================================================= -->
+
+    <section id="menu" class="menu">
+
+        <div class="menu-header">
+
+            <div class="section-title">
+
+                <small>
+                    FROM OUR KITCHEN
+                </small>
+
+                <h2>
+                    Something warm,<br>
+                    something <em>good.</em>
+                </h2>
+
+            </div>
+
+            <p>
+                Our menu is small by choice.
+                Everything is prepared fresh and served
+                the way we would serve it to a friend.
+            </p>
+
+        </div>
+
+
+        <div class="menu-layout">
+
+
+            <div class="menu-box">
+
+                <h3>
+                    Coffee & Tea
+                </h3>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            House Espresso
+                        </h4>
+
+                        <p>
+                            Bold, rich and beautifully balanced
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹120
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Honey Cinnamon Latte
+                        </h4>
+
+                        <p>
+                            Espresso, milk, honey & cinnamon
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹210
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Classic Cappuccino
+                        </h4>
+
+                        <p>
+                            Espresso, silky milk & foam
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹180
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Mocha Cloud
+                        </h4>
+
+                        <p>
+                            Dark chocolate & espresso
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹220
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Masala Chai
+                        </h4>
+
+                        <p>
+                            Homemade spices & fresh milk
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹110
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="menu-box">
+
+                <h3>
+                    From The Oven
+                </h3>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Butter Croissant
+                        </h4>
+
+                        <p>
+                            Flaky, golden & freshly baked
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹150
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Cinnamon Roll
+                        </h4>
+
+                        <p>
+                            Soft dough, cinnamon & vanilla glaze
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹170
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Grilled Cheese
+                        </h4>
+
+                        <p>
+                            Sourdough, three cheese blend
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹240
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Chocolate Cake
+                        </h4>
+
+                        <p>
+                            Dark chocolate & soft cream
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹220
+                    </div>
+
+                </div>
+
+
+                <div class="menu-item">
+
+                    <div>
+
+                        <h4>
+                            Avocado Toast
+                        </h4>
+
+                        <p>
+                            Sourdough, avocado & herbs
+                        </p>
+
+                    </div>
+
+                    <div class="menu-price">
+                        ₹260
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         BOOK A TABLE
+    ========================================================= -->
+
+    <section id="book" class="booking">
+
+
+        <div class="booking-content">
+
+            <div class="section-title">
+
+                <small>
+                    COME SIT WITH US
+                </small>
+
+                <h2>
+                    Your table<br>
+                    is waiting <em>for you.</em>
+                </h2>
+
+            </div>
+
+            <p>
+                Whether it's a quiet morning alone, a date
+                with someone special or an evening with friends,
+                we'll keep your favorite corner ready.
+            </p>
+
+        </div>
+
+
+        <form class="booking-form">
+
+            <h3>
+                Reserve a Table
+            </h3>
+
+
+            <div class="form-row">
+
+                <input type="text" placeholder="Your Name">
+
+                <input type="tel" placeholder="Phone Number">
+
+            </div>
+
+
+            <div class="form-row">
+
+                <input type="date">
+
+                <input type="time">
+
+            </div>
+
+
+            <div class="form-row">
+
+                <select>
+
+                    <option>
+                        Number of Guests
+                    </option>
+
+                    <option>
+                        1 Guest
+                    </option>
+
+                    <option>
+                        2 Guests
+                    </option>
+
+                    <option>
+                        3 Guests
+                    </option>
+
+                    <option>
+                        4 Guests
+                    </option>
+
+                    <option>
+                        5+ Guests
+                    </option>
+
+                </select>
+
+                <input type="email" placeholder="Email Address">
+
+            </div>
+
+
+            <button type="submit" class="button button-main">
+                Reserve My Table
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================================================
+         ONLINE ORDER
+    ========================================================= -->
+
+    <section id="order" class="order">
+
+        <div class="section-title">
+
+            <small>
+                CAN'T STAY?
+            </small>
+
+            <h2>
+                Take a little<br>
+                <em>Hearth home.</em>
+            </h2>
+
+        </div>
+
+
+        <div class="order-cards">
+
+
+            <div class="order-card">
+
+                <div class="order-number">
+                    01
+                </div>
+
+                <div class="icon">
+                    ☕
+                </div>
+
+                <h3>
+                    Coffee
+                </h3>
+
+                <p>
+                    Freshly brewed favorites made
+                    just the way you like them.
+                </p>
+
+                <a href="#">
+                    ORDER COFFEE →
+                </a>
+
+            </div>
+
+
+            <div class="order-card">
+
+                <div class="order-number">
+                    02
+                </div>
+
+                <div class="icon">
+                    🥐
+                </div>
+
+                <h3>
+                    Bakery
+                </h3>
+
+                <p>
+                    Croissants, cinnamon rolls and
+                    treats baked fresh every morning.
+                </p>
+
+                <a href="#">
+                    ORDER FOOD →
+                </a>
+
+            </div>
+
+
+            <div class="order-card">
+
+                <div class="order-number">
+                    03
+                </div>
+
+                <div class="icon">
+                    🎁
+                </div>
+
+                <h3>
+                    Gift Box
+                </h3>
+
+                <p>
+                    A thoughtful little package for
+                    the coffee lover in your life.
+                </p>
+
+                <a href="#">
+                    SHOP GIFTS →
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         CONTACT
+    ========================================================= -->
+
+    <section id="contact" class="contact">
+
+
+        <div class="contact-info">
+
+            <div class="section-title">
+
+                <small>
+                    COME FIND US
+                </small>
+
+                <h2>
+                    We'd love to<br>
+                    hear <em>from you.</em>
+                </h2>
+
+            </div>
+
+            <p>
+                Come by for coffee. Stay for the conversation.
+                And if you can't make it, drop us a message.
+            </p>
+
+
+            <div class="details">
+
+
+                <div class="detail">
+
+                    <div class="detail-icon">
+                        📍
+                    </div>
+
+                    <div>
+
+                        <h4>
+                            FIND US
+                        </h4>
+
+                        <p>
+                            21 Willow Street, Downtown
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-icon">
+                        ☎
+                    </div>
+
+                    <div>
+
+                        <h4>
+                            CALL US
+                        </h4>
+
+                        <p>
+                            +91 98765 43210
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-icon">
+                        ✉
+                    </div>
+
+                    <div>
+
+                        <h4>
+                            WRITE TO US
+                        </h4>
+
+                        <p>
+                            hello@hearthandbean.com
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-icon">
+                        ◷
+                    </div>
+
+                    <div>
+
+                        <h4>
+                            OPENING HOURS
+                        </h4>
+
+                        <p>
+                            Every day • 8:00 AM – 10:00 PM
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="contact-form">
+
+            <h3>
+                Leave us a note
+            </h3>
+
+
+            <form>
+
+                <input type="text" placeholder="Your Name">
+
+                <input type="email" placeholder="Your Email">
+
+                <input type="text" placeholder="Subject">
+
+                <textarea rows="5" placeholder="Tell us something..."></textarea>
+
+                <button type="submit" class="button button-main">
+                    Send Message
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================= -->
+
+    <footer>
+
+        <div class="footer-top">
+
+            <div class="footer-brand">
+
+                <h2>
+                    Hearth & Bean
+                </h2>
+
+                <p>
+                    A small coffee house for slow mornings,
+                    long conversations and really good coffee.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <a href="#home">
+                    Home
+                </a>
+
+                <a href="#about">
+                    About
+                </a>
+
+                <a href="#menu">
+                    Menu
+                </a>
+
+                <a href="#book">
+                    Book a Table
+                </a>
+
+                <a href="#order">
+                    Order
+                </a>
+
+                <a href="#contact">
+                    Contact
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="copyright">
+
+            © 2026 Hearth & Bean Coffee House.
+            Made for slow moments.
+
+        </div>
+
+    </footer>
+
+
+</body>
+
+</html>
