@@ -1,5 +1,5 @@
 # ╔════════════════════════════════════════════════════╗
-# ║          Python Functions: Theory & Examples        ║
+# ║          Python Functions: Theory & Examples       ║
 # ╚════════════════════════════════════════════════════╝
 #
 # A function is a reusable block of code for a specific task.
