@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 7</title>
+</head>
+
+<style>
+    .container {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    .cards {
+        display: flex;
+        border: none;
+        background: rgb(242, 241, 241);
+        width: 35%;
+        padding: 18px;
+    }
+
+    .cards-1 {
+        display: flex;
+        align-items: center;
+    }
+
+    .cards-2 {
+        display: flex;
+        flex-direction: column;
+        padding: 18px;
+        margin: 10px;
+    }
+
+    h2 {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    p {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    img {
+        border-radius: 30px;
+    }
+</style>
+
+<body>
+    <section class="container">
+
+        <div class="cards">
+            <div class="cards-1">
+                <img src="https://img.magnific.com/free-photo/computer-program-coding-screen_53876-138060.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="code" height="50px" width="50px">
+
+                <div class="cards-2">
+                    <h2>Rahul</h2>
+                    <p>The course helped me understand frontend development.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="cards-1">
+                <img src="https://img.magnific.com/free-photo/computer-program-coding-screen_53876-138060.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="code" height="50px" width="50px">
+                <div class="cards-2">
+                    <h2>Rahul</h2>
+                    <p>The course helped me understand frontend development.</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</body>
+
+</html>

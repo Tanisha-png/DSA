@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flex</title>
+</head>
+
+<style>
+    .container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 1rem;
+    }
+
+    .item {
+        flex-grow: 0;
+        flex-basis: 0;
+    }
+
+    .title {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .info {
+        color: slategray;
+    }
+
+    .card-1 {
+        border: 2px solid black;
+        border-radius: 10px;
+        background-color: aliceblue;
+        padding: 15px;
+    }
+
+    .price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #design {
+        color: gray;
+        margin-top: -14px;
+    }
+
+    h3 h4 {
+        margin-top: -14px;
+        font-family: sans-serif;
+    }
+
+    p {
+        font-family: sans-serif;
+    }
+
+    img {
+        border-radius: 8px;
+    }
+
+    button {
+        color: white;
+        background-color: rgb(240, 75, 15);
+        padding: 2px;
+        height: 20px;
+        border-radius: 8px;
+    }
+</style>
+
+<body>
+    <section class="container">
+        <div class="card-1">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYseBCJwHlTX53ZDVQYjsbmXpfi8n0rKb35rwFVAcNdm8tviNrOHB8kNg&s=10"
+                alt="painter" height="200px" width="300px">
+            <div class="title">
+                <h3>House Painting (Eco)</h3>
+                <h3>⭐️ 4.6/5</h3>
+            </div>
+            <h4 id="design">Design . Maintenance</h4>
+            <div class="info">
+                <h4>🗓️ Joined Apr 21, 2024</h4>
+                <h4>📍 London</h4>
+                <h4>🕔 Sun-Fri 9:30 AM - 11 PM</h4>
+            </div>
+            <div class="price">
+                <div>
+                    <p>Start from</p>
+                    <p>7 $/H</p>
+                </div>
+                <button>Booking Now</button>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        
+    </style>
+    
+    <section class="container-2">
+        <div class="card-2">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYseBCJwHlTX53ZDVQYjsbmXpfi8n0rKb35rwFVAcNdm8tviNrOHB8kNg&s=10"
+                alt="painter" height="300px" width="300px">
+            <div class="title-2">
+                <h3>House Painting (Eco)</h3>
+                <h3>⭐️ 4.6/5</h3>
+            </div>
+            <h4>Design . Maintenance</h4>
+            <div class="info-2">
+                <h3>🗓️ Joined Apr 21, 2024</h3>
+                <h3>📍 London</h3>
+                <h3>🕔 Sun-Fri 9:30 AM - 11 PM</h3>
+            </div>
+            <div class="price-2">
+                <p>Start from</p>
+                <p>7 $/H</p>
+            </div>
+            <button>Booking Now</button>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 10</title>
+</head>
+
+<style>
+     .website-10 {
+            min-height: 600px;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+
+        /* HEADER */
+
+        .website-header-10 {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 20px 30px;
+
+            background: #222;
+            color: white;
+        }
+
+        .website-header-actions-10 {
+            display: flex;
+
+            gap: 20px;
+        }
+
+
+        /* MAIN AREA */
+
+        .website-body-10 {
+            flex: 1;
+
+            display: flex;
+        }
+
+
+        /* SIDEBAR */
+
+        .website-sidebar-10 {
+            flex: 0 0 220px;
+
+            padding: 25px;
+
+            background: #333;
+            color: white;
+        }
+
+        .website-sidebar-10 a {
+            display: block;
+
+            padding: 12px 0;
+
+            color: white;
+            text-decoration: none;
+        }
+
+
+        /* MAIN CONTENT */
+
+        .website-main-10 {
+            flex: 1;
+
+            padding: 30px;
+        }
+
+
+        /* HERO */
+
+        .website-hero-10 {
+            display: flex;
+
+            align-items: center;
+
+            gap: 30px;
+
+            margin-bottom: 30px;
+        }
+
+        .website-hero-content-10 {
+            flex: 1;
+        }
+
+        .website-hero-image-10 {
+            flex: 1;
+
+            height: 200px;
+
+            display: flex;
+
+            justify-content: center;
+            align-items: center;
+
+            background: #ddd;
+        }
+
+
+        /* DASHBOARD CARDS */
+
+        .website-cards-10 {
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 20px;
+        }
+
+        .website-card-10 {
+            flex: 1 1 200px;
+
+            padding: 25px;
+
+            background: #f1f1f1;
+        }
+
+
+        /* FOOTER */
+
+        .website-footer-10 {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 20px;
+
+            background: #222;
+            color: white;
+        }
+
+</style>
+
+<section class="example">
+
+    <h2 class="example-title">
+        10. Complete Responsive Website
+    </h2>
+
+    <p class="example-description">
+        A complete page combining multiple Flexbox layouts.
+    </p>
+
+
+    <section class="website-10">
+
+
+        <!-- HEADER -->
+
+        <header class="website-header-10">
+
+            <div>
+
+                <h2>
+                    CodeLearn
+                </h2>
+
+            </div>
+
+
+            <div class="website-header-actions-10">
+
+                <span>
+                    Courses
+                </span>
+
+                <span>
+                    Profile
+                </span>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- BODY -->
+
+        <div class="website-body-10">
+
+
+            <!-- SIDEBAR -->
+
+            <aside class="website-sidebar-10">
+
+                <h3>
+                    Learning
+                </h3>
+
+                <a href="#">
+                    Dashboard
+                </a>
+
+                <a href="#">
+                    My Courses
+                </a>
+
+                <a href="#">
+                    Projects
+                </a>
+
+                <a href="#">
+                    Certificates
+                </a>
+
+            </aside>
+
+
+
+            <!-- MAIN -->
+
+            <main class="website-main-10">
+
+
+                <!-- HERO -->
+
+                <section class="website-hero-10">
+
+
+                    <div class="website-hero-content-10">
+
+                        <h1>
+                            Continue Learning
+                        </h1>
+
+                        <p>
+                            Improve your programming skills
+                            through practical projects.
+                        </p>
+
+                    </div>
+
+
+                    <div class="website-hero-image-10">
+
+                        Course Image
+
+                    </div>
+
+
+                </section>
+
+
+
+                <!-- CARDS -->
+
+                <section>
+
+                    <h2>
+                        Your Courses
+                    </h2>
+
+
+                    <div class="website-cards-10">
+
+
+                        <article class="website-card-10">
+
+                            <h3>
+                                HTML & CSS
+                            </h3>
+
+                            <p>
+                                75% Complete
+                            </p>
+
+                        </article>
+
+
+                        <article class="website-card-10">
+
+                            <h3>
+                                JavaScript
+                            </h3>
+
+                            <p>
+                                50% Complete
+                            </p>
+
+                        </article>
+
+
+                        <article class="website-card-10">
+
+                            <h3>
+                                Python
+                            </h3>
+
+                            <p>
+                                35% Complete
+                            </p>
+
+                        </article>
+
+
+                        <article class="website-card-10">
+
+                            <h3>
+                                React
+                            </h3>
+
+                            <p>
+                                20% Complete
+                            </p>
+
+                        </article>
+
+
+                    </div>
+
+                </section>
+
+
+            </main>
+
+        </div>
+
+
+
+        <!-- FOOTER -->
+
+        <footer class="website-footer-10">
+
+            <div>
+                © 2026 CodeLearn
+            </div>
+
+            <div>
+                Privacy | Terms
+            </div>
+
+        </footer>
+
+
+    </section>
+
+</section>
+
+
+</body>
+
+</html>

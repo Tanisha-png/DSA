@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout 9</title>
+</head>
+
+<style>
+    .product-2 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .image-box {
+        display: flex;
+        justify-content: center;
+        border: 1px solid gray;
+        width: 50%;
+        background: rgb(198, 196, 196);
+    }
+
+    .main-container {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    .product-2 {
+        display: flex;
+        justify-content: space-evenly;
+        gap: 10px;
+    }
+
+    .product-action button {
+        flex: 1;
+        width: 45%;
+        color: white;
+        background: black;
+        padding: 10px;
+        margin: 5px;
+    }
+
+    button:hover {
+        cursor: pointer;
+        background: red;
+    }
+
+    button:active {
+        background: gray;
+    }
+
+</style>
+
+<body>
+    <section class="container">
+        <h2>Ecommerce Product Page</h2>
+        <p>Product image and product information using Flexbox.</p>
+
+        <div class="main-container">
+            <section class="image-box">
+                <h3>Product Image</h3>
+            </section>
+
+            <main class="product">
+                <div class="product-2">
+                    <h2>Wireless Headphones</h2>
+                    <h3>2,499</h3>
+                    <p>Premium wireless headphones with long battery life.</p>
+
+                    <label>Color</label>
+                    <select>
+                        <option value="">black</option>
+                        <option value="">white</option>
+                    </select>
+
+                    <label>Size</label>
+                    <select>
+                        <option>Standard</option>
+                    </select>
+
+                    <div class="quantity">
+                        <strong>Quantity</strong>
+                        <button>+</button>
+                        <span>1</span>
+                        <button>-</button>
+                    </div>
+
+                    <div class="product-action">
+                        <button>Add to Cart</button>
+                        <button>Buy Now</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -405,44 +405,44 @@ console.log(binaryTreePaths(root))
 //!  12. Maximum Root to Leaf Path Sum
 //!  https://leetcode.com/problems/binary-tree-maximum-path-sum/ (simplified version)
 
-class Node {
-    constructor(val) {
-        this.val = val;
-        this.left = null;
-        this.right = null;
-    }
-}
+// class Node {
+//     constructor(val) {
+//         this.val = val;
+//         this.left = null;
+//         this.right = null;
+//     }
+// }
 
-function maxPathSum(root) {
-    if (!root) return 0;
+// function maxPathSum(root) {
+//     if (!root) return 0;
 
-    return root.val + maxPathSum(root.left) + maxPathSum(root.right);
-}
+//     return root.val + maxPathSum(root.left) + maxPathSum(root.right);
+// }
 
-const root = new Node(88);
-root.left = new Node(70);
-root.right = new Node(90);
+// const root = new Node(88);
+// root.left = new Node(70);
+// root.right = new Node(90);
 
-root.left.left = new Node(55);
-root.left.right = new Node(40);
+// root.left.left = new Node(55);
+// root.left.right = new Node(40);
 
-root.right.right = new Node(50);
-root.right.left = new Node(20);
+// root.right.right = new Node(50);
+// root.right.left = new Node(20);
 
-console.log(maxPathSum(root));
+// console.log(maxPathSum(root));
 
-function maxPathSum2(root) {
-    let maxSum = -Infinity;
+// function maxPathSum2(root) {
+//     let maxSum = -Infinity;
 
-    function dfs(node) {
-        if (!node) return 0;
-        maxSum = Math.max(maxSum, node.val + Math.max(0, dfs(node.left) + Math.max(0, dfs(node.right))));
+//     function dfs(node) {
+//         if (!node) return 0;
+//         maxSum = Math.max(maxSum, node.val + Math.max(0, dfs(node.left) + Math.max(0, dfs(node.right))));
 
-        return node.val + Math.max(Math.max(0, dfs(node.left), Math.max(0, dfs(node.right))));
-    }
-    dfs(root);
-    return maxSum;
-}
+//         return node.val + Math.max(Math.max(0, dfs(node.left), Math.max(0, dfs(node.right))));
+//     }
+//     dfs(root);
+//     return maxSum;
+// }
 
 
 //!  =============================================================================
@@ -453,3 +453,52 @@ function maxPathSum2(root) {
 //!  https://leetcode.com/problems/insert-into-a-binary-search-tree/
 
 
+// 701. Insert into a Binary Search Tree
+// Solved
+// Medium
+// Topics
+// premium lock icon
+// Companies
+// You are given the root node of a binary search tree(BST) and a value to insert into the tree.Return the root node of the BST after the insertion.It is guaranteed that the new value does not exist in the original BST.
+
+// Notice that there may exist multiple valid ways for the insertion, as long as the tree remains a BST after insertion.You can return any of them.
+
+/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *     val: number
+ *     left: TreeNode | null
+ *     right: TreeNode | null
+ *     constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+ *         this.val = (val===undefined ? 0 : val)
+ *         this.left = (left===undefined ? null : left)
+ *         this.right = (right===undefined ? null : right)
+ *     }
+ * }
+ */
+
+// class Node {
+//     constructor(val) {
+//         this.value = val,
+//         this.left = null,
+//         this.right = null
+//     }
+// }
+
+// function insertIntoBST(root, val) {
+//     // i: root
+//     // o: root node
+
+//     if (!root) return new TreeNode(val);
+
+//     if (val < root.val) {
+//         root.left = insertIntoBST(root.left, val)
+//     } else {
+//         root.right = insertIntoBST(root.right, val)
+//     }
+//     return root;
+// };
+
+// const root = new Node(25);
+// root.left = new Node(18);
+// root.right = new Node(35);

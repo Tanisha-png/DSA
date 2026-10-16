@@ -1,0 +1,36 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+/* container begins */
+
+body {
+    background-color: rgb(242, 224, 203);
+}
+
+.links {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 30px;
+    margin: 10px 15px;
+    padding: 10px 15px;
+}
+
+.links a {
+    text-decoration: none;
+}
+
+img {
+    border-radius: 25px;
+}
+
+/* Container ends */
+
+/* Cards Begins */
+.cards {
+    
+}
+/* Card Ends */
