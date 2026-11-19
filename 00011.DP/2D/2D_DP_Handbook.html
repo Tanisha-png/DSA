@@ -1,0 +1,1811 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2D DP Handbook</title>
+<meta name="description" content="22 two-dimensional dynamic programming problems in JavaScript, with step-by-step tables, diagrams and tested code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: sticky contents rail on the left, one reading column on the right. Graph-paper motif from the subject itself. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f6; --ink: #18202c; --muted: #5b6676; --line: #d6dbe3; --line-strong: #9aa4b2;
+  --accent: #3355d1; --accent-soft: #e5eafb; --accent-ink: #ffffff;
+  --cell: #f3f5f8; --cur: #ffd36b; --cur-line: #c98a00; --dep: #cfe0ff; --dep-line: #3a6fe0; --path: #c8efd6; --path-line: #1f8f52;
+  --pad: #e7eaef; --warn: #ffd9d6; --warn-line: #d23b2e; --violet: #8a5cd6; --block: #4a5464;
+  --code-bg: #141a24; --code-ink: #e3e8f1; --code-muted: #8590a3; --k: #ff9e64; --s: #9ece6a; --n: #e0af68; --f: #7aa2f7; --memo: rgba(255, 211, 107, .16);
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --grid-dot: rgba(24, 32, 44, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131a; --surface: #161b24; --surface-2: #1d2430; --ink: #e6eaf1; --muted: #9aa5b5; --line: #2c3442; --line-strong: #5d687a;
+    --accent: #7d97ff; --accent-soft: #232c45; --accent-ink: #0f131a;
+    --cell: #1d2430; --cur: #6e5414; --cur-line: #f2b632; --dep: #1f3560; --dep-line: #6f9bff; --path: #173f2a; --path-line: #4fcf87;
+    --pad: #252c38; --warn: #4a1f1c; --warn-line: #ff7a6e; --violet: #b18cff; --block: #8a95a8;
+    --code-bg: #0b0e14; --memo: rgba(242, 182, 50, .14); --grid-dot: rgba(230, 234, 241, .05);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131a; --surface: #161b24; --surface-2: #1d2430; --ink: #e6eaf1; --muted: #9aa5b5; --line: #2c3442; --line-strong: #5d687a;
+  --accent: #7d97ff; --accent-soft: #232c45; --accent-ink: #0f131a;
+  --cell: #1d2430; --cur: #6e5414; --cur-line: #f2b632; --dep: #1f3560; --dep-line: #6f9bff; --path: #173f2a; --path-line: #4fcf87;
+  --pad: #252c38; --warn: #4a1f1c; --warn-line: #ff7a6e; --violet: #b18cff; --block: #8a95a8;
+  --code-bg: #0b0e14; --memo: rgba(242, 182, 50, .14); --grid-dot: rgba(230, 234, 241, .05);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--sans); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 .3em; white-space: nowrap; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+p { margin: 0 0 .8em; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+.rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); padding: 22px 16px 40px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); }
+main { min-width: 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px 40px; }
+.col { max-width: 860px; }
+
+.brand { font-family: var(--display); font-weight: 700; font-size: 19px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.brand-mark { display: grid; grid-template-columns: repeat(3, 7px); gap: 2px; }
+.brand-mark i { width: 7px; height: 7px; border-radius: 2px; background: var(--line); }
+.brand-mark i.a { background: var(--cur); } .brand-mark i.b { background: var(--dep-line); } .brand-mark i.c { background: var(--path-line); }
+.progress { margin: 6px 0 14px; font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-top: 6px; border: 1px solid var(--line); }
+.bar > span { display: block; height: 100%; width: 0; background: var(--path-line); transition: width .3s; }
+.search { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 14px; }
+.nav { list-style: none; margin: 14px 0 0; padding: 0; font-size: 14px; }
+.nav .grp { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 16px 0 4px; }
+.nav a { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.nav a:hover { background: var(--surface-2); }
+.nav a.on { background: var(--accent-soft); color: var(--accent); }
+.nav .nid { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 22px; }
+.nav .tick { margin-left: auto; color: var(--path-line); font-size: 12px; visibility: hidden; }
+.nav a.done .tick { visibility: visible; }
+.rail-foot { margin-top: 20px; display: flex; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+.btn:hover { border-color: var(--line-strong); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.mobile-bar { display: none; }
+
+/* ---------- hero ---------- */
+.hero { padding: 54px 0 36px; border-bottom: 1px solid var(--line); background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px); background-size: 22px 22px; }
+.hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; }
+.hero p.lead { font-size: 19px; color: var(--muted); max-width: 620px; margin-top: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; color: var(--muted); margin-top: 18px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid; display: inline-block; }
+.sw-cur { background: var(--cur); border-color: var(--cur-line); }
+.sw-dep { background: var(--dep); border-color: var(--dep-line); }
+.sw-path { background: var(--path); border-color: var(--path-line); }
+.sw-pad { background: var(--pad); border-color: var(--line-strong); border-style: dashed; }
+.stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 26px; }
+.stats div { font-size: 13px; color: var(--muted); }
+.stats b { display: block; font-family: var(--display); font-size: 26px; color: var(--ink); }
+
+/* ---------- sections ---------- */
+section.block { padding: 48px 0 8px; }
+.eyebrow { font-family: var(--display); font-size: 12.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+section.block > h2 { font-size: 32px; margin-bottom: 12px; }
+h3.sub { font-size: 21px; margin: 34px 0 10px; }
+.prose { max-width: 680px; }
+.muted { color: var(--muted); }
+.figure { margin: 18px 0 22px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+.figure figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
+.dg { width: 100%; height: auto; display: block; overflow: visible; }
+pre.mini { font: 13.5px/1.5 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; overflow-x: auto; }
+
+table.plain { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.tablewrap { overflow-x: auto; margin: 12px 0 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table.plain th, table.plain td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.plain th { font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--muted); background: var(--surface-2); }
+table.plain tr:last-child td { border-bottom: 0; }
+
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0 8px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; position: relative; }
+.step b { font-family: var(--display); font-size: 15px; display: block; margin-bottom: 4px; }
+.step small { color: var(--muted); font-size: 13px; line-height: 1.45; display: block; }
+.step .lv { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
+.step:not(:last-child)::after { content: '→'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--line-strong); font-size: 14px; }
+
+.counter { display: grid; gap: 10px; margin-top: 8px; }
+.counter label { font-size: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.counter input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.crow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 130px; align-items: center; gap: 10px; font-size: 14px; }
+.cbar { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.cbar span { display: block; height: 100%; transition: width .25s; }
+.cbar .slow { background: var(--warn-line); } .cbar .fast { background: var(--path-line); }
+.crow .num { font-family: var(--mono); text-align: right; font-size: 13.5px; }
+
+/* ---------- family header ---------- */
+.fam { padding-top: 64px; }
+.fam-head { display: flex; gap: 18px; align-items: flex-start; }
+.fam-letter { font-family: var(--display); font-weight: 700; font-size: 26px; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: var(--bg); flex: none; }
+.fam-head h2 { font-size: 30px; }
+.fam-head p { color: var(--muted); margin: 6px 0 0; max-width: 640px; }
+.statebox { margin-top: 16px; padding: 12px 16px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; font-size: 15px; }
+
+/* ---------- problem ---------- */
+.prob { margin-top: 40px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.prob-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 14px; }
+.pid { font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+.prob-head h3 { font-size: 23px; }
+.chip { font-size: 12.5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+a.chip:hover { border-color: var(--accent); color: var(--accent); }
+.diff-Medium { color: #b26b00; border-color: #e7c27a; } .diff-Hard { color: var(--warn-line); border-color: var(--warn-line); }
+:root[data-theme="dark"] .diff-Medium { color: #f2b632; border-color: #7a5d1e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .diff-Medium { color: #f2b632; border-color: #7a5d1e; } }
+.chip-new { background: var(--path); color: var(--ink); border-color: var(--path-line); }
+.done-toggle { margin-left: auto; font-size: 13.5px; display: inline-flex; gap: 7px; align-items: center; cursor: pointer; color: var(--muted); user-select: none; }
+.done-toggle input { width: 17px; height: 17px; accent-color: var(--path-line); }
+.prob-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; }
+pre.example { font: 13.5px/1.55 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 10px 0 0; overflow-x: auto; white-space: pre-wrap; }
+.card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-self: start; }
+.card-title { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.card dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); }
+.card dt, .card dd { margin: 0; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.card dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding-top: 9px; }
+.card dl > :nth-last-child(-n+2) { border-bottom: 0; }
+.card code { white-space: normal; }
+.moves { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.moves svg { width: 70px; flex: none; }
+.notes { margin-top: 18px; max-width: 700px; }
+
+/* ---------- stepper ---------- */
+.viz { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.viz-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.viz-title { font-family: var(--display); font-weight: 600; font-size: 15px; }
+.viz-title small { display: block; font-family: var(--sans); font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.viz-in { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.viz-in label { display: grid; font-size: 11.5px; color: var(--muted); gap: 2px; }
+.viz-in input { font: 13px var(--mono); padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 100%; min-width: 64px; }
+.viz-in input.wide { min-width: min(320px, 70vw); }
+.viz-scroll { overflow-x: auto; padding: 16px 14px 8px; }
+.viz-stage { position: relative; display: inline-block; }
+.viz-arrows { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+table.dpt { border-collapse: separate; border-spacing: 4px; font-family: var(--mono); }
+table.dpt th { font-size: 12px; color: var(--muted); font-weight: 500; padding: 0 4px; white-space: nowrap; }
+table.dpt th.rh { text-align: right; }
+table.dpt td { width: 44px; min-width: 44px; height: 44px; text-align: center; border-radius: 7px; background: var(--cell); border: 1.5px solid var(--line); font-size: 14.5px; font-weight: 500; position: relative; transition: background .15s, border-color .15s; }
+table.dpt td .tg { position: absolute; top: 2px; left: 4px; font-size: 10px; color: var(--muted); font-weight: 400; }
+table.dpt td.pad, table.dpt td.base { background: var(--pad); border-style: dashed; border-color: var(--line-strong); color: var(--muted); }
+table.dpt td.block { background: var(--block); border-color: var(--block); color: var(--bg); }
+table.dpt td.block::after { content: 'rock'; font-size: 10px; }
+table.dpt td.void { background: transparent; border-color: transparent; }
+table.dpt td.filled { background: var(--surface); }
+table.dpt td.dep { background: var(--dep); border-color: var(--dep-line); }
+table.dpt td.cur { background: var(--cur); border-color: var(--cur-line); font-weight: 700; }
+table.dpt td.ans { background: var(--path); border-color: var(--path-line); font-weight: 700; }
+table.dpt td.insq { box-shadow: inset 0 0 0 2px var(--path-line); }
+table.dpt td.vt { color: var(--path-line); font-weight: 700; } table.dpt td.vf { color: var(--muted); }
+.viz-note { min-height: 48px; margin: 4px 14px 0; padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font: 13.5px/1.5 var(--mono); }
+.viz-note.final { border-color: var(--path-line); background: var(--path); font-family: var(--sans); font-weight: 600; }
+.viz-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px 14px; }
+.viz-ctl .count { font: 13px var(--mono); color: var(--muted); margin-left: 4px; }
+.viz-ctl label { margin-left: auto; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.viz-ctl input[type=range] { width: 90px; accent-color: var(--accent); }
+.viz-empty { padding: 14px; color: var(--muted); font-size: 14px; }
+
+/* ---------- code ---------- */
+.code { margin-top: 20px; border-radius: 12px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 6px 0; background: rgba(255,255,255,.03); border-bottom: 1px solid rgba(255,255,255,.08); }
+.tab { background: none; border: 0; color: var(--code-muted); padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px 6px 0 0; }
+.tab[aria-selected="true"] { color: var(--code-ink); background: var(--code-bg); box-shadow: inset 0 2px 0 var(--cur-line); }
+.copy { margin-left: auto; align-self: center; background: none; border: 1px solid rgba(255,255,255,.15); color: var(--code-muted); border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; margin-bottom: 6px; }
+.copy:hover { color: var(--code-ink); }
+.code pre { margin: 0; padding: 14px 0; overflow-x: auto; font: 13.5px/1.6 var(--mono); color: var(--code-ink); }
+.code pre .ln { display: block; padding: 0 16px; min-height: 1.6em; white-space: pre; }
+.code pre .ln.memo { background: var(--memo); box-shadow: inset 3px 0 0 var(--cur-line); }
+.code pre .ln.memo::after { content: 'memo'; float: right; font-size: 10.5px; color: var(--cur-line); margin-left: 12px; }
+.code .k { color: var(--k); } .code .s { color: var(--s); } .code .n { color: var(--n); } .code .c { color: var(--code-muted); font-style: italic; } .code .f { color: var(--f); }
+.code-note { font-size: 12.5px; color: var(--code-muted); padding: 0 16px 12px; }
+
+/* ---------- try it ---------- */
+.tries { margin-top: 18px; display: grid; gap: 8px; }
+details.try { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+details.try summary { cursor: pointer; padding: 10px 14px; font-weight: 500; list-style: none; display: flex; gap: 10px; }
+details.try summary::-webkit-details-marker { display: none; }
+details.try summary::before { content: 'Try first'; flex: none; font: 600 11px var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 6px; height: fit-content; margin-top: 3px; }
+details.try[open] summary::before { content: 'Answer'; color: var(--path-line); border-color: var(--path-line); }
+details.try .ans { padding: 0 14px 12px 14px; color: var(--ink); }
+.cx { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.cx b { color: var(--ink); }
+
+/* ---------- quiz ---------- */
+.quiz-score { font-family: var(--display); font-size: 15px; margin: 6px 0 16px; }
+.q { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 12px; }
+.q p { font-weight: 500; }
+.q .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.q .opt { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-size: 13.5px; cursor: pointer; }
+.q .opt:hover:not(:disabled) { border-color: var(--accent); }
+.q .opt.right { background: var(--path); border-color: var(--path-line); }
+.q .opt.wrong { background: var(--warn); border-color: var(--warn-line); }
+.q .opt:disabled { cursor: default; }
+.q .why { margin-top: 10px; font-size: 14.5px; color: var(--muted); }
+
+ol.script { padding-left: 22px; } ol.script li { margin-bottom: 6px; }
+footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: fixed; z-index: 30; inset: 0 auto 0 0; width: min(320px, 86vw); transform: translateX(-102%); transition: transform .2s; box-shadow: 0 0 40px rgba(0,0,0,.25); padding-top: calc(22px + env(safe-area-inset-top, 0px)); }
+  .rail.open { transform: none; }
+  main { padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
+  .mobile-bar { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; align-items: center; justify-content: space-between; gap: 10px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 25; background: var(--bg); }
+  .prob-grid { grid-template-columns: minmax(0, 1fr); }
+  .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step:nth-child(2)::after { display: none; }
+}
+@media (max-width: 560px) {
+  .prob { padding: 18px 14px; margin-left: -4px; margin-right: -4px; }
+  .crow { grid-template-columns: 90px minmax(0, 1fr) 96px; }
+  .ladder { grid-template-columns: minmax(0, 1fr); }
+  .step::after { display: none; }
+  .done-toggle { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+    <marker id="ah-dep" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dep-line)"/></marker>
+    <marker id="ah-path" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--path-line)"/></marker>
+    <marker id="ah-cur" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--cur-line)"/></marker>
+    <marker id="ah-warn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--warn-line)"/></marker>
+  </defs>
+</svg>
+<style>
+.dg .c { stroke: var(--line-strong); stroke-width: 1.2; fill: var(--cell); }
+.dg .c-cur { fill: var(--cur); stroke: var(--cur-line); }
+.dg .c-dep { fill: var(--dep); stroke: var(--dep-line); }
+.dg .c-path { fill: var(--path); stroke: var(--path-line); }
+.dg .c-path-soft { fill: var(--path); stroke: var(--line-strong); }
+.dg .c-pad { fill: var(--pad); stroke-dasharray: 4 3; }
+.dg .c-warn { fill: var(--warn); stroke: var(--warn-line); }
+.dg .c-len1 { fill: var(--dep); fill-opacity: .25; } .dg .c-len2 { fill: var(--dep); fill-opacity: .4; } .dg .c-len3 { fill: var(--dep); fill-opacity: .55; } .dg .c-len4 { fill: var(--dep); fill-opacity: .7; }
+.dg .t { fill: var(--ink); font: 500 13px var(--mono); }
+.dg .t-sm { font-size: 11.5px; }
+.dg .t-b { font-weight: 700; }
+.dg .t-s { fill: var(--muted); font: 12.5px var(--sans); }
+.dg .t-strong { fill: var(--ink); font-weight: 600; }
+.dg .t-lab { fill: var(--ink); font: 600 13.5px var(--display); }
+.dg .edge { stroke: var(--line-strong); stroke-width: 1.5; fill: none; }
+.dg .edge-dup { stroke: var(--cur-line); stroke-width: 2; }
+.ar { stroke-width: 2; fill: none; }
+.ar-ink { stroke: var(--muted); } .ar-dep { stroke: var(--dep-line); } .ar-path { stroke: var(--path-line); } .ar-cur { stroke: var(--cur-line); } .ar-warn { stroke: var(--warn-line); }
+.dg .sq { fill: none; stroke-width: 2.5; } .dg .sq-a { stroke: var(--path-line); } .dg .sq-b { stroke: var(--dep-line); } .dg .sq-c { stroke: var(--violet); }
+</style>
+
+<div class="mobile-bar">
+  <button class="btn" id="menu-btn" aria-controls="rail" aria-expanded="false">Contents</button>
+  <span class="brand" style="margin:0;font-size:16px">2D DP Handbook</span>
+  <button class="btn theme-btn" aria-label="Switch colour theme">Theme</button>
+</div>
+
+<div class="layout">
+  <aside class="rail" id="rail">
+    <div class="brand"><span class="brand-mark"><i></i><i class="b"></i><i></i><i></i><i class="a"></i><i></i><i></i><i></i><i class="c"></i></span>2D DP Handbook</div>
+    <div class="progress"><span id="prog-text">0 of 22 solved</span><div class="bar"><span id="prog-bar"></span></div></div>
+    <input class="search" id="nav-search" type="search" placeholder="Filter problems (name or LC number)" aria-label="Filter problems">
+    <ul class="nav" id="nav"></ul>
+    <div class="rail-foot"><button class="btn theme-btn" aria-label="Switch colour theme">Theme</button><button class="btn" id="reset-progress">Reset ticks</button></div>
+  </aside>
+
+  <main>
+    <div class="col">
+      <header class="hero" id="top">
+        <div class="eyebrow">JavaScript · LeetCode · 22 problems</div>
+        <h1>2D Dynamic Programming,<br>one table at a time</h1>
+        <p class="lead">Every problem here is solved with the same five questions. Press <b>Next</b> on any table and watch it fill, cell by cell, with the reason for each number written underneath.</p>
+        <div class="legend">
+          <span><i class="sw sw-cur"></i>cell being filled</span>
+          <span><i class="sw sw-dep"></i>cells it reads from</span>
+          <span><i class="sw sw-path"></i>answer or best path</span>
+          <span><i class="sw sw-pad"></i>padding / base case</span>
+        </div>
+        <div class="stats">
+          <div><b>6</b>families</div>
+          <div><b>22</b>problems</div>
+          <div><b>22</b>step-through tables</div>
+          <div><b>10</b>quiz questions</div>
+        </div>
+      </header>
+
+      <!-- ====================== START HERE ====================== -->
+      <section class="block" id="start">
+        <div class="eyebrow">Start here</div>
+        <h2>How every solution is built</h2>
+        <div class="prose">
+          <p>A problem is dynamic programming when you make a series of choices, the same smaller question keeps coming up along different routes, and the best answer is built from the best answers to those smaller questions.</p>
+          <p>It is <b>2D</b> when you need two numbers to say where you are:</p>
+        </div>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>State</th><th>What the two numbers mean</th><th>Family</th></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I am at row i, column j</td><td>Grid paths, squares</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I have used s1 up to i and s2 up to j</td><td>Two strings</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I am looking at the slice from i to j</td><td>Intervals</td></tr>
+          <tr><td><code>dp(i, c)</code></td><td>I am at item i with c capacity left</td><td>Knapsack</td></tr>
+          <tr><td><code>dp(i, s)</code></td><td>I am on day i and in mode s</td><td>Index + state</td></tr>
+        </table></div>
+        <p class="prose">A good test: <i>what is the least I need to know about where I am, so that I can finish the problem without caring how I got here?</i> If the answer is two numbers, you are in the right place.</p>
+
+        <h3 class="sub">The DP card</h3>
+        <p class="prose">Fill this in before you write any code. Every problem below starts with one.</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Question</th><th>For Unique Paths</th></tr>
+          <tr><td><b>State.</b> What does <code>dp(i, j)</code> mean, in plain words?</td><td>Number of routes from <code>(i, j)</code> to the finish</td></tr>
+          <tr><td><b>Choices.</b> What can I do from here?</td><td>Step right or step down</td></tr>
+          <tr><td><b>Recurrence.</b> How do the choices combine?</td><td><code>dp(i, j+1) + dp(i+1, j)</code></td></tr>
+          <tr><td><b>Base cases.</b> Where does it stop?</td><td>Off the grid → 0, on the finish → 1</td></tr>
+          <tr><td><b>Answer.</b> Which state do I return?</td><td><code>dp(0, 0)</code></td></tr>
+          <tr><td><b>Order</b> (tables only). Which cells must be ready first?</td><td>Bottom-right to top-left</td></tr>
+        </table></div>
+        <p class="prose">What the question asks for tells you how to combine the choices, and what to return for a move that is not allowed:</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>The question asks for</th><th>Combine with</th><th>A move that is not allowed returns</th></tr>
+          <tr><td>Number of ways</td><td><code>+</code></td><td><code>0</code></td></tr>
+          <tr><td>Smallest cost</td><td><code>Math.min</code></td><td><code>Infinity</code></td></tr>
+          <tr><td>Largest value</td><td><code>Math.max</code></td><td><code>-Infinity</code>, or <code>0</code> if doing nothing is allowed</td></tr>
+          <tr><td>Is it possible?</td><td><code>||</code></td><td><code>false</code></td></tr>
+        </table></div>
+
+        <h3 class="sub">Four versions of the same solution</h3>
+        <div class="ladder">
+          <div class="step"><span class="lv">version 1</span><b>Plain recursion</b><small>Correct but very slow. Write it first to get the logic right.</small></div>
+          <div class="step"><span class="lv">version 2</span><b>Memo</b><small>Same code plus a table that remembers answers. Two extra lines.</small></div>
+          <div class="step"><span class="lv">version 3</span><b>Table (bottom-up)</b><small>Fill the table with loops. No recursion, so no stack overflow.</small></div>
+          <div class="step"><span class="lv">version 4</span><b>One row</b><small>Keep only the rows you still need. Same speed, much less memory.</small></div>
+        </div>
+        <p class="prose">In the code boxes, the lines that memoization adds have a yellow bar. Switch to the <b>Recursion</b> tab to see the same code with those lines removed.</p>
+
+        <h3 class="sub">Why the memo makes such a difference</h3>
+        <p class="prose">Here is plain recursion on a 3 × 3 grid. The orange part is worked out twice, because two different routes reach cell (1,1).</p>
+        <figure class="figure" id="fig-tree"></figure>
+        <p class="prose">On bigger grids the repeated work gets out of hand. Move the slider:</p>
+        <div class="figure counter">
+          <label for="calls-n">Grid size: <b id="calls-label">10 × 10</b><input type="range" id="calls-n" min="2" max="16" value="10"></label>
+          <div class="crow"><span>Plain recursion</span><div class="cbar"><span class="slow" id="calls-bar-slow"></span></div><span class="num" id="calls-slow"></span></div>
+          <div class="crow"><span>With memo</span><div class="cbar"><span class="fast" id="calls-bar-fast"></span></div><span class="num" id="calls-fast"></span></div>
+          <figcaption>Function calls made by each version. Bars use a log scale, otherwise the memo bar would be invisible.</figcaption>
+        </div>
+
+        <h3 class="sub">Two ways to read a state</h3>
+        <p class="prose">Most notes never say this out loud, but it causes a lot of confusion. <code>dp(i, j)</code> can mean the answer for the <b>rest</b> of the problem starting at <code>(i, j)</code>, or the answer for a piece that <b>ends</b> exactly at <code>(i, j)</code>. Both work for most problems. Which one you choose decides the loop direction.</p>
+        <figure class="figure" id="fig-dirs"></figure>
+        <p class="prose">This handbook uses "from here to the end" for grids, strings, knapsack and stocks, so you only have one habit to learn. Squares use "ending here", because a square is easiest to describe by its bottom-right corner. The Dungeon Game (A6) only works "from here to the end", and you will see why.</p>
+
+        <h3 class="sub">Padding is the base case</h3>
+        <p class="prose">When you turn a memo into a table, add one extra row and column filled with the base-case value. Then the loops need no "am I outside the grid?" checks. In the steppers, padding cells have a dashed grey border. They are filled before the first step.</p>
+        <p class="prose"><b>Loop direction rule:</b> if <code>dp(i, j)</code> reads row <code>i + 1</code>, loop <code>i</code> downward. If it reads <code>i − 1</code>, loop upward.</p>
+
+        <h3 class="sub">Common mistakes</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Mistake</th><th>What you see</th><th>Fix</th></tr>
+          <tr><td>Checking the memo before the bounds</td><td><code>Cannot read properties of undefined</code></td><td>Bounds first, memo second</td></tr>
+          <tr><td><code>Array(m).fill(Array(n))</code></td><td>All rows change together</td><td><code>Array.from({ length: m }, () =&gt; Array(n))</code></td></tr>
+          <tr><td>Using <code>0</code> to mean "not computed yet"</td><td>Right answer, but Time Limit Exceeded</td><td>Use <code>undefined</code></td></tr>
+          <tr><td>Returning <code>0</code> for a bad move in a min problem</td><td>Answer too small</td><td>Return <code>Infinity</code></td></tr>
+          <tr><td>Mixing up <code>"1"</code> and <code>1</code></td><td>Every cell treated as 0 (or 1)</td><td>Check the input type</td></tr>
+          <tr><td>Wrong loop direction in the table</td><td>Reads cells that are still empty</td><td>Follow the arrows in the recurrence</td></tr>
+          <tr><td>Very deep recursion (amount = 10⁴)</td><td><code>Maximum call stack size exceeded</code></td><td>Use the table version</td></tr>
+        </table></div>
+      </section>
+
+      <div id="families"></div>
+
+      <!-- ====================== QUIZ ====================== -->
+      <section class="block" id="quiz">
+        <div class="eyebrow">Check yourself</div>
+        <h2>Which family is it?</h2>
+        <p class="prose">These problems are not in the handbook. Read each one and pick the family before you think about code. If you can do this in under a minute, you have learned the most useful part.</p>
+        <div class="quiz-score" id="quiz-score"></div>
+        <div id="quiz-list"></div>
+        <button class="btn" id="quiz-reset">Start the quiz again</button>
+      </section>
+
+      <!-- ====================== CHEAT SHEET ====================== -->
+      <section class="block" id="cheat">
+        <div class="eyebrow">One page</div>
+        <h2>All 22 side by side</h2>
+        <div class="tablewrap"><table class="plain" id="cheat-table">
+          <tr><th>#</th><th>Problem</th><th>dp means</th><th>Combine</th><th>Base</th><th>Answer</th></tr>
+          <tr><td>A1</td><td>Unique Paths</td><td>routes from cell</td><td><code>+</code></td><td>off → 0, finish → 1</td><td>dp(0,0)</td></tr>
+          <tr><td>A2</td><td>Unique Paths II</td><td>routes from cell</td><td><code>+</code></td><td>+ rock → 0</td><td>dp(0,0)</td></tr>
+          <tr><td>A3</td><td>Min Path Sum</td><td>cheapest from cell</td><td><code>min</code></td><td>off → ∞</td><td>dp(0,0)</td></tr>
+          <tr><td>A4</td><td>Triangle</td><td>cheapest from cell</td><td><code>min</code></td><td>bottom row</td><td>dp(0,0)</td></tr>
+          <tr><td>A5</td><td>Min Falling Path</td><td>cheapest from cell</td><td><code>min</code> of 3</td><td>column off → ∞</td><td>min of row 0</td></tr>
+          <tr><td>A6</td><td>Dungeon Game</td><td>health needed on entry</td><td><code>max(1, min − d)</code></td><td>off → ∞</td><td>dp(0,0)</td></tr>
+          <tr><td>B1</td><td>Maximal Square</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>max²</td></tr>
+          <tr><td>B2</td><td>Count Squares</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>sum</td></tr>
+          <tr><td>C1</td><td>LCS</td><td>LCS of what is left</td><td>match +1, else <code>max</code></td><td>empty → 0</td><td>dp(0,0)</td></tr>
+          <tr><td>C2</td><td>Delete Operation</td><td>deletions</td><td>match, else <code>1 + min</code></td><td>empty → length left</td><td>dp(0,0)</td></tr>
+          <tr><td>C3</td><td>Edit Distance</td><td>operations</td><td>match, else <code>1 + min</code> of 3</td><td>empty → length left</td><td>dp(0,0)</td></tr>
+          <tr><td>C4</td><td>Distinct Subsequences</td><td>ways</td><td>skip + use</td><td>t done → 1</td><td>dp(0,0)</td></tr>
+          <tr><td>C5</td><td>Wildcard Matching</td><td>matches?</td><td><code>||</code></td><td>both done → true</td><td>dp(0,0)</td></tr>
+          <tr><td>D1</td><td>Longest Pal. Subsequence</td><td>LPS in [i..j]</td><td>match +2, else <code>max</code></td><td>i = j → 1</td><td>dp(0, n−1)</td></tr>
+          <tr><td>D2</td><td>Palindromic Substrings</td><td>is palindrome?</td><td><code>&amp;&amp;</code></td><td>length ≤ 2</td><td>count true</td></tr>
+          <tr><td>D3</td><td>Burst Balloons</td><td>coins between l and r</td><td><code>max</code> over last k</td><td>nothing between → 0</td><td>dp(0, n+1)</td></tr>
+          <tr><td>E1</td><td>Partition Equal Subset</td><td>can make t?</td><td><code>||</code></td><td>t = 0 → true</td><td>dp(0, sum/2)</td></tr>
+          <tr><td>E2</td><td>Target Sum</td><td>ways</td><td><code>+</code></td><td>sum hits target → 1</td><td>dp(0, P)</td></tr>
+          <tr><td>E3</td><td>Coin Change II</td><td>ways</td><td><code>+</code></td><td>amount 0 → 1</td><td>dp(0, amount)</td></tr>
+          <tr><td>E4</td><td>Coin Change</td><td>fewest coins</td><td><code>min</code></td><td>amount 0 → 0</td><td>dp(0, amount)</td></tr>
+          <tr><td>F1</td><td>Stock with Cooldown</td><td>profit</td><td><code>max</code></td><td>past the end → 0</td><td>dp(0, free)</td></tr>
+          <tr><td>F2</td><td>Stock with Fee</td><td>profit</td><td><code>max</code></td><td>past the end → 0</td><td>dp(0, free)</td></tr>
+        </table></div>
+
+        <h3 class="sub">Knapsack in one table</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th></th><th>Each item once (0/1)</th><th>Reuse allowed</th></tr>
+          <tr><td>Possible? (<code>||</code>)</td><td>E1 Partition</td><td>Word Break style</td></tr>
+          <tr><td>Count (<code>+</code>)</td><td>E2 Target Sum</td><td>E3 Coin Change II</td></tr>
+          <tr><td>Min / max</td><td>0/1 Knapsack, LC 474</td><td>E4 Coin Change</td></tr>
+          <tr><td>Take goes to</td><td><code>(i+1, c − w)</code></td><td><code>(i, c − w)</code></td></tr>
+          <tr><td>1D loop</td><td>downward</td><td>upward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Explaining it in an interview</h3>
+        <ol class="script">
+          <li>"Let <code>dp(i, j)</code> be <i>[the state in plain words]</i>."</li>
+          <li>"From here I can <i>[choices]</i>, so <code>dp(i, j) =</code> <i>[recurrence]</i>."</li>
+          <li>"It stops when <i>[base cases]</i>."</li>
+          <li>"The answer is <i>[answer state]</i>."</li>
+          <li>"There are <i>[number of states]</i> states and each does <i>[number of choices]</i> work, so the time is <i>[product]</i>."</li>
+          <li>"I would write it top-down first, then turn it into a table and keep only <i>[one or two rows]</i>."</li>
+        </ol>
+      </section>
+
+      <!-- ====================== PLAN ====================== -->
+      <section class="block" id="plan">
+        <div class="eyebrow">Two weeks</div>
+        <h2>A study plan</h2>
+        <p class="prose">One or two problems a day, plus one problem that is not in the handbook. Tick a problem in its header only when you can write it from a blank file without peeking.</p>
+        <div class="tablewrap"><table class="plain" id="plan-table"><tr><th>Day</th><th>Learn</th><th>Then try on your own</th></tr></table></div>
+        <h3 class="sub">After this</h3>
+        <ul class="prose">
+          <li><b>3D DP:</b> add a third number to the state (LC 1463, 188, 474, 2435). The DP card stays the same. The state line just gets longer.</li>
+          <li><b>DP on trees:</b> <code>dp(node, state)</code>, for example LC 337 House Robber III.</li>
+          <li><b>Bitmask DP:</b> <code>dp(mask, i)</code> for small sets, for example LC 847.</li>
+          <li><b>Digit DP:</b> counting numbers with some property, digit by digit.</li>
+        </ul>
+        <footer>All code on this page was run in Node.js against the LeetCode examples and extra edge cases, and every stepper table is checked against the same solutions. If you remember one thing: say what <code>dp</code> means in plain words, list the choices, combine them with <code>+</code>, <code>min</code>, <code>max</code> or <code>||</code>, and stop at the base case.</footer>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+const FAMILIES = [
+  {
+    id: 'A', name: 'Grid paths',
+    lead: 'You stand on a grid and can only move in a few fixed directions, never backwards. You either count the routes or look for the cheapest one.',
+    state: '<code>dp(i, j)</code> = the answer for the trip <b>from</b> cell <code>(i, j)</code> to the finish.',
+    diagram: 'familyGrid'
+  },
+  {
+    id: 'B', name: 'Squares in a grid',
+    lead: 'Find or count squares made only of 1s. Here it is easier to describe a square by the cell where it <b>ends</b>, its bottom-right corner.',
+    state: '<code>dp(i, j)</code> = side of the biggest all-1 square whose bottom-right corner is <code>(i, j)</code>.',
+    diagram: 'squares'
+  },
+  {
+    id: 'C', name: 'Two strings',
+    lead: 'Two strings, two pointers. At every step you look at one letter from each string and decide what to do with them.',
+    state: '<code>dp(i, j)</code> = the answer for what is left: <code>s1[i..]</code> and <code>s2[j..]</code>.',
+    diagram: 'strings'
+  },
+  {
+    id: 'D', name: 'Intervals',
+    lead: 'One string or array, but the answer for a range <code>[i..j]</code> is built from smaller ranges inside it. Short ranges get solved first.',
+    state: '<code>dp(i, j)</code> = the answer for the slice from index <code>i</code> to index <code>j</code>.',
+    diagram: 'interval'
+  },
+  {
+    id: 'E', name: 'Knapsack',
+    lead: 'A list of items and a budget (capacity, target sum, amount). For every item you decide: take it or leave it.',
+    state: '<code>dp(i, c)</code> = the answer using items from <code>i</code> onward with <code>c</code> left to fill.',
+    diagram: 'knap'
+  },
+  {
+    id: 'F', name: 'Index + state',
+    lead: 'You walk through a list one step at a time, but you also carry a small "mode" with you: holding a stock or not, cooling down or not.',
+    state: '<code>dp(i, mode)</code>. The second number is tiny (2 or 3 values), but it is still 2D DP.',
+    diagram: 'machine'
+  }
+];
+
+const PROBLEMS = [
+  // ===================== A =====================
+  {
+    id: 'A1', fam: 'A', lc: 62, title: 'Unique Paths', diff: 'Medium', url: 'https://leetcode.com/problems/unique-paths/', viz: 'uniquePaths',
+    statement: 'A robot starts in the top-left corner of an <code>m × n</code> grid. It can only move right or down. How many different routes reach the bottom-right corner?',
+    example: 'm = 3, n = 7  →  28\nm = 3, n = 2  →  3',
+    card: ['Number of routes from <code>(i, j)</code> to the finish', 'Right <code>(i, j+1)</code> or down <code>(i+1, j)</code>', '<code>dp(i, j) = dp(i, j+1) + dp(i+1, j)</code>', 'Off the grid → <code>0</code>. On the finish → <code>1</code>', '<code>dp(0, 0)</code>'],
+    moves: 'rd',
+    notes: '<p>Every route from here starts with either a step right or a step down. Those two groups never overlap, so you add them.</p><p>Watch the table fill up in the stepper below. The grey row and column on the edge are the "off the grid" cells. They are already 0 before we start, which is why the loop never needs an <code>if (outside)</code> check.</p>',
+    tries: [
+      { q: 'Before you press Play: what will the whole last row and last column be?', a: 'All 1s. From any cell on the bottom edge there is only one way to the finish: keep going right. Same for the right edge going down.' },
+      { q: 'Set m = 1 and n = 5. What does the table look like?', a: 'One row of 1s. A single corridor has exactly one route.' },
+      { q: 'Is there a formula without DP?', a: 'Yes. You make (m−1) down moves and (n−1) right moves in some order, so the answer is C(m+n−2, m−1). For 3 × 7 that is C(8, 2) = 28. The DP is still worth learning because the next problem breaks the formula.' }
+    ],
+    cx: 'Plain recursion O(2<sup>m+n</sup>). Memo and table O(m·n) time. One row: O(n) memory.'
+  },
+  {
+    id: 'A2', fam: 'A', lc: 63, title: 'Unique Paths II', diff: 'Medium', url: 'https://leetcode.com/problems/unique-paths-ii/', viz: 'uniquePathsWithObstacles',
+    statement: 'Same robot, same moves. Now some cells hold a rock (<code>1</code>) and the robot cannot step on them.',
+    example: '[[0,0,0],\n [0,1,0],\n [0,0,0]]  →  2',
+    card: ['Routes from <code>(i, j)</code> to the finish, avoiding rocks', 'Right or down', 'Same as A1', 'Off the grid → <code>0</code>. <b>Rock → <code>0</code>.</b> Finish → <code>1</code>', '<code>dp(0, 0)</code>'],
+    moves: 'rd',
+    notes: '<p>The only change from A1 is one extra base case. A rock is a dead end, so it contributes 0 routes to its neighbours.</p><p>Try putting a rock on the start or the finish cell in the stepper and see what happens to the whole table.</p>',
+    tries: [
+      { q: 'What happens if the finish cell itself is a rock?', a: 'Every cell becomes 0. In the code we check for a rock <b>before</b> we check "is this the finish?". If you swap those two lines, the finish returns 1 and the answer is wrong. The order of base cases matters.' }
+    ],
+    cx: 'Same as A1.'
+  },
+  {
+    id: 'A3', fam: 'A', lc: 64, title: 'Minimum Path Sum', diff: 'Medium', url: 'https://leetcode.com/problems/minimum-path-sum/', viz: 'minPathSum',
+    statement: 'Each cell has a cost. Move right or down from the top-left to the bottom-right and make the total as small as possible.',
+    example: '[[1,3,1],\n [1,5,1],\n [4,2,1]]  →  7   (1 → 3 → 1 → 1 → 1)',
+    card: ['Cheapest total from <code>(i, j)</code> to the finish, counting this cell', 'Right or down', '<code>grid[i][j] + min(dp(i, j+1), dp(i+1, j))</code>', 'Off the grid → <code>Infinity</code>. Finish → <code>grid[i][j]</code>', '<code>dp(0, 0)</code>'],
+    moves: 'rd',
+    notes: '<p>Compare this with A1. Counting became optimising, so <code>+</code> became <code>min</code>. The "off the grid" value also changed from 0 to <code>Infinity</code>. With <code>min</code>, a 0 would look like the best choice, so we use a value that <code>min</code> will never pick.</p><p>To get the actual path, start at <code>(0,0)</code> and keep stepping to whichever neighbour has the smaller dp value.</p>',
+    tries: [
+      { q: 'What goes wrong if "off the grid" returns 0 instead of Infinity?', a: 'On the bottom row, <code>min(right, down)</code> picks the off-grid 0 and "finishes" without reaching the target. <code>dp[2][0]</code> becomes 4 instead of 7, and the final answer is 5 instead of 7.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row.'
+  },
+  {
+    id: 'A4', fam: 'A', lc: 120, title: 'Triangle', diff: 'Medium', url: 'https://leetcode.com/problems/triangle/', viz: 'minimumTotal',
+    statement: 'Numbers are stacked in a triangle. From each number you can step to one of the two numbers right below it. Find the smallest sum from top to bottom.',
+    example: '      2\n     3 4\n    6 5 7\n   4 1 8 3     →  11   (2 + 3 + 5 + 1)',
+    card: ['Cheapest sum from <code>(i, j)</code> down to the bottom row', 'Down <code>(i+1, j)</code> or down-right <code>(i+1, j+1)</code>', '<code>t[i][j] + min(dp(i+1, j), dp(i+1, j+1))</code>', 'Bottom row → <code>t[i][j]</code>', '<code>dp(0, 0)</code>'],
+    diagram: 'triangle',
+    notes: '<p>In code, the triangle is stored left-aligned: row <code>i</code> has <code>i + 1</code> numbers. "Down" is the same column and "down-right" is the next column.</p><p>There is no "off the grid" case here. Every number always has two numbers below it, so the bottom row is the only base case.</p>',
+    tries: [
+      { q: 'In the one-row version we overwrite dp[j] from left to right. Why are we not destroying values we still need?', a: 'Cell <code>j</code> only reads <code>dp[j]</code> and <code>dp[j+1]</code>. When we overwrite <code>dp[j]</code>, the old <code>dp[j+1]</code> is still untouched, and nothing later needs the old <code>dp[j]</code>. In A5 this is no longer true.' }
+    ],
+    cx: 'Plain recursion O(2<sup>n</sup>). Memo and table O(n²). One row: O(n) memory.'
+  },
+  {
+    id: 'A5', fam: 'A', lc: 931, title: 'Minimum Falling Path Sum', diff: 'Medium', url: 'https://leetcode.com/problems/minimum-falling-path-sum/', viz: 'minFallingPathSum',
+    statement: 'Start on <b>any</b> cell of the first row of a square matrix. Each step goes down, down-left or down-right. Reach any cell in the last row with the smallest sum.',
+    example: '[[2,1,3],\n [6,5,4],\n [7,8,9]]  →  13   (1 → 5 → 7)',
+    card: ['Cheapest falling sum from <code>(i, j)</code> to the last row', 'Three cells below: <code>j-1</code>, <code>j</code>, <code>j+1</code>', '<code>a[i][j] + min(of those three)</code>', 'Column off the edge → <code>Infinity</code>. Last row → <code>a[i][j]</code>', 'The <b>smallest</b> value in row 0 (any start is allowed)'],
+    moves: 'fall',
+    notes: '<p>Two new things compared with A3: three choices instead of two, and many possible starting cells. The second one only changes the last line of the code, where we take the minimum over the whole first row.</p>',
+    tries: [
+      { q: 'Why can\'t we update a single array in place like in Triangle?', a: 'Cell <code>j</code> needs <code>below[j-1]</code>. If we already overwrote position <code>j-1</code> with this row\'s value, we read the wrong number. Triangle only looks right, so in-place is safe there. Here we look both ways, so we keep a second array.' }
+    ],
+    cx: 'O(n²) time, O(n) memory.'
+  },
+  {
+    id: 'A6', fam: 'A', lc: 174, title: 'Dungeon Game', diff: 'Hard', url: 'https://leetcode.com/problems/dungeon-game/', viz: 'calculateMinimumHP', isNew: true,
+    statement: 'A knight walks from the top-left room to the princess in the bottom-right room, moving right or down. Each room takes or gives health. His health must never drop below 1. What is the lowest starting health that works?',
+    example: '[[-2, -3,  3],\n [-5,-10,  1],\n [10, 30, -5]]  →  7',
+    card: ['Health needed <b>when entering</b> <code>(i, j)</code> to survive the rest', 'Right or down', '<code>max(1, min(dp(i, j+1), dp(i+1, j)) − d[i][j])</code>', 'Off the grid → <code>Infinity</code>. Princess room → <code>max(1, 1 − d)</code>', '<code>dp(0, 0)</code>'],
+    moves: 'rd',
+    diagram: 'dungeon',
+    notes: '<p>This is the one grid problem where the direction really matters. If you go forward from the start, one number per cell is not enough. You would need the current health <b>and</b> the lowest point so far, and neither one alone tells you which path is better (see the picture).</p><p>Going backward from the princess, one number is enough: "how much health do I need when I walk into this room?"</p><p>The <code>max(1, …)</code> is there because a big healing room can make the need 0 or negative, but you still have to be alive to walk in.</p>',
+    tries: [
+      { q: 'In the table version we set dp[m][n-1] = 1 and dp[m-1][n] = 1. Why?', a: 'Those are the two padding cells right below and right of the princess. Setting them to 1 means "after the last room you need to be alive". Then the princess room uses the same formula as every other room and needs no special case.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row.'
+  },
+
+  // ===================== B =====================
+  {
+    id: 'B1', fam: 'B', lc: 221, title: 'Maximal Square', diff: 'Medium', url: 'https://leetcode.com/problems/maximal-square/', viz: 'maximalSquare',
+    statement: 'A matrix holds the <b>strings</b> <code>"0"</code> and <code>"1"</code>. Return the area of the largest square that contains only 1s.',
+    example: '[["1","0","1","0","0"],\n ["1","0","1","1","1"],\n ["1","1","1","1","1"],\n ["1","0","0","1","0"]]  →  4',
+    card: ['Side of the biggest square whose bottom-right corner is <code>(i, j)</code>', 'Look up, left and diagonally up-left', '<code>"1"</code> → <code>1 + min(top, left, diag)</code>. <code>"0"</code> → <code>0</code>', 'Outside → <code>0</code>', '<code>(largest value anywhere)²</code>'],
+    moves: 'tld',
+    notes: '<p>The square can end anywhere, so we fill the whole table and remember the biggest value we saw.</p><p>In the table version the indices are shifted by one. Row 0 and column 0 become padding (always 0), so <code>dp[i][j]</code> describes <code>matrix[i-1][j-1]</code>.</p>',
+    tries: [
+      { q: 'What does the code return if you compare with the number 0 instead of the string "0"?', a: '<code>"0" === 0</code> is false, so every cell looks like a 1. The whole 4 × 5 matrix gives side 4 and area 16. Always check the input type. B2 uses real numbers.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row plus a variable for the diagonal.'
+  },
+  {
+    id: 'B2', fam: 'B', lc: 1277, title: 'Count Square Submatrices with All Ones', diff: 'Medium', url: 'https://leetcode.com/problems/count-square-submatrices-with-all-ones/', viz: 'countSquares',
+    statement: 'Count every square (any size) that contains only 1s. This time the matrix holds numbers.',
+    example: '[[0,1,1,1],\n [1,1,1,1],\n [0,1,1,1]]  →  15',
+    card: ['Same as B1', 'Same as B1', 'Same as B1', 'Same as B1', '<b>Sum</b> of every cell'],
+    diagram: 'squareCount',
+    notes: '<p>If the biggest square ending at a cell has side 3, then exactly 3 squares end there: the 1 × 1, the 2 × 2 and the 3 × 3. So the dp value is also the count of squares ending at that cell. Add them all up and you are done.</p>',
+    tries: [
+      { q: 'Same recurrence as B1, different answer line. Can you name the one line that changes?', a: '<code>best = Math.max(best, dp)</code> becomes <code>total += dp</code>. That is the entire difference.' }
+    ],
+    cx: 'O(m·n) time.'
+  },
+
+  // ===================== C =====================
+  {
+    id: 'C1', fam: 'C', lc: 1143, title: 'Longest Common Subsequence', diff: 'Medium', url: 'https://leetcode.com/problems/longest-common-subsequence/', viz: 'longestCommonSubsequence',
+    statement: 'Find the length of the longest sequence of letters that appears in both strings in the same order. The letters do not have to be next to each other.',
+    example: '"abcde", "ace"  →  3   ("ace")',
+    card: ['LCS of <code>a[i..]</code> and <code>b[j..]</code>', 'Letters match → use both. Otherwise skip one letter from either string', 'Match: <code>1 + dp(i+1, j+1)</code>. Else <code>max(dp(i+1, j), dp(i, j+1))</code>', 'Either string used up → <code>0</code>', '<code>dp(0, 0)</code>'],
+    notes: '<p>This is the parent of the whole family. Once this table makes sense, C2 to C5 are the same table with different rules.</p>',
+    tries: [
+      { q: 'When the letters match, why don\'t we also try skipping one of them?', a: 'Taking a matching pair is never worse. Any common subsequence that skips <code>a[i]</code> could swap in <code>a[i]</code> paired with <code>b[j]</code> and stay just as long. So <code>1 + dp(i+1, j+1)</code> is always at least as good.' }
+    ],
+    cx: 'O(n·m) time. O(m) memory with two rows.'
+  },
+  {
+    id: 'C2', fam: 'C', lc: 583, title: 'Delete Operation for Two Strings', diff: 'Medium', url: 'https://leetcode.com/problems/delete-operation-for-two-strings/', viz: 'deleteOp',
+    statement: 'You may delete one letter at a time from either string. What is the fewest number of deletions to make both strings equal?',
+    example: '"sea", "eat"  →  2   (delete "s", delete "t", both become "ea")',
+    card: ['Fewest deletions to make <code>a[i..]</code> and <code>b[j..]</code> equal', 'Match → keep both. Else delete <code>a[i]</code> or delete <code>b[j]</code>', 'Match: <code>dp(i+1, j+1)</code>. Else <code>1 + min(dp(i+1, j), dp(i, j+1))</code>', '<code>i === n</code> → <code>m − j</code>. <code>j === m</code> → <code>n − i</code>', '<code>dp(0, 0)</code>'],
+    notes: '<p>Shortcut: keep the LCS and delete everything else, which gives <code>n + m − 2·LCS</code>. The direct DP is still worth writing once, because it shows a base case that is <b>not</b> zero. When one word is used up, you must delete everything left in the other. Edit Distance needs exactly this idea.</p>',
+    tries: [],
+    cx: 'O(n·m).'
+  },
+  {
+    id: 'C3', fam: 'C', lc: 72, title: 'Edit Distance', diff: 'Medium', url: 'https://leetcode.com/problems/edit-distance/', viz: 'editDistance',
+    statement: 'Turn <code>word1</code> into <code>word2</code> using insert, delete and replace (one letter each). What is the fewest number of operations?',
+    example: '"horse", "ros"  →  3\n  horse → rorse  (replace h with r)\n  rorse → rose   (delete r)\n  rose  → ros    (delete e)',
+    card: ['Fewest operations to turn <code>a[i..]</code> into <code>b[j..]</code>', 'Match → free. Else insert, delete or replace', 'Match: <code>dp(i+1, j+1)</code>. Else <code>1 + min(insert, delete, replace)</code>', '<code>i === n</code> → insert the rest: <code>m − j</code>. <code>j === m</code> → delete the rest: <code>n − i</code>', '<code>dp(0, 0)</code>'],
+    diagram: 'editOps',
+    notes: '<p>Put C2 and C3 side by side. C3 has one more arrow: replace, which moves diagonally for a cost of 1. Without it you get C2 back. Spotting "same table, one more arrow" is the main skill this family teaches.</p>',
+    tries: [
+      { q: 'Try word1 = "intention", word2 = "execution" in the stepper. What do you expect?', a: '5. You can watch the diagonal of matches ("tion" at the end) carry the cost through for free.' }
+    ],
+    cx: 'O(n·m) time. O(m) memory with two rows.'
+  },
+  {
+    id: 'C4', fam: 'C', lc: 115, title: 'Distinct Subsequences', diff: 'Hard', url: 'https://leetcode.com/problems/distinct-subsequences/', viz: 'numDistinct',
+    statement: 'Count how many different ways you can delete letters from <code>s</code> so that what is left equals <code>t</code>.',
+    example: '"rabbbit", "rabbit"  →  3   (drop any one of the three b\'s)',
+    card: ['Ways <code>s[i..]</code> can form <code>t[j..]</code>', 'Always: skip <code>s[i]</code>. If letters match: also use it', '<code>dp(i+1, j) + (match ? dp(i+1, j+1) : 0)</code>', '<code>j === m</code> → <code>1</code> (check this first). <code>i === n</code> → <code>0</code>', '<code>dp(0, 0)</code>'],
+    notes: '<p>The order of the two base cases matters. If <code>t</code> is fully built, that is one valid way, even if <code>s</code> also ran out at the same moment.</p>',
+    tries: [
+      { q: 'Try s = "babgbag", t = "bag". How many?', a: '5.' }
+    ],
+    cx: 'O(n·m).'
+  },
+  {
+    id: 'C5', fam: 'C', lc: 44, title: 'Wildcard Matching', diff: 'Hard', url: 'https://leetcode.com/problems/wildcard-matching/', viz: 'isMatch',
+    statement: 'In the pattern, <code>?</code> matches any one letter and <code>*</code> matches any run of letters, including none. Does the pattern match the <b>whole</b> string?',
+    example: '("aa", "a")        →  false\n("aa", "*")        →  true\n("cb", "?a")       →  false\n("adceb", "*a*b")  →  true',
+    card: ['Does <code>s[i..]</code> match <code>p[j..]</code>?', '<code>*</code>: match nothing, or eat one letter and stay on the <code>*</code>. <code>?</code> or same letter: move both', 'Boolean OR of the choices', '<code>j === m</code> → <code>i === n</code>. <code>i === n</code> → rest of <code>p</code> must be all <code>*</code>', '<code>dp(0, 0)</code>'],
+    notes: '<p>The <code>*</code> rule is the interesting one. "Eat one letter and stay on the <code>*</code>" moves down a row in the same column, so a single <code>*</code> can swallow a long run of letters one step at a time. In the example you can see a column of T running down under the second <code>*</code>.</p><p>The memo needs <code>n + 1</code> rows, because <code>i</code> can be at the end of <code>s</code> while there is still pattern left.</p>',
+    tries: [],
+    cx: 'O(n·m).'
+  },
+
+  // ===================== D =====================
+  {
+    id: 'D1', fam: 'D', lc: 516, title: 'Longest Palindromic Subsequence', diff: 'Medium', url: 'https://leetcode.com/problems/longest-palindromic-subsequence/', viz: 'longestPalindromeSubseq',
+    statement: 'Find the length of the longest subsequence of <code>s</code> that reads the same forwards and backwards.',
+    example: '"bbbab"  →  4   ("bbbb")',
+    card: ['Longest palindromic subsequence inside <code>s[i..j]</code>', 'Ends match → keep both. Else drop the left end or the right end', 'Match: <code>2 + dp(i+1, j−1)</code>. Else <code>max(dp(i+1, j), dp(i, j−1))</code>', '<code>i > j</code> → <code>0</code>. <code>i === j</code> → <code>1</code>', '<code>dp(0, n−1)</code>'],
+    notes: '<p>Only the upper half of the table is used, because a range needs <code>i ≤ j</code>. A neat link: this answer equals <code>LCS(s, reverse(s))</code>.</p>',
+    tries: [],
+    cx: 'O(n²).'
+  },
+  {
+    id: 'D2', fam: 'D', lc: 647, title: 'Palindromic Substrings', diff: 'Medium', url: 'https://leetcode.com/problems/palindromic-substrings/', viz: 'countSubstrings',
+    statement: 'Count the substrings (no gaps) that are palindromes.',
+    example: '"abc"  →  3\n"aaa"  →  6',
+    card: ['Is <code>s[i..j]</code> a palindrome?', 'None. Just check the ends and the inside', '<code>s[i] === s[j] && (length ≤ 2 || pal(i+1, j−1))</code>', 'Empty or single letter → true', 'Count the true cells'],
+    notes: '<p>D1 is about subsequences (gaps allowed), D2 about substrings (no gaps). Without gaps there is nothing to choose, so there is no <code>max</code>. A range is a palindrome when its ends match and the inside is a palindrome.</p><p>In an interview, "expand around the centre" also works in O(n²) time with O(1) memory. The table is still useful: it answers LC 5 (longest palindromic substring) as well.</p>',
+    tries: [],
+    cx: 'O(n²).'
+  },
+  {
+    id: 'D3', fam: 'D', lc: 312, title: 'Burst Balloons', diff: 'Hard', url: 'https://leetcode.com/problems/burst-balloons/', viz: 'maxCoins',
+    statement: 'Bursting balloon <code>k</code> earns <code>left × nums[k] × right</code>, using its neighbours at that moment (missing neighbours count as 1). Burst them all and collect as many coins as possible.',
+    example: '[3,1,5,8]  →  167\n  burst 1:  3·1·5 = 15\n  burst 5:  3·5·8 = 120\n  burst 3:  1·3·8 = 24\n  burst 8:  1·8·1 = 8',
+    card: ['Most coins from bursting everything <b>strictly between</b> <code>l</code> and <code>r</code> (pad the array with a 1 on both ends)', 'Which balloon <code>k</code> goes <b>last</b>', '<code>max over k: a[l]·a[k]·a[r] + dp(l, k) + dp(k, r)</code>', 'Nothing between (<code>r − l < 2</code>) → <code>0</code>', '<code>dp(0, n+1)</code>'],
+    diagram: 'balloons',
+    notes: '<p>The trick is to think about which balloon is burst <b>last</b>, not first. If you pick the first one, its neighbours change and the two sides get glued together, so the sub-problems depend on each other. If <code>k</code> goes last, it stands between the two sides the whole time, so they never touch. And when <code>k</code> finally bursts, its neighbours are exactly the walls <code>l</code> and <code>r</code>.</p>',
+    tries: [],
+    cx: 'O(n³) time (n² ranges × n choices of k). O(n²) memory.'
+  },
+
+  // ===================== E =====================
+  {
+    id: 'E1', fam: 'E', lc: 416, title: 'Partition Equal Subset Sum', diff: 'Medium', url: 'https://leetcode.com/problems/partition-equal-subset-sum/', viz: 'canPartition',
+    statement: 'Can the array be split into two groups with the same sum?',
+    example: '[1,5,11,5]  →  true   ([1,5,5] and [11])\n[1,2,3,5]   →  false',
+    card: ['Can items <code>i..</code> make exactly <code>t</code>?', 'Skip <code>(i+1, t)</code> or take <code>(i+1, t − nums[i])</code>', '<code>skip || take</code>', '<code>t === 0</code> → true. Out of items or <code>t &lt; 0</code> → false', '<code>dp(0, total / 2)</code>'],
+    diagram: 'directionBug',
+    notes: '<p>Say it differently: the total is 22, so we need some items that add up to 11. If the total is odd, stop right away.</p><p>In the one-row version the inner loop runs <b>downward</b>. The picture shows why: going upward lets the same item be used again in the same round.</p>',
+    tries: [
+      { q: 'Run the 1D code with an upward loop on [1, 2, 5]. What do you get?', a: '<code>true</code>, which is wrong. With <code>x = 1</code>, the upward loop sets dp[1], then dp[2] from dp[1], then dp[3], then dp[4]: that is 1 + 1 + 1 + 1, using the single 1 four times. Downward = each item once. Upward = unlimited.' }
+    ],
+    cx: 'O(n · target) time. O(target) memory.'
+  },
+  {
+    id: 'E2', fam: 'E', lc: 494, title: 'Target Sum', diff: 'Medium', url: 'https://leetcode.com/problems/target-sum/', viz: 'findTargetSumWays',
+    statement: 'Put a <code>+</code> or <code>−</code> in front of every number. Count the ways to reach <code>target</code>.',
+    example: '[1,1,1,1,1], target 3  →  5',
+    card: ['(after the rewrite) Ways items <code>i..</code> can make sum <code>s</code>', 'Leave out or put in', '<code>skip + take</code>', 'End: <code>s === 0</code> → 1, else 0', '<code>dp(0, P)</code> with <code>P = (total + target) / 2</code>'],
+    notes: '<p>The memo version tracks the running sum directly. Since the sum can be negative, the memo index is shifted by <code>total</code>.</p><p>The smarter way is a little algebra. Let <code>P</code> be the sum of the plus-numbers and <code>N</code> the sum of the minus-numbers:</p><pre class="mini">P − N = target\nP + N = total\n─────────────\nP = (target + total) / 2</pre><p>Now it is "count subsets that sum to P", which is E1 with <code>+</code> instead of <code>||</code>. With five 1s, the table turns into Pascal\'s triangle.</p>',
+    tries: [
+      { q: 'nums = [0,0,1], target = 1. How many ways?', a: '4. Each 0 can be +0 or −0, and those count as different ways. The downward loop handles this: for x = 0 it doubles dp[s].' }
+    ],
+    cx: 'Direct: O(n · total). Subset version: O(n · P) time, O(P) memory.'
+  },
+  {
+    id: 'E3', fam: 'E', lc: 518, title: 'Coin Change II', diff: 'Medium', url: 'https://leetcode.com/problems/coin-change-ii/', viz: 'change',
+    statement: 'You have an unlimited supply of each coin. Count the combinations that make <code>amount</code>.',
+    example: 'amount 5, coins [1,2,5]  →  4\n  5 | 2+2+1 | 2+1+1+1 | 1+1+1+1+1',
+    card: ['Ways to make <code>a</code> using coins <code>i..</code>', 'Never use this coin <code>(i+1, a)</code>, or use it once more and <b>stay</b> <code>(i, a − c)</code>', '<code>skip + use</code>', '<code>a === 0</code> → 1. Out of coins or <code>a &lt; 0</code> → 0', '<code>dp(0, amount)</code>'],
+    notes: '<p>Compare with E1. The "take" arrow now stays on the same row, because a coin can be used again. In the 1D version, that is why the inner loop goes <b>upward</b>.</p>',
+    tries: [
+      { q: 'Swap the loops in the 1D version (amount outside, coins inside). What do you count now?', a: 'Ordered sequences. 1+2+2, 2+1+2 and 2+2+1 all count separately, so amount 5 gives 9 instead of 4. That is LC 377, Combination Sum IV.' }
+    ],
+    cx: 'O(n · amount) time. O(amount) memory.'
+  },
+  {
+    id: 'E4', fam: 'E', lc: 322, title: 'Coin Change', diff: 'Medium', url: 'https://leetcode.com/problems/coin-change/', viz: 'coinChange',
+    statement: 'Unlimited coins again. What is the fewest number of coins that make <code>amount</code>? Return <code>-1</code> if it cannot be done.',
+    example: 'coins [1,2,5], amount 11  →  3   (5 + 5 + 1)\ncoins [2], amount 3       →  -1',
+    card: ['Fewest coins to make <code>a</code> with coins <code>i..</code>', 'Skip or use (and stay)', '<code>min(dp(i+1, a), 1 + dp(i, a − c))</code>', '<code>a === 0</code> → 0. Out of coins or <code>a &lt; 0</code> → Infinity', '<code>dp(0, amount)</code>, or −1 if Infinity'],
+    notes: '<p>Same skeleton as E3: <code>+</code> became <code>min</code>, the "done" value went from 1 to 0, the "impossible" value went from 0 to Infinity, and the take branch adds 1 coin.</p><p>Prefer the table version here. With amount up to 10,000 and a coin of 1, the recursion can go 10,000 calls deep.</p>',
+    tries: [],
+    cx: 'O(n · amount).'
+  },
+
+  // ===================== F =====================
+  {
+    id: 'F1', fam: 'F', lc: 309, title: 'Best Time to Buy and Sell Stock with Cooldown', diff: 'Medium', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/', viz: 'stockCooldown',
+    statement: 'Buy and sell as often as you like, holding at most one share. After you sell, you must wait one day before buying again.',
+    example: '[1,2,3,0,2]  →  3   (buy 1, sell 2, rest, buy 0, sell 2)',
+    card: ['Best profit from day <code>i</code> on, given whether you hold a share', 'Holding: keep it or sell (then skip a day). Free: wait or buy', 'Holding: <code>max(dp(i+1, 1), price + dp(i+2, 0))</code>. Free: <code>max(dp(i+1, 0), −price + dp(i+1, 1))</code>', 'Past the last day → 0', '<code>dp(0, free)</code>'],
+    diagram: 'machineCooldown',
+    notes: '<p>The cooldown is just the <code>i + 2</code> after a sale. The table has two extra rows at the bottom so <code>i + 2</code> never goes out of range.</p>',
+    tries: [],
+    cx: 'O(n) time. O(1) memory if you keep only the last few rows.'
+  },
+  {
+    id: 'F2', fam: 'F', lc: 714, title: 'Best Time to Buy and Sell Stock with Transaction Fee', diff: 'Medium', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/', viz: 'stockFee',
+    statement: 'Buy and sell as often as you like, but every sale costs a fixed fee.',
+    example: '[1,3,2,8,4,9], fee 2  →  8   ((8 − 1 − 2) + (9 − 4 − 2))',
+    card: ['Same as F1', 'Same as F1', 'Holding: <code>max(dp(i+1, 1), price − fee + dp(i+1, 0))</code>. Free: same as F1', 'Past the last day → 0', '<code>dp(0, free)</code>'],
+    notes: '<p>Two small changes from F1: a sale earns <code>price − fee</code>, and there is no cooldown, so it is <code>i + 1</code> again. Because each day only looks at the next day, two variables are enough.</p>',
+    tries: [],
+    cx: 'O(n) time, O(1) memory.'
+  }
+];
+
+const QUIZ = [
+  { q: 'A grid of costs. Start anywhere in the first column, end anywhere in the last column. Each step goes right, up-right or down-right. Minimise the cost.', a: 0, why: 'Grid paths. It is A5 turned on its side. dp(i, j) = cheapest cost from (i, j) to the last column, and the answer is the minimum over column 0.' },
+  { q: 'Find the shortest string that contains both s1 and s2 as subsequences.', a: 2, why: 'Two strings (LC 1092). Its length is n + m − LCS, and you build it by walking back through the LCS table.' },
+  { q: 'You have binary strings. Pick the largest group that uses at most m zeros and n ones in total.', a: 4, why: 'Knapsack with two budgets (LC 474). dp over (zeros left, ones left), with downward loops because each string is used once.' },
+  { q: 'Cut a string into pieces so that every piece is a palindrome. Use as few cuts as possible.', a: 3, why: 'Intervals (LC 132). Build the palindrome table from D2, then a 1D pass: cuts(i) = min over j with pal(i, j) of 1 + cuts(j + 1).' },
+  { q: 'Stock prices, but you may complete at most k transactions.', a: 5, why: 'Index + state with a third number (LC 188): dp(day, holding, transactions left).' },
+  { q: 'Length of the longest run that appears, unbroken, in two arrays.', a: 2, why: 'Two strings (LC 718). dp(i, j) = length of the common run starting at i and j. No skipping, because it must be unbroken. Take the max over all cells, like B1.' },
+  { q: 'Can s3 be formed by interleaving the letters of s1 and s2 (keeping each one\'s order)?', a: 2, why: 'Two strings (LC 97). dp(i, j) = can s1[i..] and s2[j..] form s3[i+j..]? Take from s1 or from s2, combine with OR.' },
+  { q: 'Merge neighbouring piles of stones. Each merge costs the total weight of the two piles. Minimise the total cost.', a: 3, why: 'Intervals. dp(l, r) = cheapest way to merge that range. Try every split point, like D3.' },
+  { q: 'Count right/down paths in a grid whose sum of cells is divisible by k.', a: 0, why: 'Grid paths with an extra number (LC 2435): dp(i, j, remainder). When a rule depends on the path so far, add that to the state.' },
+  { q: 'Two robots start at the top corners of a grid and move down one row at a time, collecting cherries.', a: 0, why: 'Grid paths in 3D (LC 1463). Both robots are always on the same row, so the state is dp(row, col1, col2).' }
+];
+const QUIZ_OPTIONS = ['Grid paths', 'Squares', 'Two strings', 'Intervals', 'Knapsack', 'Index + state'];
+
+const PLAN = [
+  ['1', 'Start here, A1, A2', 'LC 1289 Minimum Falling Path Sum II'],
+  ['2', 'A3, A4', 'LC 2304 Minimum Path Cost in a Grid'],
+  ['3', 'A5, A6', 'LC 741 Cherry Pickup (hard, a first look at 3D)'],
+  ['4', 'B1, B2', 'LC 85 Maximal Rectangle'],
+  ['5', 'C1, C2', 'LC 1092 Shortest Common Supersequence, LC 718'],
+  ['6', 'C3', 'LC 712 Minimum ASCII Delete Sum'],
+  ['7', 'C4, C5', 'LC 10 Regular Expression Matching, LC 97 Interleaving String'],
+  ['8', 'Revision: A3, B1 and C3 from a blank file', 'Quiz questions 1 to 5'],
+  ['9', 'D1, D2', 'LC 5 Longest Palindromic Substring, LC 132'],
+  ['10', 'D3', 'LC 1039 Minimum Score Triangulation, LC 1547 Minimum Cost to Cut a Stick'],
+  ['11', 'E1, E2', 'LC 474 Ones and Zeroes, LC 1049 Last Stone Weight II'],
+  ['12', 'E3, E4', 'LC 377 Combination Sum IV (compare it with E3)'],
+  ['13', 'F1, F2', 'LC 123 and LC 188 (add a transaction count)'],
+  ['14', 'Final: the whole quiz, then D3 and C5 from a blank file', '']
+];
+
+// Step-by-step builders for every DP table on the page.
+// Each builder returns { rows, cols, cells, steps, answer, result, resultNote }.
+//   cells[i][j] = { v, kind: 'pad' | 'base' | 'block' | 'void' | '', tag }
+//   steps[k]    = { i, j, v, deps: [[i, j], ...], note }
+const VIZ = (() => {
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, Number.isFinite(x) ? x : lo));
+  const nums = (n) => Array.from({ length: n }, (_, i) => String(i));
+  const blank = (R, C) => Array.from({ length: R }, () => Array.from({ length: C }, () => ({ kind: '' })));
+  const table = (R, C, v) => Array.from({ length: R }, () => Array(C).fill(v));
+  const json = (s, fallback) => { try { return JSON.parse(s); } catch (e) { return fallback; } };
+  const f = (v) => (v === Infinity ? '∞' : v === -Infinity ? '−∞' : v === true ? 'T' : v === false ? 'F' : String(v));
+  const B = {};
+
+  // ---------- Part A: grids ----------
+  B.uniquePaths = {
+    inputs: [{ k: 'm', label: 'rows (m)', v: '3' }, { k: 'n', label: 'cols (n)', v: '3' }],
+    build(p) {
+      const m = clamp(+p.m, 1, 7), n = clamp(+p.n, 1, 7);
+      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
+      for (let i = 0; i <= m; i++) cells[i][n] = { v: 0, kind: 'pad' };
+      for (let j = 0; j <= n; j++) cells[m][j] = { v: 0, kind: 'pad' };
+      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
+        if (i === m - 1 && j === n - 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'This is the target. From here there is exactly 1 way: stay put.' }); continue; }
+        dp[i][j] = dp[i + 1][j] + dp[i][j + 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = below (${dp[i + 1][j]}) + right (${dp[i][j + 1]}) = ${dp[i][j]}` });
+      }
+      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} different paths from the top-left corner.` };
+    }
+  };
+
+  B.uniquePathsWithObstacles = {
+    inputs: [{ k: 'g', label: 'grid (1 = rock)', v: '[[0,0,0],[0,1,0],[0,0,0]]' }],
+    build(p) {
+      const g = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)); const m = g.length, n = g[0].length;
+      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
+      for (let i = 0; i <= m; i++) cells[i][n] = { v: 0, kind: 'pad' };
+      for (let j = 0; j <= n; j++) cells[m][j] = { v: 0, kind: 'pad' };
+      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) if (g[i][j] === 1) cells[i][j].kind = 'block';
+      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
+        if (g[i][j] === 1) { dp[i][j] = 0; steps.push({ i, j, v: 0, deps: [], note: `(${i},${j}) is a rock. Nothing can pass through it, so 0 ways.` }); continue; }
+        if (i === m - 1 && j === n - 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Target cell: 1 way.' }); continue; }
+        dp[i][j] = dp[i + 1][j] + dp[i][j + 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = below (${dp[i + 1][j]}) + right (${dp[i][j + 1]}) = ${dp[i][j]}` });
+      }
+      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} paths avoid every rock.` };
+    }
+  };
+
+  B.minPathSum = {
+    inputs: [{ k: 'g', label: 'grid', v: '[[1,3,1],[1,5,1],[4,2,1]]' }],
+    build(p) {
+      const g = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)); const m = g.length, n = g[0].length;
+      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, Infinity), steps = [];
+      for (let i = 0; i <= m; i++) cells[i][n] = { v: Infinity, kind: 'pad' };
+      for (let j = 0; j <= n; j++) cells[m][j] = { v: Infinity, kind: 'pad' };
+      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) cells[i][j].tag = g[i][j];
+      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
+        if (i === m - 1 && j === n - 1) { dp[i][j] = g[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Target: you still pay for this cell, so dp = ${g[i][j]}.` }); continue; }
+        dp[i][j] = g[i][j] + Math.min(dp[i + 1][j], dp[i][j + 1]);
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = cell ${g[i][j]} + min(below ${f(dp[i + 1][j])}, right ${f(dp[i][j + 1])}) = ${dp[i][j]}` });
+      }
+      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Cheapest path costs ${dp[0][0]}. Small grey numbers are the grid values.` };
+    }
+  };
+
+  B.minimumTotal = {
+    inputs: [{ k: 't', label: 'triangle', v: '[[2],[3,4],[6,5,7],[4,1,8,3]]' }],
+    build(p) {
+      const t = json(p.t, [[1]]).slice(0, 7); const n = t.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { if (j > i) cells[i][j].kind = 'void'; else cells[i][j].tag = t[i][j]; }
+      for (let i = n - 1; i >= 0; i--) for (let j = 0; j <= i; j++) {
+        if (i === n - 1) { dp[i][j] = t[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Bottom row: nothing below, so dp = ${t[i][j]}.` }); continue; }
+        dp[i][j] = t[i][j] + Math.min(dp[i + 1][j], dp[i + 1][j + 1]);
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i + 1, j + 1]], note: `dp[${i}][${j}] = ${t[i][j]} + min(down ${dp[i + 1][j]}, down-right ${dp[i + 1][j + 1]}) = ${dp[i][j]}` });
+      }
+      return { rows: nums(n), cols: nums(n), cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Minimum top-to-bottom sum is ${dp[0][0]}.` };
+    }
+  };
+
+  B.minFallingPathSum = {
+    inputs: [{ k: 'g', label: 'matrix', v: '[[2,1,3],[6,5,4],[7,8,9]]' }],
+    build(p) {
+      const a = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)); const n = a.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) cells[i][j].tag = a[i][j];
+      for (let i = n - 1; i >= 0; i--) for (let j = 0; j < n; j++) {
+        if (i === n - 1) { dp[i][j] = a[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Last row: dp = ${a[i][j]}.` }); continue; }
+        const deps = [[i + 1, j - 1], [i + 1, j], [i + 1, j + 1]].filter(([, c]) => c >= 0 && c < n);
+        const best = Math.min(...deps.map(([r, c]) => dp[r][c]));
+        dp[i][j] = a[i][j] + best;
+        steps.push({ i, j, v: dp[i][j], deps, note: `dp[${i}][${j}] = ${a[i][j]} + min(${deps.map(([r, c]) => dp[r][c]).join(', ')}) = ${dp[i][j]}` });
+      }
+      let bj = 0; for (let j = 1; j < n; j++) if (dp[0][j] < dp[0][bj]) bj = j;
+      return { rows: nums(n), cols: nums(n), cells, steps, answer: [0, bj], result: dp[0][bj], resultNote: `You may start in any column, so take the smallest value in row 0: ${dp[0][bj]}.` };
+    }
+  };
+
+  B.calculateMinimumHP = {
+    inputs: [{ k: 'g', label: 'dungeon', v: '[[-2,-3,3],[-5,-10,1],[10,30,-5]]' }],
+    build(p) {
+      const d = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)); const m = d.length, n = d[0].length;
+      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, Infinity), steps = [];
+      for (let i = 0; i <= m; i++) cells[i][n] = { v: Infinity, kind: 'pad' };
+      for (let j = 0; j <= n; j++) cells[m][j] = { v: Infinity, kind: 'pad' };
+      dp[m][n - 1] = 1; dp[m - 1][n] = 1; cells[m][n - 1] = { v: 1, kind: 'base' }; cells[m - 1][n] = { v: 1, kind: 'base' };
+      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) cells[i][j].tag = d[i][j];
+      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
+        const nxt = Math.min(dp[i + 1][j], dp[i][j + 1]); const need = nxt - d[i][j];
+        dp[i][j] = Math.max(1, need);
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `Need ${nxt} after this room. Room gives ${d[i][j]}. So ${nxt} − (${d[i][j]}) = ${need}` + (need < 1 ? `, but you must be alive, so 1.` : '.') });
+      }
+      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `The knight must start with ${dp[0][0]} health.` };
+    }
+  };
+
+  // ---------- Part B: squares ----------
+  function squares(p, asString) {
+    const raw = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 8));
+    const m = raw.length, n = raw[0].length;
+    const isOne = (x) => (asString ? x === '1' : x === 1);
+    const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
+    for (let i = 0; i <= m; i++) cells[i][0] = { v: 0, kind: 'pad' };
+    for (let j = 0; j <= n; j++) cells[0][j] = { v: 0, kind: 'pad' };
+    let best = 0, bi = 0, bj = 0, sum = 0;
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+      cells[i][j].tag = raw[i - 1][j - 1];
+      if (!isOne(raw[i - 1][j - 1])) { steps.push({ i, j, v: 0, deps: [], note: `matrix[${i - 1}][${j - 1}] is 0, so no square can end here.` }); continue; }
+      const t = dp[i - 1][j], l = dp[i][j - 1], g = dp[i - 1][j - 1];
+      dp[i][j] = 1 + Math.min(t, l, g); sum += dp[i][j];
+      if (dp[i][j] > best) { best = dp[i][j]; bi = i; bj = j; }
+      steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1], [i - 1, j - 1]], note: `1 + min(top ${t}, left ${l}, diagonal ${g}) = ${dp[i][j]}` + (asString ? `   (best so far: ${best})` : `   (running total: ${sum})`) });
+    }
+    return { m, n, cells, steps, best, bi, bj, sum };
+  }
+  B.maximalSquare = {
+    inputs: [{ k: 'g', label: 'matrix (strings)', v: '[["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]' }],
+    build(p) {
+      const r = squares(p, true);
+      return { rows: ['pad', ...nums(r.m)], cols: ['pad', ...nums(r.n)], cells: r.cells, steps: r.steps, answer: [r.bi, r.bj], result: r.best * r.best, resultNote: `Largest side is ${r.best}, so the area is ${r.best * r.best}.`, square: r.best ? [r.bi, r.bj, r.best] : null };
+    }
+  };
+  B.countSquares = {
+    inputs: [{ k: 'g', label: 'matrix', v: '[[0,1,1,1],[1,1,1,1],[0,1,1,1]]' }],
+    build(p) {
+      const r = squares(p, false);
+      return { rows: ['pad', ...nums(r.m)], cols: ['pad', ...nums(r.n)], cells: r.cells, steps: r.steps, answer: null, result: r.sum, resultNote: `Add up every cell: ${r.sum} squares in total.` };
+    }
+  };
+
+  // ---------- Part C: two strings ----------
+  function strTable(a, b, baseFn) {
+    const n = a.length, m = b.length, cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, 0);
+    for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) if (i === n || j === m) { const v = baseFn(i, j); dp[i][j] = v; cells[i][j] = { v, kind: 'base' }; }
+    return { n, m, cells, dp, rows: [...a, '∅'], cols: [...b, '∅'] };
+  }
+  const word = (s, d) => String(s ?? d).slice(0, 9);
+
+  B.longestCommonSubsequence = {
+    inputs: [{ k: 'a', label: 'text1', v: 'abcde' }, { k: 'b', label: 'text2', v: 'ace' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, () => 0), { dp } = T, steps = [];
+      for (let i = T.n - 1; i >= 0; i--) for (let j = T.m - 1; j >= 0; j--) {
+        if (a[i] === b[j]) { dp[i][j] = 1 + dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': match! 1 + diagonal ${dp[i + 1][j + 1]} = ${dp[i][j]}` }); }
+        else { dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': max(skip '${a[i]}' → ${dp[i + 1][j]}, skip '${b[j]}' → ${dp[i][j + 1]}) = ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `The LCS has length ${dp[0][0]}. Grey row and column: one string is empty, so 0.` };
+    }
+  };
+
+  B.deleteOp = {
+    inputs: [{ k: 'a', label: 'word1', v: 'sea' }, { k: 'b', label: 'word2', v: 'eat' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
+      const T = strTable(a, b, (i, j) => (i === n ? m - j : n - i)), { dp } = T, steps = [];
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': keep both, cost stays ${dp[i][j]}` }); }
+        else { dp[i][j] = 1 + Math.min(dp[i + 1][j], dp[i][j + 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': 1 + min(delete '${a[i]}' → ${dp[i + 1][j]}, delete '${b[j]}' → ${dp[i][j + 1]}) = ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} deletions. Grey edge: when one word is used up, delete what is left of the other.` };
+    }
+  };
+
+  B.editDistance = {
+    inputs: [{ k: 'a', label: 'word1', v: 'horse' }, { k: 'b', label: 'word2', v: 'ros' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
+      const T = strTable(a, b, (i, j) => (i === n ? m - j : n - i)), { dp } = T, steps = [];
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': free, copy the diagonal ${dp[i][j]}` }); continue; }
+        const ins = dp[i][j + 1], del = dp[i + 1][j], rep = dp[i + 1][j + 1];
+        dp[i][j] = 1 + Math.min(ins, del, rep);
+        steps.push({ i, j, v: dp[i][j], deps: [[i, j + 1], [i + 1, j], [i + 1, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': 1 + min(insert ${ins}, delete ${del}, replace ${rep}) = ${dp[i][j]}` });
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} operations turn "${a}" into "${b}".` };
+    }
+  };
+
+  B.numDistinct = {
+    inputs: [{ k: 'a', label: 's', v: 'rabbbit' }, { k: 'b', label: 't', v: 'rabbit' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
+      const T = strTable(a, b, (i, j) => (j === m ? 1 : 0)), { dp } = T, steps = [];
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j] + dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': skip it (${dp[i + 1][j]}) + use it (${dp[i + 1][j + 1]}) = ${dp[i][j]}` }); }
+        else { dp[i][j] = dp[i + 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j]], note: `'${a[i]}' ≠ '${b[j]}': can only skip it, ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} ways. Last column is 1: an empty t can always be made one way.` };
+    }
+  };
+
+  B.isMatch = {
+    inputs: [{ k: 'a', label: 's', v: 'adceb' }, { k: 'b', label: 'p', v: '*a*b' }],
+    build(p) {
+      const s = word(p.a, ''), pt = word(p.b, ''), n = s.length, m = pt.length;
+      const cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, false), steps = [];
+      dp[n][m] = true; cells[n][m] = { v: true, kind: 'base' };
+      for (let i = 0; i < n; i++) cells[i][m] = { v: false, kind: 'base' };
+      for (let j = m - 1; j >= 0; j--) { dp[n][j] = pt[j] === '*' && dp[n][j + 1]; cells[n][j] = { v: dp[n][j], kind: 'base' }; }
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+        if (pt[j] === '*') { dp[i][j] = dp[i][j + 1] || dp[i + 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i, j + 1], [i + 1, j]], note: `'*': match nothing (${f(dp[i][j + 1])}) or eat '${s[i]}' (${f(dp[i + 1][j])}) → ${f(dp[i][j])}` }); }
+        else if (pt[j] === '?' || pt[j] === s[i]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${pt[j]}' matches '${s[i]}': copy diagonal → ${f(dp[i][j])}` }); }
+        else { dp[i][j] = false; steps.push({ i, j, v: false, deps: [], note: `'${pt[j]}' cannot match '${s[i]}' → F` }); }
+      }
+      return { rows: [...s, '∅'], cols: [...pt, '∅'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: dp[0][0] ? 'The pattern matches the whole string.' : 'No match.' };
+    }
+  };
+
+  // ---------- Part D: intervals ----------
+  B.longestPalindromeSubseq = {
+    inputs: [{ k: 's', label: 's', v: 'bbbab' }],
+    build(p) {
+      const s = word(p.s, 'a'), n = s.length, cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < i; j++) cells[i][j].kind = 'void';
+      for (let i = n - 1; i >= 0; i--) {
+        dp[i][i] = 1; steps.push({ i, j: i, v: 1, deps: [], note: `A single letter '${s[i]}' is a palindrome of length 1.` });
+        for (let j = i + 1; j < n; j++) {
+          if (s[i] === s[j]) { dp[i][j] = 2 + (i + 1 <= j - 1 ? dp[i + 1][j - 1] : 0); steps.push({ i, j, v: dp[i][j], deps: i + 1 <= j - 1 ? [[i + 1, j - 1]] : [], note: `Ends '${s[i]}' and '${s[j]}' match: 2 + inside ${dp[i][j] - 2} = ${dp[i][j]}` }); }
+          else { dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j - 1]], note: `Ends differ: max(drop left ${dp[i + 1][j]}, drop right ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
+        }
+      }
+      return { rows: [...s].map((c, i) => i + ' ' + c), cols: [...s].map((c, i) => i + ' ' + c), cells, steps, answer: [0, n - 1], result: dp[0][n - 1], resultNote: `Longest palindromic subsequence: ${dp[0][n - 1]}.` };
+    }
+  };
+
+  B.countSubstrings = {
+    inputs: [{ k: 's', label: 's', v: 'abba' }],
+    build(p) {
+      const s = word(p.s, 'a'), n = s.length, cells = blank(n, n), dp = table(n, n, false), steps = []; let c = 0;
+      for (let i = 0; i < n; i++) for (let j = 0; j < i; j++) cells[i][j].kind = 'void';
+      for (let i = n - 1; i >= 0; i--) for (let j = i; j < n; j++) {
+        const inner = j - i < 2 ? true : dp[i + 1][j - 1];
+        dp[i][j] = s[i] === s[j] && inner; if (dp[i][j]) c++;
+        const sub = s.slice(i, j + 1);
+        steps.push({ i, j, v: dp[i][j], deps: j - i >= 2 ? [[i + 1, j - 1]] : [], note: `"${sub}": ` + (s[i] !== s[j] ? `ends differ → F` : j - i < 2 ? `short and ends match → T` : `ends match, inside is ${f(inner)} → ${f(dp[i][j])}`) + `   (count: ${c})` });
+      }
+      return { rows: [...s].map((ch, i) => i + ' ' + ch), cols: [...s].map((ch, i) => i + ' ' + ch), cells, steps, answer: null, result: c, resultNote: `${c} palindromic substrings (count the T cells).` };
+    }
+  };
+
+  B.maxCoins = {
+    inputs: [{ k: 'a', label: 'nums', v: '[3,1,5,8]' }],
+    build(p) {
+      const nums0 = json(p.a, [1]).slice(0, 6), a = [1, ...nums0, 1], n = a.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) cells[i][j].kind = 'void';
+      for (let i = 0; i + 1 < n; i++) cells[i][i + 1] = { v: 0, kind: 'base' };
+      for (let len = 2; len < n; len++) for (let l = 0; l + len < n; l++) {
+        const r = l + len; let best = -1, bk = -1;
+        for (let k = l + 1; k < r; k++) { const v = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r]; if (v > best) { best = v; bk = k; } }
+        dp[l][r] = best;
+        steps.push({ i: l, j: r, v: best, deps: [[l, bk], [bk, r]], note: `Between walls ${a[l]} and ${a[r]}: best last balloon is ${a[bk]} → ${a[l]}·${a[bk]}·${a[r]} + ${dp[l][bk]} + ${dp[bk][r]} = ${best}` });
+      }
+      return { rows: a.map((v, i) => i + ':' + v), cols: a.map((v, i) => i + ':' + v), cells, steps, answer: [0, n - 1], result: dp[0][n - 1], resultNote: `Maximum coins: ${dp[0][n - 1]}. Row and column labels are index:value of the padded array.` };
+    }
+  };
+
+  // ---------- Part E: knapsack ----------
+  B.canPartition = {
+    inputs: [{ k: 'a', label: 'nums', v: '[1,5,11,5]' }],
+    build(p) {
+      const xs = json(p.a, [1, 1]).slice(0, 6), total = xs.reduce((s, x) => s + x, 0);
+      if (total % 2 || total / 2 > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: false, resultNote: total % 2 ? `Total is ${total}, which is odd. Answer: false, no table needed.` : 'Keep the total at 60 or less so the table fits.' };
+      const T = total / 2, n = xs.length, cells = blank(n + 1, T + 1), dp = table(n + 1, T + 1, false), steps = [];
+      for (let t = 0; t <= T; t++) { dp[n][t] = t === 0; cells[n][t] = { v: dp[n][t], kind: 'base' }; }
+      for (let i = n - 1; i >= 0; i--) for (let t = 0; t <= T; t++) {
+        const skip = dp[i + 1][t], take = t >= xs[i] ? dp[i + 1][t - xs[i]] : false;
+        dp[i][t] = skip || take;
+        steps.push({ i, j: t, v: dp[i][t], deps: t >= xs[i] ? [[i + 1, t], [i + 1, t - xs[i]]] : [[i + 1, t]], note: `sum ${t} with item ${xs[i]}: skip → ${f(skip)}` + (t >= xs[i] ? `, take → need ${t - xs[i]} from the rest → ${f(take)}` : `, too big to take`) });
+      }
+      return { rows: [...xs.map((x, i) => 'i' + i + '=' + x), '∅'], cols: nums(T + 1), cells, steps, answer: [0, T], result: dp[0][T], resultNote: `Target is ${total} / 2 = ${T}. Reachable: ${dp[0][T]}.` };
+    }
+  };
+
+  B.findTargetSumWays = {
+    inputs: [{ k: 'a', label: 'nums', v: '[1,1,1,1,1]' }, { k: 't', label: 'target', v: '3' }],
+    build(p) {
+      const xs = json(p.a, [1]).slice(0, 7), tg = +p.t || 0, total = xs.reduce((s, x) => s + x, 0);
+      if (Math.abs(tg) > total || (total + tg) % 2) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: 0, resultNote: 'total + target must be even and |target| ≤ total. Answer: 0.' };
+      const P = (total + tg) / 2;
+      if (P > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: null, resultNote: 'Keep (total + target) / 2 at 30 or less so the table fits.' };
+      const n = xs.length, cells = blank(n + 1, P + 1), dp = table(n + 1, P + 1, 0), steps = [];
+      for (let s = 0; s <= P; s++) { dp[n][s] = s === 0 ? 1 : 0; cells[n][s] = { v: dp[n][s], kind: 'base' }; }
+      for (let i = n - 1; i >= 0; i--) for (let s = 0; s <= P; s++) {
+        const skip = dp[i + 1][s], take = s >= xs[i] ? dp[i + 1][s - xs[i]] : 0;
+        dp[i][s] = skip + take;
+        steps.push({ i, j: s, v: dp[i][s], deps: s >= xs[i] ? [[i + 1, s], [i + 1, s - xs[i]]] : [[i + 1, s]], note: `ways to make ${s}: leave ${xs[i]} out (${skip}) + put it in (${take}) = ${dp[i][s]}` });
+      }
+      return { rows: [...xs.map((x, i) => 'i' + i + '=' + x), '∅'], cols: nums(P + 1), cells, steps, answer: [0, P], result: dp[0][P], resultNote: `P = (${total} + ${tg}) / 2 = ${P}. There are ${dp[0][P]} ways.` };
+    }
+  };
+
+  B.change = {
+    inputs: [{ k: 'c', label: 'coins', v: '[1,2,5]' }, { k: 'a', label: 'amount', v: '5' }],
+    build(p) {
+      const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
+      const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, 0), steps = [];
+      for (let a = 0; a <= A; a++) { dp[n][a] = a === 0 ? 1 : 0; cells[n][a] = { v: dp[n][a], kind: 'base' }; }
+      for (let i = n - 1; i >= 0; i--) for (let a = 0; a <= A; a++) {
+        const skip = dp[i + 1][a], use = a >= cs[i] ? dp[i][a - cs[i]] : 0;
+        dp[i][a] = skip + use;
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= cs[i] ? [[i + 1, a], [i, a - cs[i]]] : [[i + 1, a]], note: `amount ${a}, coin ${cs[i]}: never use it (${skip}) + use it and stay on this row (${use}) = ${dp[i][a]}` });
+      }
+      return { rows: [...cs.map(c => 'coin ' + c), '∅'], cols: nums(A + 1), cells, steps, answer: [0, A], result: dp[0][A], resultNote: `${dp[0][A]} combinations. Notice the "use it" arrow stays on the same row: coins can be reused.` };
+    }
+  };
+
+  B.coinChange = {
+    inputs: [{ k: 'c', label: 'coins', v: '[1,2,5]' }, { k: 'a', label: 'amount', v: '11' }],
+    build(p) {
+      const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
+      const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, Infinity), steps = [];
+      for (let a = 0; a <= A; a++) { dp[n][a] = a === 0 ? 0 : Infinity; cells[n][a] = { v: dp[n][a], kind: 'base' }; }
+      for (let i = n - 1; i >= 0; i--) for (let a = 0; a <= A; a++) {
+        const skip = dp[i + 1][a], use = a >= cs[i] ? 1 + dp[i][a - cs[i]] : Infinity;
+        dp[i][a] = Math.min(skip, use);
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= cs[i] ? [[i + 1, a], [i, a - cs[i]]] : [[i + 1, a]], note: `amount ${a}, coin ${cs[i]}: min(skip ${f(skip)}, 1 + use ${f(use)}) = ${f(dp[i][a])}` });
+      }
+      const r = dp[0][A] === Infinity ? -1 : dp[0][A];
+      return { rows: [...cs.map(c => 'coin ' + c), '∅'], cols: nums(A + 1), cells, steps, answer: [0, A], result: r, resultNote: r === -1 ? 'Impossible, so return -1.' : `Fewest coins: ${r}.` };
+    }
+  };
+
+  // ---------- Part F: index + state ----------
+  B.stockCooldown = {
+    inputs: [{ k: 'a', label: 'prices', v: '[1,2,3,0,2]' }],
+    build(p) {
+      const pr = json(p.a, [1]).slice(0, 9), n = pr.length, cells = blank(n + 2, 2), dp = table(n + 2, 2, 0), steps = [];
+      cells[n] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }]; cells[n + 1] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }];
+      for (let i = n - 1; i >= 0; i--) {
+        dp[i][1] = Math.max(dp[i + 1][1], pr[i] + dp[i + 2][0]);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i + 1, 1], [i + 2, 0]], note: `Day ${i}, holding: keep holding (${dp[i + 1][1]}) or sell at ${pr[i]} and skip a day (${pr[i]} + ${dp[i + 2][0]})` });
+        dp[i][0] = Math.max(dp[i + 1][0], -pr[i] + dp[i + 1][1]);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i + 1, 0], [i + 1, 1]], note: `Day ${i}, free: wait (${dp[i + 1][0]}) or buy at ${pr[i]} (−${pr[i]} + ${dp[i + 1][1]})` });
+      }
+      return { rows: [...pr.map((x, i) => 'day ' + i + ' ($' + x + ')'), 'end', 'end+1'], cols: ['free', 'holding'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Best profit: ${dp[0][0]}. You start the first day free.` };
+    }
+  };
+
+  B.stockFee = {
+    inputs: [{ k: 'a', label: 'prices', v: '[1,3,2,8,4,9]' }, { k: 'f', label: 'fee', v: '2' }],
+    build(p) {
+      const pr = json(p.a, [1]).slice(0, 9), fee = +p.f || 0, n = pr.length, cells = blank(n + 1, 2), dp = table(n + 1, 2, 0), steps = [];
+      cells[n] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }];
+      for (let i = n - 1; i >= 0; i--) {
+        dp[i][1] = Math.max(dp[i + 1][1], pr[i] - fee + dp[i + 1][0]);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i + 1, 1], [i + 1, 0]], note: `Day ${i}, holding: keep (${dp[i + 1][1]}) or sell (${pr[i]} − ${fee} + ${dp[i + 1][0]})` });
+        dp[i][0] = Math.max(dp[i + 1][0], -pr[i] + dp[i + 1][1]);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i + 1, 0], [i + 1, 1]], note: `Day ${i}, free: wait (${dp[i + 1][0]}) or buy (−${pr[i]} + ${dp[i + 1][1]})` });
+      }
+      return { rows: [...pr.map((x, i) => 'day ' + i + ' ($' + x + ')'), 'end'], cols: ['free', 'holding'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Best profit: ${dp[0][0]}.` };
+    }
+  };
+
+  return { B, fmt: f };
+})();
+if (typeof module !== 'undefined') module.exports = VIZ;
+
+// Hand-built SVG diagrams. Colours come from CSS classes, so they follow the theme.
+const DG = (() => {
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const svg = (w, h, body, label) => `<svg class="dg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}" style="max-width:${w}px">${body}</svg>`;
+  const rect = (x, y, w, h, cls, rx = 6) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" class="${cls}"/>`;
+  const text = (x, y, t, cls = 't', anchor = 'middle') => `<text x="${x}" y="${y}" class="${cls}" text-anchor="${anchor}" dominant-baseline="central">${esc(t)}</text>`;
+  function arrow(x1, y1, x2, y2, kind = 'ink', s1 = 16, s2 = 18) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+    const ax = x1 + dx * s1 / L, ay = y1 + dy * s1 / L, bx = x2 - dx * s2 / L, by = y2 - dy * s2 / L;
+    return `<line x1="${ax.toFixed(1)}" y1="${ay.toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" class="ar ar-${kind}" marker-end="url(#ah-${kind})"/>`;
+  }
+  const path = (d, kind) => `<path d="${d}" class="ar ar-${kind}" fill="none" marker-end="url(#ah-${kind})"/>`;
+  const ctr = (x0, y0, s, i, j) => [x0 + j * s + s / 2, y0 + i * s + s / 2];
+  function grid(x0, y0, R, C, s, fn) {
+    let o = '';
+    for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
+      const c = fn(i, j); if (!c) continue;
+      o += rect(x0 + j * s + 2, y0 + i * s + 2, s - 4, s - 4, 'c ' + (c.cls || 'c-cell'), 5);
+      if (c.t !== undefined && c.t !== '') o += text(x0 + j * s + s / 2, y0 + i * s + s / 2, c.t, c.tc || 't');
+    }
+    return o;
+  }
+  const lbl = (x, y, t, anchor = 'middle') => text(x, y, t, 't-lab', anchor);
+
+  const D = {};
+
+  // ----- Start here: recursion tree for 3 x 3 Unique Paths -----
+  D.tree = () => {
+    const T = { l: '0,0', c: [
+      { l: '0,1', c: [{ l: '0,2', c: [{ l: '1,2' }] }, { l: '1,1', d: 1, c: [{ l: '1,2', d: 1 }, { l: '2,1', d: 1 }] }] },
+      { l: '1,0', c: [{ l: '1,1', d: 1, c: [{ l: '1,2', d: 1 }, { l: '2,1', d: 1 }] }, { l: '2,0', c: [{ l: '2,1' }] }] }
+    ] };
+    let leaf = 0; const nodes = [], edges = [];
+    (function place(n, depth) {
+      if (!n.c) { n.x = 40 + leaf * 78; leaf++; }
+      else { n.c.forEach(ch => place(ch, depth + 1)); n.x = (n.c[0].x + n.c[n.c.length - 1].x) / 2; }
+      n.y = 26 + depth * 66; nodes.push(n);
+      if (n.c) n.c.forEach(ch => edges.push([n, ch]));
+    })(T, 0);
+    const W = 40 + leaf * 78 - 38 + 40;
+    let o = edges.map(([a, b]) => `<line x1="${a.x}" y1="${a.y + 14}" x2="${b.x}" y2="${b.y - 14}" class="edge ${b.d ? 'edge-dup' : ''}"/>`).join('');
+    o += nodes.map(n => rect(n.x - 32, n.y - 14, 64, 28, 'c ' + (n.d ? 'c-cur' : 'c-cell'), 14) + text(n.x, n.y, 'dp(' + n.l + ')', 't t-sm')).join('');
+    return svg(W, 26 + 3 * 66 + 24, o, 'Recursion tree for a 3 by 3 grid with the repeated subtree highlighted');
+  };
+
+  // ----- Start here: two directions -----
+  D.directions = () => {
+    const s = 46, R = 4, C = 4;
+    const left = grid(20, 40, R, C, s, (i, j) => (i === 1 && j === 1 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : i === 3 && j === 3 ? { cls: 'c-path', t: 'end' } : {}));
+    const [cx, cy] = ctr(20, 40, s, 1, 1), [rx, ry] = ctr(20, 40, s, 1, 2), [dx, dy] = ctr(20, 40, s, 2, 1);
+    const x2 = 20 + C * s + 70;
+    const right = grid(x2, 40, R, C, s, (i, j) => (i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : i === 0 && j === 0 ? { cls: 'c-path', t: 'start' } : {}));
+    const [c2x, c2y] = ctr(x2, 40, s, 2, 2), [ux, uy] = ctr(x2, 40, s, 1, 2), [lx, ly] = ctr(x2, 40, s, 2, 1);
+    const o = lbl(20 + C * s / 2, 18, '"From here to the end"') + left + arrow(cx, cy, rx, ry, 'dep', 12, 14) + arrow(cx, cy, dx, dy, 'dep', 12, 14)
+      + text(20 + C * s / 2, 40 + R * s + 18, 'reads right and below → loop i, j downward', 't-s')
+      + lbl(x2 + C * s / 2, 18, '"Ending exactly here"') + right + arrow(ux, uy, c2x, c2y, 'dep', 12, 14) + arrow(lx, ly, c2x, c2y, 'dep', 12, 14)
+      + text(x2 + C * s / 2, 40 + R * s + 18, 'reads above and left → loop i, j upward', 't-s');
+    return svg(x2 + C * s + 20, 40 + R * s + 36, o, 'Forward-looking and backward-looking states');
+  };
+
+  // ----- small move icons -----
+  D.moves = (type) => {
+    const s = 34, x0 = 6, y0 = 6;
+    const deps = type === 'rd' ? [[1, 2], [2, 1]] : type === 'fall' ? [[2, 0], [2, 1], [2, 2]] : [[0, 1], [1, 0], [0, 0]];
+    const cur = [1, 1];
+    let o = grid(x0, y0, 3, 3, s, (i, j) => (i === 1 && j === 1 ? { cls: 'c-cur' } : deps.some(([a, b]) => a === i && b === j) ? { cls: 'c-dep' } : {}));
+    const [cx, cy] = ctr(x0, y0, s, ...cur);
+    for (const [a, b] of deps) { const [px, py] = ctr(x0, y0, s, a, b); o += type === 'tld' ? arrow(px, py, cx, cy, 'dep', 8, 10) : arrow(cx, cy, px, py, 'dep', 8, 10); }
+    return svg(3 * s + 12, 3 * s + 12, o, 'Allowed moves');
+  };
+
+  // ----- A family: grid with a route -----
+  D.familyGrid = () => {
+    const s = 44, R = 4, C = 6, x0 = 16, y0 = 16;
+    const route = [[0, 0], [0, 1], [1, 1], [1, 2], [1, 3], [2, 3], [3, 3], [3, 4], [3, 5]];
+    const on = (i, j) => route.some(([a, b]) => a === i && b === j);
+    let o = grid(x0, y0, R, C, s, (i, j) => (i === 0 && j === 0 ? { cls: 'c-path', t: 'S' } : i === R - 1 && j === C - 1 ? { cls: 'c-path', t: 'F' } : on(i, j) ? { cls: 'c-path-soft' } : {}));
+    for (let k = 0; k + 1 < route.length; k++) { const [a, b] = ctr(x0, y0, s, ...route[k]), [c, d] = ctr(x0, y0, s, ...route[k + 1]); o += arrow(a, b, c, d, 'path', 10, 12); }
+    o += text(x0 + C * s + 14, y0 + 20, 'Only right or down.', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 42, 'You can never come back', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 60, 'to a cell, so each cell is', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 78, 'a clean sub-problem.', 't-s', 'start');
+    return svg(x0 + C * s + 200, y0 + R * s + 16, o, 'A grid with one route from S to F');
+  };
+
+  // ----- A4 triangle -----
+  D.triangle = () => {
+    const t = [[2], [3, 4], [6, 5, 7], [4, 1, 8, 3]], dp = [[11], [9, 10], [7, 6, 10], [4, 1, 8, 3]];
+    const best = [[0, 0], [1, 0], [2, 1], [3, 1]];
+    const isBest = (i, j) => best.some(([a, b]) => a === i && b === j);
+    const draw = (ox, vals, title, valCls) => {
+      let o = lbl(ox, 14, title);
+      const pos = (i, j) => [ox + (j - i / 2) * 58, 48 + i * 56];
+      for (let i = 0; i < 3; i++) for (let j = 0; j <= i; j++) for (const d of [0, 1]) {
+        const [x1, y1] = pos(i, j), [x2, y2] = pos(i + 1, j + d);
+        const hot = isBest(i, j) && isBest(i + 1, j + d);
+        o += hot ? arrow(x1, y1, x2, y2, 'path', 18, 20) : `<line x1="${x1}" y1="${y1 + 18}" x2="${x2}" y2="${y2 - 18}" class="edge"/>`;
+      }
+      for (let i = 0; i < 4; i++) for (let j = 0; j <= i; j++) {
+        const [x, y] = pos(i, j);
+        o += `<circle cx="${x}" cy="${y}" r="18" class="c ${isBest(i, j) ? 'c-path' : 'c-cell'}"/>` + text(x, y, vals[i][j], valCls);
+      }
+      return o;
+    };
+    const o = draw(130, t, 'The numbers', 't') + draw(420, dp, 'dp: cheapest way down from here', 't t-b');
+    return svg(560, 240, o, 'Triangle and its dp values with the best path highlighted');
+  };
+
+  // ----- A6 dungeon: why forward fails -----
+  D.dungeon = () => {
+    const g = [[1, -3, 3], [0, -2, 0], [-3, -3, -3]], s = 46;
+    const A = [[0, 0], [1, 0], [1, 1], [1, 2]], Bp = [[0, 0], [0, 1], [0, 2], [1, 2]];
+    const panel = (x0, P, kind, title, l1, l2) => {
+      let o = lbl(x0 + 3 * s / 2, 14, title);
+      o += grid(x0, 30, 3, 3, s, (i, j) => ({ cls: P.some(([a, b]) => a === i && b === j) ? (kind === 'dep' ? 'c-dep' : 'c-path') : i === 2 ? 'c-warn' : 'c-cell', t: g[i][j] }));
+      for (let k = 0; k + 1 < P.length; k++) { const [a, b] = ctr(x0, 30, s, ...P[k]), [c, d] = ctr(x0, 30, s, ...P[k + 1]); o += arrow(a, b, c, d, kind, 12, 14); }
+      o += text(x0 + 3 * s / 2, 30 + 3 * s + 16, l1, 't-s') + text(x0 + 3 * s / 2, 30 + 3 * s + 34, l2, 't-s');
+      return o;
+    };
+    const o = panel(20, A, 'dep', 'Path A', 'lowest so far −1, now −1', 'then −3 → drops to −4') + panel(230, Bp, 'path', 'Path B', 'lowest so far −2, now +1', 'then −3 → only drops to −2');
+    return svg(410, 30 + 3 * s + 48, o, 'Two paths into the same cell. Forward DP keeps A, but B is better.');
+  };
+
+  // ----- B: why min of three squares -----
+  D.squares = () => {
+    const s = 52, x0 = 20, y0 = 20;
+    let o = grid(x0, y0, 3, 3, s, (i, j) => (i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : {}));
+    const box = (r, c, cls, inset) => `<rect x="${x0 + c * s + inset}" y="${y0 + r * s + inset}" width="${2 * s - 2 * inset}" height="${2 * s - 2 * inset}" rx="6" class="sq ${cls}"/>`;
+    o += box(0, 0, 'sq-a', 5) + box(0, 1, 'sq-b', 9) + box(1, 0, 'sq-c', 13);
+    const lx = x0 + 3 * s + 24;
+    o += `<rect x="${lx}" y="${y0 + 6}" width="22" height="12" rx="3" class="sq sq-a"/>` + text(lx + 32, y0 + 12, 'diagonal: square ending at (i−1, j−1)', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 36}" width="22" height="12" rx="3" class="sq sq-b"/>` + text(lx + 32, y0 + 42, 'top: square ending at (i−1, j)', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 66}" width="22" height="12" rx="3" class="sq sq-c"/>` + text(lx + 32, y0 + 72, 'left: square ending at (i, j−1)', 't-s', 'start');
+    o += text(lx, y0 + 112, 'A 3 × 3 square at (i, j) needs all three', 't-s', 'start');
+    o += text(lx, y0 + 130, 'of these 2 × 2 squares to be full.', 't-s', 'start');
+    o += text(lx, y0 + 148, 'The smallest one limits you, so: 1 + min.', 't-s', 'start');
+    return svg(lx + 290, y0 + 3 * s + 20, o, 'Three overlapping squares that a bigger square needs');
+  };
+
+  D.squareCount = () => {
+    const s = 26; let o = '', x = 20;
+    [1, 2, 3].forEach((k) => {
+      o += grid(x, 20 + (3 - k) * s, k, k, s, (i, j) => ({ cls: i === k - 1 && j === k - 1 ? 'c-cur' : 'c-dep' }));
+      o += text(x + k * s / 2, 20 + 3 * s + 16, k + ' × ' + k, 't-s');
+      x += k * s + 34;
+    });
+    o += text(x, 20 + 1.5 * s, 'dp = 3 means these three', 't-s', 'start') + text(x, 20 + 1.5 * s + 18, 'squares all end at this cell.', 't-s', 'start');
+    return svg(x + 210, 20 + 3 * s + 30, o, 'A dp value of 3 counts three squares');
+  };
+
+  // ----- C: the three arrows -----
+  D.strings = () => {
+    const s = 54, x0 = 70, y0 = 44, R = 4, C = 4;
+    let o = grid(x0, y0, R, C, s, (i, j) => (i === R - 1 || j === C - 1 ? { cls: 'c-pad', t: '' } : i === 1 && j === 1 ? { cls: 'c-cur', t: 'i,j' } : (i === 2 && j === 2) || (i === 2 && j === 1) || (i === 1 && j === 2) ? { cls: 'c-dep' } : {}));
+    'abc∅'.split('').forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    'xyz∅'.split('').forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    o += text(x0 - 46, y0 + 1.5 * s, 's1', 't-lab') + text(x0 + 1.5 * s, y0 - 34, 's2', 't-lab');
+    const [cx, cy] = ctr(x0, y0, s, 1, 1);
+    o += arrow(cx, cy, ...ctr(x0, y0, s, 2, 2), 'path', 14, 16) + arrow(cx, cy, ...ctr(x0, y0, s, 2, 1), 'dep', 14, 16) + arrow(cx, cy, ...ctr(x0, y0, s, 1, 2), 'cur', 14, 16);
+    const lx = x0 + C * s + 26;
+    o += `<line x1="${lx}" y1="${y0 + 14}" x2="${lx + 28}" y2="${y0 + 14}" class="ar ar-path" marker-end="url(#ah-path)"/>` + text(lx + 38, y0 + 14, '↘ (i+1, j+1): use both letters (match, replace)', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 44}" x2="${lx + 28}" y2="${y0 + 44}" class="ar ar-dep" marker-end="url(#ah-dep)"/>` + text(lx + 38, y0 + 44, '↓ (i+1, j): drop s1[i] (skip, delete)', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 74}" x2="${lx + 28}" y2="${y0 + 74}" class="ar ar-cur" marker-end="url(#ah-cur)"/>` + text(lx + 38, y0 + 74, '→ (i, j+1): drop s2[j] (skip, insert)', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 100}" width="28" height="16" rx="3" class="c c-pad"/>` + text(lx + 38, y0 + 108, 'grey edge: one string is used up (base case)', 't-s', 'start');
+    return svg(lx + 330, y0 + R * s + 14, o, 'The three moves in a two-string table');
+  };
+
+  // ----- C3 traceback -----
+  D.editOps = () => {
+    const a = 'horse', b = 'ros', v = [[3, 3, 4, 5], [3, 2, 3, 4], [2, 2, 2, 3], [3, 2, 1, 2], [3, 2, 1, 1], [3, 2, 1, 0]];
+    const P = [[0, 0], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3]];
+    const labels = ['replace h → r', 'o = o, free', 'delete r', 's = s, free', 'delete e'];
+    const s = 44, x0 = 40, y0 = 40;
+    let o = grid(x0, y0, 6, 4, s, (i, j) => ({ cls: P.some(([p, q]) => p === i && q === j) ? 'c-path' : i === 5 || j === 3 ? 'c-pad' : 'c-cell', t: v[i][j] }));
+    [...a, '∅'].forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    [...b, '∅'].forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    for (let k = 0; k + 1 < P.length; k++) {
+      const [p, q] = ctr(x0, y0, s, ...P[k]), [r, t] = ctr(x0, y0, s, ...P[k + 1]);
+      o += arrow(p, q, r, t, 'path', 12, 14);
+      o += text(x0 + 4 * s + 20, y0 + P[k][0] * s + s, (k + 1) + '. ' + labels[k], 't-s', 'start');
+    }
+    return svg(x0 + 4 * s + 190, y0 + 6 * s + 14, o, 'Reading the operations back from the edit distance table');
+  };
+
+  // ----- D: interval fill order -----
+  D.interval = () => {
+    const n = 5, s = 46, x0 = 40, y0 = 36;
+    let o = grid(x0, y0, n, n, s, (i, j) => (j < i ? null : i === 0 && j === 4 ? { cls: 'c-cur', t: '5' } : (i === 1 && j === 4) || (i === 0 && j === 3) || (i === 1 && j === 3) ? { cls: 'c-dep', t: String(j - i + 1) } : { cls: 'c-len' + (j - i + 1), t: String(j - i + 1) }));
+    for (let k = 0; k < n; k++) { o += text(x0 - 14, y0 + k * s + s / 2, 'i=' + k, 't-s'); o += text(x0 + k * s + s / 2, y0 - 12, 'j=' + k, 't-s'); }
+    const [cx, cy] = ctr(x0, y0, s, 0, 4);
+    o += arrow(cx, cy, ...ctr(x0, y0, s, 1, 4), 'dep', 12, 14) + arrow(cx, cy, ...ctr(x0, y0, s, 0, 3), 'dep', 12, 14) + arrow(cx, cy, ...ctr(x0, y0, s, 1, 3), 'dep', 12, 14);
+    const lx = x0 + n * s + 24;
+    o += text(lx, y0 + 16, 'Each number is the length of the range.', 't-s', 'start');
+    o += text(lx, y0 + 38, 'Fill the diagonal of 1s first, then 2s, and so on.', 't-s', 'start');
+    o += text(lx, y0 + 60, 'The full range [0..4] needs shorter ranges:', 't-s', 'start');
+    o += text(lx, y0 + 80, 'drop the left end, drop the right end, or both.', 't-s', 'start');
+    o += text(lx, y0 + 112, 'Bottom-to-top rows with left-to-right columns', 't-s', 'start');
+    o += text(lx, y0 + 132, 'gives the same safe order.', 't-s', 'start');
+    return svg(lx + 330, y0 + n * s + 12, o, 'Interval DP fills ranges from short to long');
+  };
+
+  // ----- D3 balloons -----
+  D.balloons = () => {
+    const items = [['l', 'wall'], ['a', ''], ['b', ''], ['k', 'last'], ['c', ''], ['d', ''], ['r', 'wall']];
+    const gap = 70, y = 70; let o = '';
+    items.forEach(([t, kind], i) => {
+      const x = 50 + i * gap;
+      o += `<circle cx="${x}" cy="${y}" r="24" class="c ${kind === 'wall' ? 'c-pad' : kind === 'last' ? 'c-cur' : 'c-dep'}"/>` + text(x, y, t, 't t-b');
+    });
+    const br = (i1, i2, label) => { const x1 = 50 + i1 * gap - 22, x2 = 50 + i2 * gap + 22; return `<path d="M${x1} ${y + 36} v10 H${x2} v-10" class="edge"/>` + text((x1 + x2) / 2, y + 66, label, 't-s'); };
+    o += br(1, 2, 'left part: dp(l, k)') + br(4, 5, 'right part: dp(k, r)');
+    o += text(50 + 3 * gap, 22, 'k bursts last, so its neighbours are l and r', 't-s');
+    o += text(50 + 3 * gap, y + 100, 'coins = a[l] · a[k] · a[r] + dp(l, k) + dp(k, r)', 't t-b');
+    o += text(50 + 3 * gap, y + 124, 'While k is still there, the two parts never touch each other.', 't-s');
+    return svg(50 + 6 * gap + 50, y + 142, o, 'Burst balloon k last');
+  };
+
+  // ----- E: 0/1 vs unbounded -----
+  D.knap = () => {
+    const s = 50, panel = (x0, unb, title) => {
+      let o = lbl(x0 + 2 * s, 16, title);
+      o += grid(x0, 34, 2, 4, s, (i, j) => (i === 0 && j === 3 ? { cls: 'c-cur', t: 'i, c' } : (i === 1 && j === 3) || (unb ? i === 0 && j === 0 : i === 1 && j === 0) ? { cls: 'c-dep' } : {}));
+      o += text(x0 - 22, 34 + s / 2, 'i', 't-s') + text(x0 - 22, 34 + 1.5 * s, 'i+1', 't-s');
+      o += text(x0 + s / 2, 34 + 2 * s + 14, 'c − w', 't-s') + text(x0 + 3.5 * s, 34 + 2 * s + 14, 'c', 't-s');
+      const [cx, cy] = ctr(x0, 34, s, 0, 3);
+      o += arrow(cx, cy, ...ctr(x0, 34, s, 1, 3), 'dep', 14, 16);
+      o += arrow(cx, cy, ...(unb ? ctr(x0, 34, s, 0, 0) : ctr(x0, 34, s, 1, 0)), 'path', 14, 16);
+      o += text(x0 + 2 * s, 34 + 2 * s + 38, unb ? 'take: stay on row i (reuse it)' : 'take: move to row i+1 (used up)', 't-s');
+      o += text(x0 + 2 * s, 34 + 2 * s + 56, unb ? '1D loop goes upward' : '1D loop goes downward', 't-s t-strong');
+      return o;
+    };
+    return svg(560, 34 + 2 * s + 70, panel(40, false, 'Each item once (0/1)') + panel(320, true, 'Reuse allowed (unbounded)'), 'Take and skip arrows for 0/1 and unbounded knapsack');
+  };
+
+  // ----- E1: why the loop direction matters -----
+  D.directionBug = () => {
+    const s = 44, row = (x0, y0, vals, title, cls, arrows, kind, note) => {
+      let o = lbl(x0 + 2.5 * s, y0 - 18, title);
+      o += grid(x0, y0, 1, 5, s, (i, j) => ({ cls: vals[j] === 'T' ? cls : 'c-cell', t: vals[j] }));
+      for (let j = 0; j < 5; j++) o += text(x0 + j * s + s / 2, y0 + s + 12, 'sum ' + j, 't-s');
+      for (const [a, b] of arrows) { const [x1, y1] = ctr(x0, y0, s, 0, a), [x2] = ctr(x0, y0, s, 0, b); o += path(`M${x1} ${y1 - 18} Q ${(x1 + x2) / 2} ${y1 - 46} ${x2} ${y1 - 20}`, kind); }
+      o += text(x0 + 2.5 * s, y0 + s + 34, note, 't-s');
+      return o;
+    };
+    const o = row(30, 70, ['T', 'T', 'T', 'T', 'T'], 'Upward loop, item 1', 'c-warn', [[0, 1], [1, 2], [2, 3], [3, 4]], 'warn', 'reads values this same item just wrote → uses 1 again and again')
+      + row(330, 70, ['T', 'T', 'F', 'F', 'F'], 'Downward loop, item 1', 'c-path', [[0, 1]], 'path', 'reads values from before this item → uses 1 once');
+    return svg(600, 170, o, 'Upward loop reuses an item, downward loop does not');
+  };
+
+  // ----- F: state machines -----
+  const stateNode = (x, y, t, cls) => `<circle cx="${x}" cy="${y}" r="38" class="c ${cls}"/>` + text(x, y, t, 't t-b');
+  const loop = (x, y, label, up = true) => { const dy = up ? -1 : 1; return path(`M${x - 16} ${y + dy * 34} C ${x - 40} ${y + dy * 90}, ${x + 40} ${y + dy * 90}, ${x + 16} ${y + dy * 36}`, 'ink') + text(x, y + dy * 88, label, 't-s'); };
+  D.machine = () => {
+    let o = stateNode(110, 110, 'FREE', 'c-cell') + stateNode(370, 110, 'HOLDING', 'c-dep');
+    o += path('M146 96 Q 240 50 334 96', 'path') + text(240, 58, 'buy: − price', 't-s');
+    o += path('M334 124 Q 240 170 146 124', 'cur') + text(240, 168, 'sell: + price (− fee)', 't-s');
+    o += loop(110, 110, 'wait', false) + loop(370, 110, 'keep', false);
+    return svg(480, 220, o, 'Two states: free and holding');
+  };
+  D.machineCooldown = () => {
+    let o = stateNode(90, 120, 'FREE', 'c-cell') + stateNode(330, 120, 'HOLDING', 'c-dep') + stateNode(210, 260, 'COOL', 'c-pad');
+    o += path('M128 112 Q 210 80 292 112', 'path') + text(210, 82, 'buy', 't-s');
+    o += path('M312 154 Q 290 220 246 244', 'cur') + text(318, 216, 'sell', 't-s', 'start');
+    o += path('M174 244 Q 128 220 106 156', 'ink') + text(104, 216, 'wait 1 day', 't-s', 'end');
+    o += loop(90, 120, 'wait', true) + loop(330, 120, 'keep', true);
+    return svg(430, 310, o, 'Three states with a cooldown after selling');
+  };
+
+  return D;
+})();
+
+const CODE = {"A1":[{"label":"1 + 2 · Recursion / Memoization","code":"var uniquePaths = function (m, n) {\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i >= m || j >= n) return 0;                 // fell off the grid\n        if (i === m - 1 && j === n - 1) return 1;       // reached target\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = dp(i, j + 1) + dp(i + 1, j);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"3 · Tabulation","code":"var uniquePaths = function (m, n) {\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0)); // padding = 0\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (i === m - 1 && j === n - 1) dp[i][j] = 1;\n            else dp[i][j] = dp[i + 1][j] + dp[i][j + 1];\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""},{"label":"4 · Space-optimised (one row)","code":"var uniquePaths = function (m, n) {\n    const dp = Array(n + 1).fill(0); // dp[j] holds the row below until we overwrite it\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (i === m - 1 && j === n - 1) dp[j] = 1;\n            else dp[j] = dp[j] + dp[j + 1]; // (below) + (right, already updated this row)\n        }\n    }\n\n    return dp[0];\n};\n","note":""}],"A2":[{"label":"Memo","code":"var uniquePathsWithObstacles = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i >= m || j >= n) return 0;\n        if (grid[i][j] === 1) return 0;                 // blocked\n        if (i === m - 1 && j === n - 1) return 1;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = dp(i, j + 1) + dp(i + 1, j);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var uniquePathsWithObstacles = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (grid[i][j] === 1) dp[i][j] = 0;\n            else if (i === m - 1 && j === n - 1) dp[i][j] = 1;\n            else dp[i][j] = dp[i + 1][j] + dp[i][j + 1];\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""},{"label":"One row","code":"var uniquePathsWithObstacles = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const dp = Array(n + 1).fill(0);\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (grid[i][j] === 1) dp[j] = 0;\n            else if (i === m - 1 && j === n - 1) dp[j] = 1;\n            else dp[j] = dp[j] + dp[j + 1];\n        }\n    }\n\n    return dp[0];\n};\n","note":""}],"A3":[{"label":"Memo","code":"var minPathSum = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i >= m || j >= n) return Infinity;           // never choose this\n        if (i === m - 1 && j === n - 1) return grid[i][j];\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = grid[i][j] + Math.min(dp(i, j + 1), dp(i + 1, j));\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var minPathSum = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(Infinity));\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (i === m - 1 && j === n - 1) dp[i][j] = grid[i][j];\n            else dp[i][j] = grid[i][j] + Math.min(dp[i + 1][j], dp[i][j + 1]);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""},{"label":"One row","code":"var minPathSum = function (grid) {\n    const m = grid.length, n = grid[0].length;\n    const dp = Array(n + 1).fill(Infinity);\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            if (i === m - 1 && j === n - 1) dp[j] = grid[i][j];\n            else dp[j] = grid[i][j] + Math.min(dp[j], dp[j + 1]);\n        }\n    }\n\n    return dp[0];\n};\n","note":""}],"A4":[{"label":"Memo","code":"var minimumTotal = function (triangle) {\n    const n = triangle.length;\n    const memo = Array.from({ length: n }, (_, i) => Array(i + 1).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i === n - 1) return triangle[i][j];\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = triangle[i][j] + Math.min(dp(i + 1, j), dp(i + 1, j + 1));\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table (one row)","code":"var minimumTotal = function (triangle) {\n    const n = triangle.length;\n    const dp = [...triangle[n - 1]]; // start from the bottom row\n\n    for (let i = n - 2; i >= 0; i--) {\n        for (let j = 0; j <= i; j++) {\n            dp[j] = triangle[i][j] + Math.min(dp[j], dp[j + 1]);\n        }\n    }\n\n    return dp[0];\n};\n","note":"Here the 1D version is the natural one: start with the bottom row and collapse upward."}],"A5":[{"label":"Memo","code":"var minFallingPathSum = function (matrix) {\n    const n = matrix.length;\n    const memo = Array.from({ length: n }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (j < 0 || j >= n) return Infinity;\n        if (i === n - 1) return matrix[i][j];\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = matrix[i][j] + Math.min(dp(i + 1, j - 1), dp(i + 1, j), dp(i + 1, j + 1));\n    }\n\n    let answer = Infinity;\n    for (let j = 0; j < n; j++) answer = Math.min(answer, dp(0, j));\n    return answer;\n};\n","note":""},{"label":"Table (one row)","code":"var minFallingPathSum = function (matrix) {\n    const n = matrix.length;\n    let below = [...matrix[n - 1]];\n\n    for (let i = n - 2; i >= 0; i--) {\n        const cur = Array(n);\n        for (let j = 0; j < n; j++) {\n            const left = j > 0 ? below[j - 1] : Infinity;\n            const right = j < n - 1 ? below[j + 1] : Infinity;\n            cur[j] = matrix[i][j] + Math.min(left, below[j], right);\n        }\n        below = cur; // a NEW row each time (see the trap below)\n    }\n\n    return Math.min(...below);\n};\n","note":""}],"A6":[{"label":"Memo","code":"var calculateMinimumHP = function (dungeon) {\n    const m = dungeon.length, n = dungeon[0].length;\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i >= m || j >= n) return Infinity;\n        if (i === m - 1 && j === n - 1) return Math.max(1, 1 - dungeon[i][j]);\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        const need = Math.min(dp(i, j + 1), dp(i + 1, j)) - dungeon[i][j];\n        return memo[i][j] = Math.max(1, need);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var calculateMinimumHP = function (dungeon) {\n    const m = dungeon.length, n = dungeon[0].length;\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(Infinity));\n    dp[m][n - 1] = 1;\n    dp[m - 1][n] = 1;\n\n    for (let i = m - 1; i >= 0; i--) {\n        for (let j = n - 1; j >= 0; j--) {\n            const need = Math.min(dp[i + 1][j], dp[i][j + 1]) - dungeon[i][j];\n            dp[i][j] = Math.max(1, need);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":"Padding trick: put `1` just right of and just below the princess, so she needs no special case."}],"B1":[{"label":"Memo","code":"var maximalSquare = function (matrix) {\n    const m = matrix.length, n = matrix[0].length;\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i < 0 || j < 0) return 0;\n        if (matrix[i][j] === \"0\") return 0;              // strings, not numbers!\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = 1 + Math.min(dp(i - 1, j), dp(i, j - 1), dp(i - 1, j - 1));\n    }\n\n    let best = 0;\n    for (let i = 0; i < m; i++)\n        for (let j = 0; j < n; j++)\n            best = Math.max(best, dp(i, j));\n\n    return best * best;\n};\n","note":""},{"label":"Table","code":"var maximalSquare = function (matrix) {\n    const m = matrix.length, n = matrix[0].length;\n    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));\n    let best = 0;\n\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= n; j++) {\n            if (matrix[i - 1][j - 1] === \"1\") {\n                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);\n                best = Math.max(best, dp[i][j]);\n            }\n        }\n    }\n\n    return best * best;\n};\n","note":"Shift indices by 1 so row 0 and column 0 are padding."},{"label":"One row","code":"var maximalSquare = function (matrix) {\n    const m = matrix.length, n = matrix[0].length;\n    const dp = Array(n + 1).fill(0);\n    let best = 0;\n\n    for (let i = 1; i <= m; i++) {\n        let diag = 0;                         // dp[i-1][j-1]\n        for (let j = 1; j <= n; j++) {\n            const top = dp[j];                // still the previous row's value\n            if (matrix[i - 1][j - 1] === \"1\") {\n                dp[j] = 1 + Math.min(top, dp[j - 1], diag);\n                best = Math.max(best, dp[j]);\n            } else {\n                dp[j] = 0;\n            }\n            diag = top;                       // becomes the diagonal for j+1\n        }\n    }\n\n    return best * best;\n};\n","note":"One row + a variable that remembers the diagonal."}],"B2":[{"label":"Memo","code":"var countSquares = function (matrix) {\n    const m = matrix.length, n = matrix[0].length;\n    const memo = Array.from({ length: m }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i < 0 || j < 0) return 0;\n        if (matrix[i][j] === 0) return 0;                // numbers here\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = 1 + Math.min(dp(i - 1, j), dp(i, j - 1), dp(i - 1, j - 1));\n    }\n\n    let total = 0;\n    for (let i = 0; i < m; i++)\n        for (let j = 0; j < n; j++)\n            total += dp(i, j);\n\n    return total;\n};\n","note":""},{"label":"Table","code":"var countSquares = function (matrix) {\n    const m = matrix.length, n = matrix[0].length;\n    const dp = matrix.map(row => [...row]); // copy so we don't mutate the input\n    let total = 0;\n\n    for (let i = 0; i < m; i++) {\n        for (let j = 0; j < n; j++) {\n            if (dp[i][j] === 1 && i > 0 && j > 0) {\n                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);\n            }\n            total += dp[i][j];\n        }\n    }\n\n    return total;\n};\n","note":"In-place: reuse the matrix as the dp table."}],"C1":[{"label":"Memo","code":"var longestCommonSubsequence = function (a, b) {\n    const n = a.length, m = b.length;\n    const memo = Array.from({ length: n }, () => Array(m).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i === n || j === m) return 0;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        if (a[i] === b[j]) return memo[i][j] = 1 + dp(i + 1, j + 1);\n        return memo[i][j] = Math.max(dp(i + 1, j), dp(i, j + 1));\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var longestCommonSubsequence = function (a, b) {\n    const n = a.length, m = b.length;\n    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));\n\n    for (let i = n - 1; i >= 0; i--) {\n        for (let j = m - 1; j >= 0; j--) {\n            if (a[i] === b[j]) dp[i][j] = 1 + dp[i + 1][j + 1];\n            else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""},{"label":"One row","code":"var longestCommonSubsequence = function (a, b) {\n    const n = a.length, m = b.length;\n    let below = Array(m + 1).fill(0);\n\n    for (let i = n - 1; i >= 0; i--) {\n        const cur = Array(m + 1).fill(0);\n        for (let j = m - 1; j >= 0; j--) {\n            if (a[i] === b[j]) cur[j] = 1 + below[j + 1];\n            else cur[j] = Math.max(below[j], cur[j + 1]);\n        }\n        below = cur;\n    }\n\n    return below[0];\n};\n","note":"Two rows."}],"C2":[{"label":"Memo","code":"var minDistance = function (a, b) {\n    const n = a.length, m = b.length;\n    const memo = Array.from({ length: n }, () => Array(m).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i === n) return m - j;   // delete all that is left in b\n        if (j === m) return n - i;   // delete all that is left in a\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        if (a[i] === b[j]) return memo[i][j] = dp(i + 1, j + 1);\n        return memo[i][j] = 1 + Math.min(dp(i + 1, j), dp(i, j + 1));\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var minDistance = function (a, b) {\n    const n = a.length, m = b.length;\n    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));\n\n    for (let i = n; i >= 0; i--) {\n        for (let j = m; j >= 0; j--) {\n            if (i === n) dp[i][j] = m - j;\n            else if (j === m) dp[i][j] = n - i;\n            else if (a[i] === b[j]) dp[i][j] = dp[i + 1][j + 1];\n            else dp[i][j] = 1 + Math.min(dp[i + 1][j], dp[i][j + 1]);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""}],"C3":[{"label":"Memo","code":"var minDistance = function (a, b) {\n    const n = a.length, m = b.length;\n    const memo = Array.from({ length: n }, () => Array(m).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i === n) return m - j;\n        if (j === m) return n - i;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        if (a[i] === b[j]) return memo[i][j] = dp(i + 1, j + 1);\n        return memo[i][j] = 1 + Math.min(\n            dp(i, j + 1),     // insert\n            dp(i + 1, j),     // delete\n            dp(i + 1, j + 1)  // replace\n        );\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var minDistance = function (a, b) {\n    const n = a.length, m = b.length;\n    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));\n\n    for (let i = n; i >= 0; i--) {\n        for (let j = m; j >= 0; j--) {\n            if (i === n) dp[i][j] = m - j;\n            else if (j === m) dp[i][j] = n - i;\n            else if (a[i] === b[j]) dp[i][j] = dp[i + 1][j + 1];\n            else dp[i][j] = 1 + Math.min(dp[i][j + 1], dp[i + 1][j], dp[i + 1][j + 1]);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""}],"C4":[{"label":"Memo","code":"var numDistinct = function (s, t) {\n    const n = s.length, m = t.length;\n    const memo = Array.from({ length: n }, () => Array(m).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (j === m) return 1;\n        if (i === n) return 0;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        let ways = dp(i + 1, j);                       // skip s[i]\n        if (s[i] === t[j]) ways += dp(i + 1, j + 1);   // use s[i]\n        return memo[i][j] = ways;\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var numDistinct = function (s, t) {\n    const n = s.length, m = t.length;\n    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));\n    for (let i = 0; i <= n; i++) dp[i][m] = 1;\n\n    for (let i = n - 1; i >= 0; i--) {\n        for (let j = m - 1; j >= 0; j--) {\n            dp[i][j] = dp[i + 1][j] + (s[i] === t[j] ? dp[i + 1][j + 1] : 0);\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""}],"C5":[{"label":"Memo","code":"var isMatch = function (s, p) {\n    const n = s.length, m = p.length;\n    const memo = Array.from({ length: n + 1 }, () => Array(m).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (j === m) return i === n;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        let ok;\n        if (p[j] === \"*\") ok = dp(i, j + 1) || (i < n && dp(i + 1, j));\n        else ok = i < n && (p[j] === \"?\" || p[j] === s[i]) && dp(i + 1, j + 1);\n\n        return memo[i][j] = ok;\n    }\n\n    return dp(0, 0);\n};\n","note":"Note: memo has `n + 1` rows because `i` can equal `n` while `j < m`."},{"label":"Table","code":"var isMatch = function (s, p) {\n    const n = s.length, m = p.length;\n    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(false));\n    dp[n][m] = true;\n    for (let j = m - 1; j >= 0; j--) dp[n][j] = p[j] === \"*\" && dp[n][j + 1];\n\n    for (let i = n - 1; i >= 0; i--) {\n        for (let j = m - 1; j >= 0; j--) {\n            if (p[j] === \"*\") dp[i][j] = dp[i][j + 1] || dp[i + 1][j];\n            else if (p[j] === \"?\" || p[j] === s[i]) dp[i][j] = dp[i + 1][j + 1];\n        }\n    }\n\n    return dp[0][0];\n};\n","note":""}],"D1":[{"label":"Memo","code":"var longestPalindromeSubseq = function (s) {\n    const n = s.length;\n    const memo = Array.from({ length: n }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(i, j) {\n        if (i > j) return 0;\n        if (i === j) return 1;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        if (s[i] === s[j]) return memo[i][j] = 2 + dp(i + 1, j - 1);\n        return memo[i][j] = Math.max(dp(i + 1, j), dp(i, j - 1));\n    }\n\n    return dp(0, n - 1);\n};\n","note":""},{"label":"Table","code":"var longestPalindromeSubseq = function (s) {\n    const n = s.length;\n    const dp = Array.from({ length: n }, () => Array(n).fill(0));\n\n    for (let i = n - 1; i >= 0; i--) {       // i reads i+1 → go down\n        dp[i][i] = 1;\n        for (let j = i + 1; j < n; j++) {    // j reads j-1 → go up\n            if (s[i] === s[j]) dp[i][j] = 2 + dp[i + 1][j - 1];\n            else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);\n        }\n    }\n\n    return dp[0][n - 1];\n};\n","note":""}],"D2":[{"label":"Memo","code":"var countSubstrings = function (s) {\n    const n = s.length;\n    const memo = Array.from({ length: n }, () => Array(n).fill(undefined)); // 🧠\n\n    function pal(i, j) {\n        if (i >= j) return true;\n        if (memo[i][j] !== undefined) return memo[i][j]; // 🧠\n\n        return memo[i][j] = s[i] === s[j] && pal(i + 1, j - 1);\n    }\n\n    let count = 0;\n    for (let i = 0; i < n; i++)\n        for (let j = i; j < n; j++)\n            if (pal(i, j)) count++;\n\n    return count;\n};\n","note":""},{"label":"Table","code":"var countSubstrings = function (s) {\n    const n = s.length;\n    const dp = Array.from({ length: n }, () => Array(n).fill(false));\n    let count = 0;\n\n    for (let i = n - 1; i >= 0; i--) {\n        for (let j = i; j < n; j++) {\n            dp[i][j] = s[i] === s[j] && (j - i < 2 || dp[i + 1][j - 1]);\n            if (dp[i][j]) count++;\n        }\n    }\n\n    return count;\n};\n","note":""}],"D3":[{"label":"Memo","code":"var maxCoins = function (nums) {\n    const a = [1, ...nums, 1];\n    const n = a.length;\n    const memo = Array.from({ length: n }, () => Array(n).fill(undefined)); // 🧠\n\n    function dp(l, r) {\n        if (r - l < 2) return 0;\n        if (memo[l][r] !== undefined) return memo[l][r]; // 🧠\n\n        let best = 0;\n        for (let k = l + 1; k < r; k++) {\n            best = Math.max(best, a[l] * a[k] * a[r] + dp(l, k) + dp(k, r));\n        }\n        return memo[l][r] = best;\n    }\n\n    return dp(0, n - 1);\n};\n","note":""},{"label":"Table","code":"var maxCoins = function (nums) {\n    const a = [1, ...nums, 1];\n    const n = a.length;\n    const dp = Array.from({ length: n }, () => Array(n).fill(0));\n\n    for (let len = 2; len < n; len++) {\n        for (let l = 0; l + len < n; l++) {\n            const r = l + len;\n            for (let k = l + 1; k < r; k++) {\n                dp[l][r] = Math.max(dp[l][r], a[l] * a[k] * a[r] + dp[l][k] + dp[k][r]);\n            }\n        }\n    }\n\n    return dp[0][n - 1];\n};\n","note":"By increasing gap."}],"E1":[{"label":"Memo","code":"var canPartition = function (nums) {\n    const total = nums.reduce((a, b) => a + b, 0);\n    if (total % 2 === 1) return false;\n\n    const n = nums.length, target = total / 2;\n    const memo = Array.from({ length: n }, () => Array(target + 1).fill(undefined)); // 🧠\n\n    function dp(i, t) {\n        if (t === 0) return true;\n        if (i === n || t < 0) return false;\n        if (memo[i][t] !== undefined) return memo[i][t]; // 🧠\n\n        return memo[i][t] = dp(i + 1, t) || dp(i + 1, t - nums[i]);\n    }\n\n    return dp(0, target);\n};\n","note":""},{"label":"One row","code":"var canPartition = function (nums) {\n    const total = nums.reduce((a, b) => a + b, 0);\n    if (total % 2 === 1) return false;\n\n    const target = total / 2;\n    const dp = Array(target + 1).fill(false);\n    dp[0] = true;\n\n    for (const x of nums) {\n        for (let t = target; t >= x; t--) {   // downward = each item used at most once\n            dp[t] = dp[t] || dp[t - x];\n        }\n    }\n\n    return dp[target];\n};\n","note":"1D, loop `t` **downward**."}],"E2":[{"label":"Memo","code":"var findTargetSumWays = function (nums, target) {\n    const n = nums.length, total = nums.reduce((a, b) => a + b, 0);\n    const memo = Array.from({ length: n }, () => Array(2 * total + 1).fill(undefined)); // 🧠\n\n    function dp(i, sum) {\n        if (i === n) return sum === target ? 1 : 0;\n        if (memo[i][sum + total] !== undefined) return memo[i][sum + total]; // 🧠\n\n        return memo[i][sum + total] = dp(i + 1, sum + nums[i]) + dp(i + 1, sum - nums[i]);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"One row","code":"var findTargetSumWays = function (nums, target) {\n    const total = nums.reduce((a, b) => a + b, 0);\n    if (Math.abs(target) > total || (total + target) % 2 === 1) return 0;\n\n    const P = (total + target) / 2;\n    const dp = Array(P + 1).fill(0);\n    dp[0] = 1;\n\n    for (const x of nums) {\n        for (let s = P; s >= x; s--) {   // 0/1 → downward\n            dp[s] += dp[s - x];\n        }\n    }\n\n    return dp[P];\n};\n","note":""}],"E3":[{"label":"Memo","code":"var change = function (amount, coins) {\n    const n = coins.length;\n    const memo = Array.from({ length: n }, () => Array(amount + 1).fill(undefined)); // 🧠\n\n    function dp(i, a) {\n        if (a === 0) return 1;\n        if (i === n || a < 0) return 0;\n        if (memo[i][a] !== undefined) return memo[i][a]; // 🧠\n\n        return memo[i][a] = dp(i + 1, a) + dp(i, a - coins[i]);\n    }\n\n    return dp(0, amount);\n};\n","note":""},{"label":"One row","code":"var change = function (amount, coins) {\n    const dp = Array(amount + 1).fill(0);\n    dp[0] = 1;\n\n    for (const c of coins) {               // coins outer → combinations\n        for (let a = c; a <= amount; a++) { // upward → unlimited use\n            dp[a] += dp[a - c];\n        }\n    }\n\n    return dp[amount];\n};\n","note":"1D, loop `a` **upward** because coins are reusable."}],"E4":[{"label":"Memo","code":"var coinChange = function (coins, amount) {\n    const n = coins.length;\n    const memo = Array.from({ length: n }, () => Array(amount + 1).fill(undefined)); // 🧠\n\n    function dp(i, a) {\n        if (a === 0) return 0;\n        if (i === n || a < 0) return Infinity;\n        if (memo[i][a] !== undefined) return memo[i][a]; // 🧠\n\n        return memo[i][a] = Math.min(dp(i + 1, a), 1 + dp(i, a - coins[i]));\n    }\n\n    const ans = dp(0, amount);\n    return ans === Infinity ? -1 : ans;\n};\n","note":""},{"label":"One row","code":"var coinChange = function (coins, amount) {\n    const dp = Array(amount + 1).fill(Infinity);\n    dp[0] = 0;\n\n    for (const c of coins) {\n        for (let a = c; a <= amount; a++) {\n            dp[a] = Math.min(dp[a], 1 + dp[a - c]);\n        }\n    }\n\n    return dp[amount] === Infinity ? -1 : dp[amount];\n};\n","note":"Prefer this: recursion depth can reach `amount` = 10⁴."}],"F1":[{"label":"Memo","code":"var maxProfit = function (prices) {\n    const n = prices.length;\n    const memo = Array.from({ length: n }, () => Array(2).fill(undefined)); // 🧠\n\n    function dp(i, holding) {\n        if (i >= n) return 0;\n        if (memo[i][holding] !== undefined) return memo[i][holding]; // 🧠\n\n        const rest = dp(i + 1, holding);\n        const act = holding\n            ? prices[i] + dp(i + 2, 0)   // sell, then cooldown\n            : -prices[i] + dp(i + 1, 1); // buy\n        return memo[i][holding] = Math.max(rest, act);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"Table","code":"var maxProfit = function (prices) {\n    const n = prices.length;\n    const dp = Array.from({ length: n + 2 }, () => [0, 0]);\n\n    for (let i = n - 1; i >= 0; i--) {\n        dp[i][1] = Math.max(dp[i + 1][1], prices[i] + dp[i + 2][0]);\n        dp[i][0] = Math.max(dp[i + 1][0], -prices[i] + dp[i + 1][1]);\n    }\n\n    return dp[0][0];\n};\n","note":""}],"F2":[{"label":"Memo","code":"var maxProfit = function (prices, fee) {\n    const n = prices.length;\n    const memo = Array.from({ length: n }, () => Array(2).fill(undefined)); // 🧠\n\n    function dp(i, holding) {\n        if (i === n) return 0;\n        if (memo[i][holding] !== undefined) return memo[i][holding]; // 🧠\n\n        const rest = dp(i + 1, holding);\n        const act = holding\n            ? prices[i] - fee + dp(i + 1, 0)\n            : -prices[i] + dp(i + 1, 1);\n        return memo[i][holding] = Math.max(rest, act);\n    }\n\n    return dp(0, 0);\n};\n","note":""},{"label":"One row","code":"var maxProfit = function (prices, fee) {\n    let free = 0, hold = 0; // values for day i+1\n\n    for (let i = prices.length - 1; i >= 0; i--) {\n        const newHold = Math.max(hold, prices[i] - fee + free);\n        const newFree = Math.max(free, -prices[i] + hold);\n        hold = newHold;\n        free = newFree;\n    }\n\n    return free;\n};\n","note":"Two variables."}]};
+</script>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('dp2d:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('dp2d:' + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
+  };
+
+  // ---------------- theme ----------------
+  const root = document.documentElement;
+  const savedTheme = store.get('theme', null);
+  if (savedTheme) root.setAttribute('data-theme', savedTheme);
+  $$('.theme-btn').forEach(b => b.addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') ? root.getAttribute('data-theme') === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    const next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next); store.set('theme', next);
+    requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows()));
+  }));
+
+  // ---------------- code highlighting ----------------
+  const KW = /\b(var|const|let|function|return|if|else|for|of|while|new|true|false|undefined|Infinity|null|break|continue)\b/;
+  function hl(line) {
+    const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`)|\b(var|const|let|function|return|if|else|for|of|while|new|true|false|undefined|Infinity|null|break|continue)\b|\b(\d+)\b|\b(Math|Array|dp|memo)\b/g;
+    let out = '', last = 0, m;
+    while ((m = re.exec(line))) {
+      out += esc(line.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'n' : 'f';
+      out += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return out + esc(line.slice(last));
+  }
+  const MEMO_MARK = '// 🧠';
+  const stripMark = (l) => l.replace(/\s*\/\/ 🧠\s*$/, '');
+  function toRecursion(code) {
+    return code.split('\n').filter(l => !l.includes(MEMO_MARK)).join('\n').replace(/memo(\[[^\]]+\])+ = /g, '');
+  }
+  function renderCode(code, showMemo) {
+    return code.replace(/\n+$/, '').split('\n').map(l => {
+      const memo = l.includes(MEMO_MARK);
+      return `<span class="ln${memo && showMemo ? ' memo' : ''}">${hl(stripMark(l)) || ' '}</span>`;
+    }).join('');
+  }
+  function codeBox(pid) {
+    const blocks = CODE[pid] || [];
+    const tabs = [];
+    blocks.forEach((b, k) => {
+      if (k === 0 && b.code.includes(MEMO_MARK)) {
+        tabs.push({ label: 'Recursion', code: toRecursion(b.code), note: 'Plain recursion: correct, but it repeats work. Fine for learning, too slow for big inputs.' });
+        tabs.push({ label: 'Memo', code: b.code, memo: true, note: 'The highlighted lines are all that memoization adds.' });
+      } else tabs.push({ label: b.label, code: b.code, note: b.note || '' });
+    });
+    const id = 'code-' + pid;
+    const el = document.createElement('div'); el.className = 'code';
+    el.innerHTML = `<div class="tabs" role="tablist">${tabs.map((t, i) => `<button class="tab" role="tab" id="${id}-t${i}" aria-selected="${i === 1 ? 'true' : 'false'}" data-i="${i}">${esc(t.label)}</button>`).join('')}<button class="copy" type="button">Copy</button></div><pre></pre><div class="code-note"></div>`;
+    let cur = tabs.length > 1 ? 1 : 0;
+    const show = (i) => {
+      cur = i;
+      $$('.tab', el).forEach(b => b.setAttribute('aria-selected', String(+b.dataset.i === i)));
+      $('pre', el).innerHTML = renderCode(tabs[i].code, !!tabs[i].memo);
+      $('.code-note', el).textContent = tabs[i].note;
+    };
+    el.addEventListener('click', (e) => {
+      const t = e.target.closest('.tab'); if (t) show(+t.dataset.i);
+      const c = e.target.closest('.copy');
+      if (c) {
+        const text = tabs[cur].code.split('\n').map(stripMark).join('\n');
+        const done = () => { c.textContent = 'Copied'; setTimeout(() => (c.textContent = 'Copy'), 1400); };
+        try { navigator.clipboard.writeText(text).then(done, () => selectPre()); } catch (err) { selectPre(); }
+      }
+    });
+    const selectPre = () => { const r = document.createRange(); r.selectNodeContents($('pre', el)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    show(cur);
+    return el;
+  }
+
+  // ---------------- stepper ----------------
+  const VIZES = [];
+  const fmt = VIZ.fmt;
+  class Stepper {
+    constructor(host, key) {
+      this.spec = VIZ.B[key]; this.key = key; this.host = host; this.k = 0; this.timer = null;
+      const uid = host.dataset.pid;
+      host.className = 'viz';
+      host.innerHTML = `
+        <div class="viz-top">
+          <div class="viz-title">Step through it<small>Change the input and press Load to try your own case.</small></div>
+          <form class="viz-in">${this.spec.inputs.map(inp => `<label for="${uid}-${inp.k}">${esc(inp.label)}<input id="${uid}-${inp.k}" name="${inp.k}" value="${esc(inp.v)}" class="${inp.v.length > 12 ? 'wide' : ''}" spellcheck="false" autocomplete="off"></label>`).join('')}<button class="btn" type="submit">Load</button></form>
+        </div>
+        <div class="viz-scroll"><div class="viz-stage"><table class="dpt"></table><svg class="viz-arrows"></svg></div></div>
+        <div class="viz-note" aria-live="polite"></div>
+        <div class="viz-ctl">
+          <button class="btn" data-a="reset" type="button" aria-label="Back to the start">Reset</button>
+          <button class="btn" data-a="prev" type="button">Back</button>
+          <button class="btn btn-primary" data-a="next" type="button">Next</button>
+          <button class="btn" data-a="play" type="button">Play</button>
+          <button class="btn" data-a="end" type="button">Show all</button>
+          <span class="count"></span>
+          <label for="${uid}-speed">speed<input type="range" id="${uid}-speed" min="1" max="10" value="5"></label>
+        </div>`;
+      $('form', host).addEventListener('submit', (e) => { e.preventDefault(); this.load(); });
+      $('.viz-ctl', host).addEventListener('click', (e) => {
+        const a = e.target.closest('[data-a]'); if (!a) return;
+        const act = a.dataset.a;
+        if (act !== 'play') this.stop();
+        if (act === 'reset') this.go(0);
+        if (act === 'prev') this.go(this.k - 1);
+        if (act === 'next') this.go(this.k + 1);
+        if (act === 'end') this.go(this.r.steps.length);
+        if (act === 'play') this.timer ? this.stop() : this.play();
+      });
+      $(`#${uid}-speed`, host).addEventListener('input', () => { if (this.timer) { this.stop(); this.play(); } });
+      this.load();
+    }
+    load() {
+      this.stop();
+      const p = {}; $$('input[name]', this.host).forEach(i => (p[i.name] = i.value));
+      try { this.r = this.spec.build(p); } catch (e) { this.r = { rows: [], cols: [], cells: [], steps: [], resultNote: 'That input could not be read. Check the brackets and quotes.' }; }
+      const r = this.r, tbl = $('table', this.host);
+      if (!r.rows.length) { tbl.innerHTML = ''; $('.viz-arrows', this.host).innerHTML = ''; this.k = 0; this.paintEmpty(); return; }
+      let h = '<tr><th></th>' + r.cols.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>';
+      r.rows.forEach((rl, i) => {
+        h += `<tr><th class="rh">${esc(rl)}</th>` + r.cols.map((_, j) => `<td data-i="${i}" data-j="${j}"></td>`).join('') + '</tr>';
+      });
+      tbl.innerHTML = h;
+      this.td = r.rows.map((_, i) => r.cols.map((_, j) => tbl.querySelector(`td[data-i="${i}"][data-j="${j}"]`)));
+      this.go(0);
+    }
+    paintEmpty() {
+      $('.viz-note', this.host).className = 'viz-note final';
+      $('.viz-note', this.host).textContent = this.r.resultNote || '';
+      $('.count', this.host).textContent = '';
+    }
+    go(k) {
+      const r = this.r; if (!r.rows.length) return;
+      k = Math.max(0, Math.min(r.steps.length, k)); this.k = k;
+      const vals = r.cells.map(row => row.map(c => c.v));
+      for (let s = 0; s < k; s++) vals[r.steps[s].i][r.steps[s].j] = r.steps[s].v;
+      const cur = k > 0 ? r.steps[k - 1] : null, end = k === r.steps.length;
+      const depSet = new Set(cur ? cur.deps.map(([a, b]) => a + ',' + b) : []);
+      let sq = null;
+      if (end && r.square) { const [bi, bj, side] = r.square; sq = (i, j) => i > bi - side && i <= bi && j > bj - side && j <= bj; }
+      r.cells.forEach((row, i) => row.forEach((c, j) => {
+        const td = this.td[i][j], v = vals[i][j];
+        const cls = [c.kind || ''];
+        if (c.kind !== 'void' && c.kind !== 'pad' && c.kind !== 'base' && v !== undefined) cls.push('filled');
+        if (v === true) cls.push('vt'); if (v === false) cls.push('vf');
+        if (cur && cur.i === i && cur.j === j && !end) cls.push('cur');
+        if (depSet.has(i + ',' + j) && !end) cls.push('dep');
+        if (end && r.answer && r.answer[0] === i && r.answer[1] === j) cls.push('ans');
+        if (sq && sq(i, j)) cls.push('insq');
+        td.className = cls.join(' ');
+        if (c.kind === 'void') { td.innerHTML = ''; return; }
+        if (c.kind === 'block' && v === undefined) { td.innerHTML = ''; return; }
+        td.innerHTML = (c.tag !== undefined ? `<span class="tg">${esc(c.tag)}</span>` : '') + (v === undefined ? '' : esc(fmt(v)));
+        if (c.kind === 'block') td.innerHTML = '';
+      }));
+      const note = $('.viz-note', this.host);
+      if (end) { note.className = 'viz-note final'; note.textContent = 'Done. ' + (r.resultNote || ''); }
+      else if (cur) { note.className = 'viz-note'; note.textContent = cur.note; }
+      else { note.className = 'viz-note'; note.textContent = 'Grey dashed cells are the base cases, filled before we start. Press Next to fill the first cell.'; }
+      $('.count', this.host).textContent = `step ${k} / ${r.steps.length}`;
+      $('[data-a="play"]', this.host).textContent = this.timer ? 'Pause' : 'Play';
+      this.cur = end ? null : cur;
+      this.drawArrows();
+    }
+    drawArrows() {
+      const svg = $('.viz-arrows', this.host); if (!svg) return;
+      const stage = $('.viz-stage', this.host);
+      svg.setAttribute('width', stage.offsetWidth); svg.setAttribute('height', stage.offsetHeight);
+      svg.setAttribute('viewBox', `0 0 ${stage.offsetWidth} ${stage.offsetHeight}`);
+      if (!this.cur || !this.cur.deps.length) { svg.innerHTML = ''; return; }
+      const sr = stage.getBoundingClientRect();
+      const center = (i, j) => { const b = this.td[i][j].getBoundingClientRect(); return [b.left - sr.left + b.width / 2, b.top - sr.top + b.height / 2]; };
+      const [cx, cy] = center(this.cur.i, this.cur.j);
+      svg.innerHTML = this.cur.deps.map(([a, b]) => {
+        const [x, y] = center(a, b), dx = cx - x, dy = cy - y, L = Math.hypot(dx, dy) || 1;
+        const s1 = 13, s2 = 16;
+        return `<line x1="${x + dx * s1 / L}" y1="${y + dy * s1 / L}" x2="${cx - dx * s2 / L}" y2="${cy - dy * s2 / L}" class="ar ar-dep" marker-end="url(#ah-dep)"/>`;
+      }).join('');
+    }
+    play() {
+      if (this.k >= this.r.steps.length) this.go(0);
+      const speed = +$(`#${this.host.dataset.pid}-speed`, this.host).value;
+      const ms = 1500 - speed * 135;
+      this.timer = setInterval(() => { if (this.k >= this.r.steps.length) { this.stop(); return; } this.go(this.k + 1); }, ms);
+      $('[data-a="play"]', this.host).textContent = 'Pause';
+    }
+    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; const b = this.host && $('[data-a="play"]', this.host); if (b) b.textContent = 'Play'; }
+  }
+  addEventListener('resize', () => VIZES.forEach(v => v.drawArrows()));
+
+  // ---------------- render families & problems ----------------
+  const famHost = $('#families');
+  const MOVE_TEXT = { rd: 'From the yellow cell you may step to the blue ones.', fall: 'Three cells below are allowed.', tld: 'The yellow cell reads from these three neighbours.' };
+  FAMILIES.forEach(F => {
+    const sec = document.createElement('section'); sec.className = 'fam'; sec.id = 'fam-' + F.id;
+    sec.innerHTML = `<div class="fam-head"><div class="fam-letter">${F.id}</div><div><div class="eyebrow">Family ${F.id}</div><h2>${F.name}</h2><p>${F.lead}</p></div></div>
+      <div class="statebox">${F.state}</div>
+      <figure class="figure">${DG[F.diagram]()}</figure>`;
+    PROBLEMS.filter(p => p.fam === F.id).forEach(P => sec.appendChild(renderProblem(P)));
+    famHost.appendChild(sec);
+  });
+
+  function renderProblem(P) {
+    const a = document.createElement('article'); a.className = 'prob'; a.id = P.id;
+    const labels = ['State', 'Choices', 'Recurrence', 'Base cases', 'Answer'];
+    a.innerHTML = `
+      <div class="prob-head">
+        <span class="pid">${P.id}</span><h3>${esc(P.title)}</h3>
+        <a class="chip" href="${P.url}" target="_blank" rel="noopener">LeetCode ${P.lc}</a>
+        <span class="chip diff-${P.diff}">${P.diff}</span>
+        ${P.isNew ? '<span class="chip chip-new">new in this edition</span>' : ''}
+        <label class="done-toggle" for="done-${P.id}"><input type="checkbox" id="done-${P.id}" data-pid="${P.id}"> I can solve this</label>
+      </div>
+      <div class="prob-grid">
+        <div><p>${P.statement}</p><pre class="example">${esc(P.example)}</pre></div>
+        <div class="card"><div class="card-title"><span>DP card</span></div>
+          <dl>${P.card.map((c, i) => `<dt>${labels[i]}</dt><dd>${c}</dd>`).join('')}</dl>
+          ${P.moves ? `<div class="moves">${DG.moves(P.moves)}<span>${MOVE_TEXT[P.moves]}</span></div>` : ''}
+        </div>
+      </div>
+      ${P.diagram ? `<figure class="figure">${DG[P.diagram]()}</figure>` : ''}
+      <div class="notes">${P.notes}</div>
+      <div class="viz-host" data-pid="${P.id}"></div>
+      <div class="code-host"></div>
+      ${P.tries.length ? `<div class="tries">${P.tries.map(t => `<details class="try"><summary>${t.q}</summary><div class="ans">${t.a}</div></details>`).join('')}</div>` : ''}
+      <p class="cx"><b>Complexity.</b> ${P.cx}</p>`;
+    $('.code-host', a).replaceWith(codeBox(P.id));
+    return a;
+  }
+  $$('.viz-host').forEach(h => { const P = PROBLEMS.find(p => p.id === h.dataset.pid); VIZES.push(new Stepper(h, P.viz)); });
+
+  // ---------------- start-here figures ----------------
+  $('#fig-tree').innerHTML = DG.tree() + '<figcaption>Every orange box is a repeat. The memo stores dp(1,1) the first time, so the second visit returns straight away.</figcaption>';
+  $('#fig-dirs').innerHTML = DG.directions();
+  function callCounts(n) {
+    const m = n, cnt = new Map();
+    const brute = (i, j) => { if (i >= m || j >= n || (i === m - 1 && j === n - 1)) return 1; const k = i * 100 + j; if (cnt.has(k)) return cnt.get(k); const v = 1 + brute(i, j + 1) + brute(i + 1, j); cnt.set(k, v); return v; };
+    let calls = 0; const seen = new Set();
+    const memo = (i, j) => { calls++; if (i >= m || j >= n || (i === m - 1 && j === n - 1)) return; const k = i * 100 + j; if (seen.has(k)) return; seen.add(k); memo(i, j + 1); memo(i + 1, j); };
+    memo(0, 0);
+    return [brute(0, 0), calls];
+  }
+  const callsInput = $('#calls-n');
+  const updCalls = () => {
+    const n = +callsInput.value, [slow, fast] = callCounts(n), max = Math.log10(callCounts(16)[0]);
+    $('#calls-label').textContent = `${n} × ${n}`;
+    $('#calls-slow').textContent = slow.toLocaleString('en-US');
+    $('#calls-fast').textContent = fast.toLocaleString('en-US');
+    $('#calls-bar-slow').style.width = (100 * Math.log10(slow) / max) + '%';
+    $('#calls-bar-fast').style.width = (100 * Math.log10(fast) / max) + '%';
+  };
+  callsInput.addEventListener('input', updCalls); updCalls();
+
+  // ---------------- nav, progress, search ----------------
+  const nav = $('#nav');
+  let navHtml = `<li><a href="#start"><span class="nid">·</span>Start here</a></li>`;
+  FAMILIES.forEach(F => {
+    navHtml += `<li class="grp"><a href="#fam-${F.id}" style="padding:0;color:inherit">${F.id} · ${F.name}</a></li>`;
+    PROBLEMS.filter(p => p.fam === F.id).forEach(P => {
+      navHtml += `<li data-search="${esc((P.id + ' ' + P.title + ' ' + P.lc).toLowerCase())}"><a href="#${P.id}" data-pid="${P.id}"><span class="nid">${P.id}</span>${esc(P.title)}<span class="tick">✓</span></a></li>`;
+    });
+  });
+  navHtml += `<li class="grp">Practice</li><li><a href="#quiz"><span class="nid">?</span>Which family is it?</a></li><li><a href="#cheat"><span class="nid">≡</span>All 22 side by side</a></li><li><a href="#plan"><span class="nid">14</span>Two-week plan</a></li>`;
+  nav.innerHTML = navHtml;
+
+  let done = store.get('done', {});
+  const paintProgress = () => {
+    const n = PROBLEMS.filter(p => done[p.id]).length;
+    $('#prog-text').textContent = `${n} of ${PROBLEMS.length} solved`;
+    $('#prog-bar').style.width = (100 * n / PROBLEMS.length) + '%';
+    $$('a[data-pid]', nav).forEach(a => a.classList.toggle('done', !!done[a.dataset.pid]));
+  };
+  $$('input[data-pid]').forEach(cb => {
+    cb.checked = !!done[cb.dataset.pid];
+    cb.addEventListener('change', () => { done[cb.dataset.pid] = cb.checked; store.set('done', done); paintProgress(); });
+  });
+  $('#reset-progress').addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    if (b.dataset.armed) { done = {}; store.set('done', done); $$('input[data-pid]').forEach(c => (c.checked = false)); paintProgress(); b.textContent = 'Reset ticks'; delete b.dataset.armed; return; }
+    b.dataset.armed = '1'; b.textContent = 'Click again to clear';
+    setTimeout(() => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = 'Reset ticks'; } }, 3000);
+  });
+  paintProgress();
+
+  $('#nav-search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    $$('li[data-search]', nav).forEach(li => (li.hidden = q && !li.dataset.search.includes(q)));
+  });
+
+  const rail = $('#rail'), menuBtn = $('#menu-btn');
+  menuBtn.addEventListener('click', () => { const o = rail.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', String(o)); });
+  nav.addEventListener('click', (e) => { if (e.target.closest('a')) { rail.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); } });
+
+  if ('IntersectionObserver' in window) {
+    const links = new Map($$('a[href^="#"]', nav).map(a => [a.getAttribute('href').slice(1), a]));
+    const io = new IntersectionObserver((ents) => {
+      ents.forEach(en => {
+        if (!en.isIntersecting) return;
+        $$('a.on', nav).forEach(a => a.classList.remove('on'));
+        const l = links.get(en.target.id); if (l) l.classList.add('on');
+      });
+    }, { rootMargin: '-30% 0px -65% 0px' });
+    ['start', 'quiz', 'cheat', 'plan', ...PROBLEMS.map(p => p.id)].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+  }
+
+  // ---------------- quiz ----------------
+  const qHost = $('#quiz-list');
+  let answers = store.get('quiz', {});
+  const paintQuiz = () => {
+    qHost.innerHTML = QUIZ.map((q, i) => {
+      const pick = answers[i];
+      return `<div class="q"><p>${i + 1}. ${esc(q.q)}</p><div class="opts">${QUIZ_OPTIONS.map((o, k) => {
+        let cls = 'opt';
+        if (pick !== undefined && k === q.a) cls += ' right';
+        if (pick === k && k !== q.a) cls += ' wrong';
+        return `<button class="${cls}" type="button" data-q="${i}" data-k="${k}" ${pick !== undefined ? 'disabled' : ''}>${o}</button>`;
+      }).join('')}</div>${pick !== undefined ? `<div class="why">${pick === q.a ? 'Right. ' : 'Not quite. '}${esc(q.why)}</div>` : ''}</div>`;
+    }).join('');
+    const answered = Object.keys(answers).length, right = QUIZ.filter((q, i) => answers[i] === q.a).length;
+    $('#quiz-score').textContent = answered ? `${right} right out of ${answered} answered (${QUIZ.length} questions)` : `${QUIZ.length} questions. Your answers stay in this browser.`;
+  };
+  qHost.addEventListener('click', (e) => {
+    const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+    answers[b.dataset.q] = +b.dataset.k; store.set('quiz', answers); paintQuiz();
+  });
+  $('#quiz-reset').addEventListener('click', () => { answers = {}; store.set('quiz', answers); paintQuiz(); });
+  paintQuiz();
+
+  // ---------------- plan ----------------
+  $('#plan-table').insertAdjacentHTML('beforeend', PLAN.map(r => `<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join(''));
+
+  // sections are built by script, so jump to a #link only after they exist
+  const jump = () => { const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' }); };
+  jump();
+
+  // fonts can shift table cells; redraw arrows once they are in
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { VIZES.forEach(v => v.drawArrows()); jump(); });
+})();
+
+</script>
+</body>
+</html>

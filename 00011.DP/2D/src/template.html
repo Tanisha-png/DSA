@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2D DP Handbook</title>
+<meta name="description" content="22 two-dimensional dynamic programming problems in JavaScript, with step-by-step tables, diagrams and tested code.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: sticky contents rail on the left, one reading column on the right. Graph-paper motif from the subject itself. */
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --surface-2: #f0f2f6; --ink: #18202c; --muted: #5b6676; --line: #d6dbe3; --line-strong: #9aa4b2;
+  --accent: #3355d1; --accent-soft: #e5eafb; --accent-ink: #ffffff;
+  --cell: #f3f5f8; --cur: #ffd36b; --cur-line: #c98a00; --dep: #cfe0ff; --dep-line: #3a6fe0; --path: #c8efd6; --path-line: #1f8f52;
+  --pad: #e7eaef; --warn: #ffd9d6; --warn-line: #d23b2e; --violet: #8a5cd6; --block: #4a5464;
+  --code-bg: #141a24; --code-ink: #e3e8f1; --code-muted: #8590a3; --k: #ff9e64; --s: #9ece6a; --n: #e0af68; --f: #7aa2f7; --memo: rgba(255, 211, 107, .16);
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --grid-dot: rgba(24, 32, 44, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f131a; --surface: #161b24; --surface-2: #1d2430; --ink: #e6eaf1; --muted: #9aa5b5; --line: #2c3442; --line-strong: #5d687a;
+    --accent: #7d97ff; --accent-soft: #232c45; --accent-ink: #0f131a;
+    --cell: #1d2430; --cur: #6e5414; --cur-line: #f2b632; --dep: #1f3560; --dep-line: #6f9bff; --path: #173f2a; --path-line: #4fcf87;
+    --pad: #252c38; --warn: #4a1f1c; --warn-line: #ff7a6e; --violet: #b18cff; --block: #8a95a8;
+    --code-bg: #0b0e14; --memo: rgba(242, 182, 50, .14); --grid-dot: rgba(230, 234, 241, .05);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f131a; --surface: #161b24; --surface-2: #1d2430; --ink: #e6eaf1; --muted: #9aa5b5; --line: #2c3442; --line-strong: #5d687a;
+  --accent: #7d97ff; --accent-soft: #232c45; --accent-ink: #0f131a;
+  --cell: #1d2430; --cur: #6e5414; --cur-line: #f2b632; --dep: #1f3560; --dep-line: #6f9bff; --path: #173f2a; --path-line: #4fcf87;
+  --pad: #252c38; --warn: #4a1f1c; --warn-line: #ff7a6e; --violet: #b18cff; --block: #8a95a8;
+  --code-bg: #0b0e14; --memo: rgba(242, 182, 50, .14); --grid-dot: rgba(230, 234, 241, .05);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--sans); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 .3em; white-space: nowrap; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+p { margin: 0 0 .8em; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+.rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); padding: 22px 16px 40px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); }
+main { min-width: 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px 40px; }
+.col { max-width: 860px; }
+
+.brand { font-family: var(--display); font-weight: 700; font-size: 19px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.brand-mark { display: grid; grid-template-columns: repeat(3, 7px); gap: 2px; }
+.brand-mark i { width: 7px; height: 7px; border-radius: 2px; background: var(--line); }
+.brand-mark i.a { background: var(--cur); } .brand-mark i.b { background: var(--dep-line); } .brand-mark i.c { background: var(--path-line); }
+.progress { margin: 6px 0 14px; font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-top: 6px; border: 1px solid var(--line); }
+.bar > span { display: block; height: 100%; width: 0; background: var(--path-line); transition: width .3s; }
+.search { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 14px; }
+.nav { list-style: none; margin: 14px 0 0; padding: 0; font-size: 14px; }
+.nav .grp { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 16px 0 4px; }
+.nav a { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.nav a:hover { background: var(--surface-2); }
+.nav a.on { background: var(--accent-soft); color: var(--accent); }
+.nav .nid { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 22px; }
+.nav .tick { margin-left: auto; color: var(--path-line); font-size: 12px; visibility: hidden; }
+.nav a.done .tick { visibility: visible; }
+.rail-foot { margin-top: 20px; display: flex; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+.btn:hover { border-color: var(--line-strong); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.mobile-bar { display: none; }
+
+/* ---------- hero ---------- */
+.hero { padding: 54px 0 36px; border-bottom: 1px solid var(--line); background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px); background-size: 22px 22px; }
+.hero h1 { font-size: clamp(34px, 5vw, 52px); letter-spacing: -.02em; }
+.hero p.lead { font-size: 19px; color: var(--muted); max-width: 620px; margin-top: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; color: var(--muted); margin-top: 18px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid; display: inline-block; }
+.sw-cur { background: var(--cur); border-color: var(--cur-line); }
+.sw-dep { background: var(--dep); border-color: var(--dep-line); }
+.sw-path { background: var(--path); border-color: var(--path-line); }
+.sw-pad { background: var(--pad); border-color: var(--line-strong); border-style: dashed; }
+.stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 26px; }
+.stats div { font-size: 13px; color: var(--muted); }
+.stats b { display: block; font-family: var(--display); font-size: 26px; color: var(--ink); }
+
+/* ---------- sections ---------- */
+section.block { padding: 48px 0 8px; }
+.eyebrow { font-family: var(--display); font-size: 12.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+section.block > h2 { font-size: 32px; margin-bottom: 12px; }
+h3.sub { font-size: 21px; margin: 34px 0 10px; }
+.prose { max-width: 680px; }
+.muted { color: var(--muted); }
+.figure { margin: 18px 0 22px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+.figure figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
+.dg { width: 100%; height: auto; display: block; overflow: visible; }
+pre.mini { font: 13.5px/1.5 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; overflow-x: auto; }
+
+table.plain { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.tablewrap { overflow-x: auto; margin: 12px 0 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table.plain th, table.plain td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.plain th { font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--muted); background: var(--surface-2); }
+table.plain tr:last-child td { border-bottom: 0; }
+
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0 8px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; position: relative; }
+.step b { font-family: var(--display); font-size: 15px; display: block; margin-bottom: 4px; }
+.step small { color: var(--muted); font-size: 13px; line-height: 1.45; display: block; }
+.step .lv { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
+.step:not(:last-child)::after { content: '→'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--line-strong); font-size: 14px; }
+
+.counter { display: grid; gap: 10px; margin-top: 8px; }
+.counter label { font-size: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.counter input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.crow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 130px; align-items: center; gap: 10px; font-size: 14px; }
+.cbar { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.cbar span { display: block; height: 100%; transition: width .25s; }
+.cbar .slow { background: var(--warn-line); } .cbar .fast { background: var(--path-line); }
+.crow .num { font-family: var(--mono); text-align: right; font-size: 13.5px; }
+
+/* ---------- family header ---------- */
+.fam { padding-top: 64px; }
+.fam-head { display: flex; gap: 18px; align-items: flex-start; }
+.fam-letter { font-family: var(--display); font-weight: 700; font-size: 26px; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: var(--bg); flex: none; }
+.fam-head h2 { font-size: 30px; }
+.fam-head p { color: var(--muted); margin: 6px 0 0; max-width: 640px; }
+.statebox { margin-top: 16px; padding: 12px 16px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; font-size: 15px; }
+
+/* ---------- problem ---------- */
+.prob { margin-top: 40px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.prob-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 14px; }
+.pid { font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+.prob-head h3 { font-size: 23px; }
+.chip { font-size: 12.5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+a.chip:hover { border-color: var(--accent); color: var(--accent); }
+.diff-Medium { color: #b26b00; border-color: #e7c27a; } .diff-Hard { color: var(--warn-line); border-color: var(--warn-line); }
+:root[data-theme="dark"] .diff-Medium { color: #f2b632; border-color: #7a5d1e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .diff-Medium { color: #f2b632; border-color: #7a5d1e; } }
+.chip-new { background: var(--path); color: var(--ink); border-color: var(--path-line); }
+.done-toggle { margin-left: auto; font-size: 13.5px; display: inline-flex; gap: 7px; align-items: center; cursor: pointer; color: var(--muted); user-select: none; }
+.done-toggle input { width: 17px; height: 17px; accent-color: var(--path-line); }
+.prob-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; }
+pre.example { font: 13.5px/1.55 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 10px 0 0; overflow-x: auto; white-space: pre-wrap; }
+.card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-self: start; }
+.card-title { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.card dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); }
+.card dt, .card dd { margin: 0; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.card dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding-top: 9px; }
+.card dl > :nth-last-child(-n+2) { border-bottom: 0; }
+.card code { white-space: normal; }
+.moves { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.moves svg { width: 70px; flex: none; }
+.notes { margin-top: 18px; max-width: 700px; }
+
+/* ---------- stepper ---------- */
+.viz { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.viz-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.viz-title { font-family: var(--display); font-weight: 600; font-size: 15px; }
+.viz-title small { display: block; font-family: var(--sans); font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.viz-in { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.viz-in label { display: grid; font-size: 11.5px; color: var(--muted); gap: 2px; }
+.viz-in input { font: 13px var(--mono); padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 100%; min-width: 64px; }
+.viz-in input.wide { min-width: min(320px, 70vw); }
+.viz-scroll { overflow-x: auto; padding: 16px 14px 8px; }
+.viz-stage { position: relative; display: inline-block; }
+.viz-arrows { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+table.dpt { border-collapse: separate; border-spacing: 4px; font-family: var(--mono); }
+table.dpt th { font-size: 12px; color: var(--muted); font-weight: 500; padding: 0 4px; white-space: nowrap; }
+table.dpt th.rh { text-align: right; }
+table.dpt td { width: 44px; min-width: 44px; height: 44px; text-align: center; border-radius: 7px; background: var(--cell); border: 1.5px solid var(--line); font-size: 14.5px; font-weight: 500; position: relative; transition: background .15s, border-color .15s; }
+table.dpt td .tg { position: absolute; top: 2px; left: 4px; font-size: 10px; color: var(--muted); font-weight: 400; }
+table.dpt td.pad, table.dpt td.base { background: var(--pad); border-style: dashed; border-color: var(--line-strong); color: var(--muted); }
+table.dpt td.block { background: var(--block); border-color: var(--block); color: var(--bg); }
+table.dpt td.block::after { content: 'rock'; font-size: 10px; }
+table.dpt td.void { background: transparent; border-color: transparent; }
+table.dpt td.filled { background: var(--surface); }
+table.dpt td.dep { background: var(--dep); border-color: var(--dep-line); }
+table.dpt td.cur { background: var(--cur); border-color: var(--cur-line); font-weight: 700; }
+table.dpt td.ans { background: var(--path); border-color: var(--path-line); font-weight: 700; }
+table.dpt td.insq { box-shadow: inset 0 0 0 2px var(--path-line); }
+table.dpt td.vt { color: var(--path-line); font-weight: 700; } table.dpt td.vf { color: var(--muted); }
+.viz-note { min-height: 48px; margin: 4px 14px 0; padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font: 13.5px/1.5 var(--mono); }
+.viz-note.final { border-color: var(--path-line); background: var(--path); font-family: var(--sans); font-weight: 600; }
+.viz-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px 14px; }
+.viz-ctl .count { font: 13px var(--mono); color: var(--muted); margin-left: 4px; }
+.viz-ctl label { margin-left: auto; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.viz-ctl input[type=range] { width: 90px; accent-color: var(--accent); }
+.viz-empty { padding: 14px; color: var(--muted); font-size: 14px; }
+
+/* ---------- code ---------- */
+.code { margin-top: 20px; border-radius: 12px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 6px 0; background: rgba(255,255,255,.03); border-bottom: 1px solid rgba(255,255,255,.08); }
+.tab { background: none; border: 0; color: var(--code-muted); padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px 6px 0 0; }
+.tab[aria-selected="true"] { color: var(--code-ink); background: var(--code-bg); box-shadow: inset 0 2px 0 var(--cur-line); }
+.copy { margin-left: auto; align-self: center; background: none; border: 1px solid rgba(255,255,255,.15); color: var(--code-muted); border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; margin-bottom: 6px; }
+.copy:hover { color: var(--code-ink); }
+.code pre { margin: 0; padding: 14px 0; overflow-x: auto; font: 13.5px/1.6 var(--mono); color: var(--code-ink); }
+.code pre .ln { display: block; padding: 0 16px; min-height: 1.6em; white-space: pre; }
+.code pre .ln.memo { background: var(--memo); box-shadow: inset 3px 0 0 var(--cur-line); }
+.code pre .ln.memo::after { content: 'memo'; float: right; font-size: 10.5px; color: var(--cur-line); margin-left: 12px; }
+.code .k { color: var(--k); } .code .s { color: var(--s); } .code .n { color: var(--n); } .code .c { color: var(--code-muted); font-style: italic; } .code .f { color: var(--f); }
+.code-note { font-size: 12.5px; color: var(--code-muted); padding: 0 16px 12px; }
+
+/* ---------- try it ---------- */
+.tries { margin-top: 18px; display: grid; gap: 8px; }
+details.try { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+details.try summary { cursor: pointer; padding: 10px 14px; font-weight: 500; list-style: none; display: flex; gap: 10px; }
+details.try summary::-webkit-details-marker { display: none; }
+details.try summary::before { content: 'Try first'; flex: none; font: 600 11px var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 6px; height: fit-content; margin-top: 3px; }
+details.try[open] summary::before { content: 'Answer'; color: var(--path-line); border-color: var(--path-line); }
+details.try .ans { padding: 0 14px 12px 14px; color: var(--ink); }
+.cx { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.cx b { color: var(--ink); }
+
+/* ---------- quiz ---------- */
+.quiz-score { font-family: var(--display); font-size: 15px; margin: 6px 0 16px; }
+.q { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 12px; }
+.q p { font-weight: 500; }
+.q .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.q .opt { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-size: 13.5px; cursor: pointer; }
+.q .opt:hover:not(:disabled) { border-color: var(--accent); }
+.q .opt.right { background: var(--path); border-color: var(--path-line); }
+.q .opt.wrong { background: var(--warn); border-color: var(--warn-line); }
+.q .opt:disabled { cursor: default; }
+.q .why { margin-top: 10px; font-size: 14.5px; color: var(--muted); }
+
+ol.script { padding-left: 22px; } ol.script li { margin-bottom: 6px; }
+footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: fixed; z-index: 30; inset: 0 auto 0 0; width: min(320px, 86vw); transform: translateX(-102%); transition: transform .2s; box-shadow: 0 0 40px rgba(0,0,0,.25); padding-top: calc(22px + env(safe-area-inset-top, 0px)); }
+  .rail.open { transform: none; }
+  main { padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
+  .mobile-bar { display: flex; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; align-items: center; justify-content: space-between; gap: 10px; padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 25; background: var(--bg); }
+  .prob-grid { grid-template-columns: minmax(0, 1fr); }
+  .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step:nth-child(2)::after { display: none; }
+}
+@media (max-width: 560px) {
+  .prob { padding: 18px 14px; margin-left: -4px; margin-right: -4px; }
+  .crow { grid-template-columns: 90px minmax(0, 1fr) 96px; }
+  .ladder { grid-template-columns: minmax(0, 1fr); }
+  .step::after { display: none; }
+  .done-toggle { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+    <marker id="ah-dep" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dep-line)"/></marker>
+    <marker id="ah-path" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--path-line)"/></marker>
+    <marker id="ah-cur" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--cur-line)"/></marker>
+    <marker id="ah-warn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--warn-line)"/></marker>
+  </defs>
+</svg>
+<style>
+.dg .c { stroke: var(--line-strong); stroke-width: 1.2; fill: var(--cell); }
+.dg .c-cur { fill: var(--cur); stroke: var(--cur-line); }
+.dg .c-dep { fill: var(--dep); stroke: var(--dep-line); }
+.dg .c-path { fill: var(--path); stroke: var(--path-line); }
+.dg .c-path-soft { fill: var(--path); stroke: var(--line-strong); }
+.dg .c-pad { fill: var(--pad); stroke-dasharray: 4 3; }
+.dg .c-warn { fill: var(--warn); stroke: var(--warn-line); }
+.dg .c-len1 { fill: var(--dep); fill-opacity: .25; } .dg .c-len2 { fill: var(--dep); fill-opacity: .4; } .dg .c-len3 { fill: var(--dep); fill-opacity: .55; } .dg .c-len4 { fill: var(--dep); fill-opacity: .7; }
+.dg .t { fill: var(--ink); font: 500 13px var(--mono); }
+.dg .t-sm { font-size: 11.5px; }
+.dg .t-b { font-weight: 700; }
+.dg .t-s { fill: var(--muted); font: 12.5px var(--sans); }
+.dg .t-strong { fill: var(--ink); font-weight: 600; }
+.dg .t-lab { fill: var(--ink); font: 600 13.5px var(--display); }
+.dg .edge { stroke: var(--line-strong); stroke-width: 1.5; fill: none; }
+.dg .edge-dup { stroke: var(--cur-line); stroke-width: 2; }
+.ar { stroke-width: 2; fill: none; }
+.ar-ink { stroke: var(--muted); } .ar-dep { stroke: var(--dep-line); } .ar-path { stroke: var(--path-line); } .ar-cur { stroke: var(--cur-line); } .ar-warn { stroke: var(--warn-line); }
+.dg .sq { fill: none; stroke-width: 2.5; } .dg .sq-a { stroke: var(--path-line); } .dg .sq-b { stroke: var(--dep-line); } .dg .sq-c { stroke: var(--violet); }
+</style>
+
+<div class="mobile-bar">
+  <button class="btn" id="menu-btn" aria-controls="rail" aria-expanded="false">Contents</button>
+  <span class="brand" style="margin:0;font-size:16px">2D DP Handbook</span>
+  <button class="btn theme-btn" aria-label="Switch colour theme">Theme</button>
+</div>
+
+<div class="layout">
+  <aside class="rail" id="rail">
+    <div class="brand"><span class="brand-mark"><i></i><i class="b"></i><i></i><i></i><i class="a"></i><i></i><i></i><i></i><i class="c"></i></span>2D DP Handbook</div>
+    <div class="progress"><span id="prog-text">0 of 22 solved</span><div class="bar"><span id="prog-bar"></span></div></div>
+    <input class="search" id="nav-search" type="search" placeholder="Filter problems (name or LC number)" aria-label="Filter problems">
+    <ul class="nav" id="nav"></ul>
+    <div class="rail-foot"><button class="btn theme-btn" aria-label="Switch colour theme">Theme</button><button class="btn" id="reset-progress">Reset ticks</button></div>
+  </aside>
+
+  <main>
+    <div class="col">
+      <header class="hero" id="top">
+        <div class="eyebrow">JavaScript · LeetCode · 22 problems</div>
+        <h1>2D Dynamic Programming,<br>one table at a time</h1>
+        <p class="lead">Every problem here is solved with the same five questions. Press <b>Next</b> on any table and watch it fill, cell by cell, with the reason for each number written underneath.</p>
+        <div class="legend">
+          <span><i class="sw sw-cur"></i>cell being filled</span>
+          <span><i class="sw sw-dep"></i>cells it reads from</span>
+          <span><i class="sw sw-path"></i>answer or best path</span>
+          <span><i class="sw sw-pad"></i>padding / base case</span>
+        </div>
+        <div class="stats">
+          <div><b>6</b>families</div>
+          <div><b>22</b>problems</div>
+          <div><b>22</b>step-through tables</div>
+          <div><b>10</b>quiz questions</div>
+        </div>
+      </header>
+
+      <!-- ====================== START HERE ====================== -->
+      <section class="block" id="start">
+        <div class="eyebrow">Start here</div>
+        <h2>How every solution is built</h2>
+        <div class="prose">
+          <p>A problem is dynamic programming when you make a series of choices, the same smaller question keeps coming up along different routes, and the best answer is built from the best answers to those smaller questions.</p>
+          <p>It is <b>2D</b> when you need two numbers to say where you are:</p>
+        </div>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>State</th><th>What the two numbers mean</th><th>Family</th></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I am at row i, column j</td><td>Grid paths, squares</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I have used s1 up to i and s2 up to j</td><td>Two strings</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>I am looking at the slice from i to j</td><td>Intervals</td></tr>
+          <tr><td><code>dp(i, c)</code></td><td>I am at item i with c capacity left</td><td>Knapsack</td></tr>
+          <tr><td><code>dp(i, s)</code></td><td>I am on day i and in mode s</td><td>Index + state</td></tr>
+        </table></div>
+        <p class="prose">A good test: <i>what is the least I need to know about where I am, so that I can finish the problem without caring how I got here?</i> If the answer is two numbers, you are in the right place.</p>
+
+        <h3 class="sub">The DP card</h3>
+        <p class="prose">Fill this in before you write any code. Every problem below starts with one.</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Question</th><th>For Unique Paths</th></tr>
+          <tr><td><b>State.</b> What does <code>dp(i, j)</code> mean, in plain words?</td><td>Number of routes from <code>(i, j)</code> to the finish</td></tr>
+          <tr><td><b>Choices.</b> What can I do from here?</td><td>Step right or step down</td></tr>
+          <tr><td><b>Recurrence.</b> How do the choices combine?</td><td><code>dp(i, j+1) + dp(i+1, j)</code></td></tr>
+          <tr><td><b>Base cases.</b> Where does it stop?</td><td>Off the grid → 0, on the finish → 1</td></tr>
+          <tr><td><b>Answer.</b> Which state do I return?</td><td><code>dp(0, 0)</code></td></tr>
+          <tr><td><b>Order</b> (tables only). Which cells must be ready first?</td><td>Bottom-right to top-left</td></tr>
+        </table></div>
+        <p class="prose">What the question asks for tells you how to combine the choices, and what to return for a move that is not allowed:</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>The question asks for</th><th>Combine with</th><th>A move that is not allowed returns</th></tr>
+          <tr><td>Number of ways</td><td><code>+</code></td><td><code>0</code></td></tr>
+          <tr><td>Smallest cost</td><td><code>Math.min</code></td><td><code>Infinity</code></td></tr>
+          <tr><td>Largest value</td><td><code>Math.max</code></td><td><code>-Infinity</code>, or <code>0</code> if doing nothing is allowed</td></tr>
+          <tr><td>Is it possible?</td><td><code>||</code></td><td><code>false</code></td></tr>
+        </table></div>
+
+        <h3 class="sub">Four versions of the same solution</h3>
+        <div class="ladder">
+          <div class="step"><span class="lv">version 1</span><b>Plain recursion</b><small>Correct but very slow. Write it first to get the logic right.</small></div>
+          <div class="step"><span class="lv">version 2</span><b>Memo</b><small>Same code plus a table that remembers answers. Two extra lines.</small></div>
+          <div class="step"><span class="lv">version 3</span><b>Table (bottom-up)</b><small>Fill the table with loops. No recursion, so no stack overflow.</small></div>
+          <div class="step"><span class="lv">version 4</span><b>One row</b><small>Keep only the rows you still need. Same speed, much less memory.</small></div>
+        </div>
+        <p class="prose">In the code boxes, the lines that memoization adds have a yellow bar. Switch to the <b>Recursion</b> tab to see the same code with those lines removed.</p>
+
+        <h3 class="sub">Why the memo makes such a difference</h3>
+        <p class="prose">Here is plain recursion on a 3 × 3 grid. The orange part is worked out twice, because two different routes reach cell (1,1).</p>
+        <figure class="figure" id="fig-tree"></figure>
+        <p class="prose">On bigger grids the repeated work gets out of hand. Move the slider:</p>
+        <div class="figure counter">
+          <label for="calls-n">Grid size: <b id="calls-label">10 × 10</b><input type="range" id="calls-n" min="2" max="16" value="10"></label>
+          <div class="crow"><span>Plain recursion</span><div class="cbar"><span class="slow" id="calls-bar-slow"></span></div><span class="num" id="calls-slow"></span></div>
+          <div class="crow"><span>With memo</span><div class="cbar"><span class="fast" id="calls-bar-fast"></span></div><span class="num" id="calls-fast"></span></div>
+          <figcaption>Function calls made by each version. Bars use a log scale, otherwise the memo bar would be invisible.</figcaption>
+        </div>
+
+        <h3 class="sub">Two ways to read a state</h3>
+        <p class="prose">Most notes never say this out loud, but it causes a lot of confusion. <code>dp(i, j)</code> can mean the answer for the <b>rest</b> of the problem starting at <code>(i, j)</code>, or the answer for a piece that <b>ends</b> exactly at <code>(i, j)</code>. Both work for most problems. Which one you choose decides the loop direction.</p>
+        <figure class="figure" id="fig-dirs"></figure>
+        <p class="prose">This handbook uses "from here to the end" for grids, strings, knapsack and stocks, so you only have one habit to learn. Squares use "ending here", because a square is easiest to describe by its bottom-right corner. The Dungeon Game (A6) only works "from here to the end", and you will see why.</p>
+
+        <h3 class="sub">Padding is the base case</h3>
+        <p class="prose">When you turn a memo into a table, add one extra row and column filled with the base-case value. Then the loops need no "am I outside the grid?" checks. In the steppers, padding cells have a dashed grey border. They are filled before the first step.</p>
+        <p class="prose"><b>Loop direction rule:</b> if <code>dp(i, j)</code> reads row <code>i + 1</code>, loop <code>i</code> downward. If it reads <code>i − 1</code>, loop upward.</p>
+
+        <h3 class="sub">Common mistakes</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Mistake</th><th>What you see</th><th>Fix</th></tr>
+          <tr><td>Checking the memo before the bounds</td><td><code>Cannot read properties of undefined</code></td><td>Bounds first, memo second</td></tr>
+          <tr><td><code>Array(m).fill(Array(n))</code></td><td>All rows change together</td><td><code>Array.from({ length: m }, () =&gt; Array(n))</code></td></tr>
+          <tr><td>Using <code>0</code> to mean "not computed yet"</td><td>Right answer, but Time Limit Exceeded</td><td>Use <code>undefined</code></td></tr>
+          <tr><td>Returning <code>0</code> for a bad move in a min problem</td><td>Answer too small</td><td>Return <code>Infinity</code></td></tr>
+          <tr><td>Mixing up <code>"1"</code> and <code>1</code></td><td>Every cell treated as 0 (or 1)</td><td>Check the input type</td></tr>
+          <tr><td>Wrong loop direction in the table</td><td>Reads cells that are still empty</td><td>Follow the arrows in the recurrence</td></tr>
+          <tr><td>Very deep recursion (amount = 10⁴)</td><td><code>Maximum call stack size exceeded</code></td><td>Use the table version</td></tr>
+        </table></div>
+      </section>
+
+      <div id="families"></div>
+
+      <!-- ====================== QUIZ ====================== -->
+      <section class="block" id="quiz">
+        <div class="eyebrow">Check yourself</div>
+        <h2>Which family is it?</h2>
+        <p class="prose">These problems are not in the handbook. Read each one and pick the family before you think about code. If you can do this in under a minute, you have learned the most useful part.</p>
+        <div class="quiz-score" id="quiz-score"></div>
+        <div id="quiz-list"></div>
+        <button class="btn" id="quiz-reset">Start the quiz again</button>
+      </section>
+
+      <!-- ====================== CHEAT SHEET ====================== -->
+      <section class="block" id="cheat">
+        <div class="eyebrow">One page</div>
+        <h2>All 22 side by side</h2>
+        <div class="tablewrap"><table class="plain" id="cheat-table">
+          <tr><th>#</th><th>Problem</th><th>dp means</th><th>Combine</th><th>Base</th><th>Answer</th></tr>
+          <tr><td>A1</td><td>Unique Paths</td><td>routes from cell</td><td><code>+</code></td><td>off → 0, finish → 1</td><td>dp(0,0)</td></tr>
+          <tr><td>A2</td><td>Unique Paths II</td><td>routes from cell</td><td><code>+</code></td><td>+ rock → 0</td><td>dp(0,0)</td></tr>
+          <tr><td>A3</td><td>Min Path Sum</td><td>cheapest from cell</td><td><code>min</code></td><td>off → ∞</td><td>dp(0,0)</td></tr>
+          <tr><td>A4</td><td>Triangle</td><td>cheapest from cell</td><td><code>min</code></td><td>bottom row</td><td>dp(0,0)</td></tr>
+          <tr><td>A5</td><td>Min Falling Path</td><td>cheapest from cell</td><td><code>min</code> of 3</td><td>column off → ∞</td><td>min of row 0</td></tr>
+          <tr><td>A6</td><td>Dungeon Game</td><td>health needed on entry</td><td><code>max(1, min − d)</code></td><td>off → ∞</td><td>dp(0,0)</td></tr>
+          <tr><td>B1</td><td>Maximal Square</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>max²</td></tr>
+          <tr><td>B2</td><td>Count Squares</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>sum</td></tr>
+          <tr><td>C1</td><td>LCS</td><td>LCS of what is left</td><td>match +1, else <code>max</code></td><td>empty → 0</td><td>dp(0,0)</td></tr>
+          <tr><td>C2</td><td>Delete Operation</td><td>deletions</td><td>match, else <code>1 + min</code></td><td>empty → length left</td><td>dp(0,0)</td></tr>
+          <tr><td>C3</td><td>Edit Distance</td><td>operations</td><td>match, else <code>1 + min</code> of 3</td><td>empty → length left</td><td>dp(0,0)</td></tr>
+          <tr><td>C4</td><td>Distinct Subsequences</td><td>ways</td><td>skip + use</td><td>t done → 1</td><td>dp(0,0)</td></tr>
+          <tr><td>C5</td><td>Wildcard Matching</td><td>matches?</td><td><code>||</code></td><td>both done → true</td><td>dp(0,0)</td></tr>
+          <tr><td>D1</td><td>Longest Pal. Subsequence</td><td>LPS in [i..j]</td><td>match +2, else <code>max</code></td><td>i = j → 1</td><td>dp(0, n−1)</td></tr>
+          <tr><td>D2</td><td>Palindromic Substrings</td><td>is palindrome?</td><td><code>&amp;&amp;</code></td><td>length ≤ 2</td><td>count true</td></tr>
+          <tr><td>D3</td><td>Burst Balloons</td><td>coins between l and r</td><td><code>max</code> over last k</td><td>nothing between → 0</td><td>dp(0, n+1)</td></tr>
+          <tr><td>E1</td><td>Partition Equal Subset</td><td>can make t?</td><td><code>||</code></td><td>t = 0 → true</td><td>dp(0, sum/2)</td></tr>
+          <tr><td>E2</td><td>Target Sum</td><td>ways</td><td><code>+</code></td><td>sum hits target → 1</td><td>dp(0, P)</td></tr>
+          <tr><td>E3</td><td>Coin Change II</td><td>ways</td><td><code>+</code></td><td>amount 0 → 1</td><td>dp(0, amount)</td></tr>
+          <tr><td>E4</td><td>Coin Change</td><td>fewest coins</td><td><code>min</code></td><td>amount 0 → 0</td><td>dp(0, amount)</td></tr>
+          <tr><td>F1</td><td>Stock with Cooldown</td><td>profit</td><td><code>max</code></td><td>past the end → 0</td><td>dp(0, free)</td></tr>
+          <tr><td>F2</td><td>Stock with Fee</td><td>profit</td><td><code>max</code></td><td>past the end → 0</td><td>dp(0, free)</td></tr>
+        </table></div>
+
+        <h3 class="sub">Knapsack in one table</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th></th><th>Each item once (0/1)</th><th>Reuse allowed</th></tr>
+          <tr><td>Possible? (<code>||</code>)</td><td>E1 Partition</td><td>Word Break style</td></tr>
+          <tr><td>Count (<code>+</code>)</td><td>E2 Target Sum</td><td>E3 Coin Change II</td></tr>
+          <tr><td>Min / max</td><td>0/1 Knapsack, LC 474</td><td>E4 Coin Change</td></tr>
+          <tr><td>Take goes to</td><td><code>(i+1, c − w)</code></td><td><code>(i, c − w)</code></td></tr>
+          <tr><td>1D loop</td><td>downward</td><td>upward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Explaining it in an interview</h3>
+        <ol class="script">
+          <li>"Let <code>dp(i, j)</code> be <i>[the state in plain words]</i>."</li>
+          <li>"From here I can <i>[choices]</i>, so <code>dp(i, j) =</code> <i>[recurrence]</i>."</li>
+          <li>"It stops when <i>[base cases]</i>."</li>
+          <li>"The answer is <i>[answer state]</i>."</li>
+          <li>"There are <i>[number of states]</i> states and each does <i>[number of choices]</i> work, so the time is <i>[product]</i>."</li>
+          <li>"I would write it top-down first, then turn it into a table and keep only <i>[one or two rows]</i>."</li>
+        </ol>
+      </section>
+
+      <!-- ====================== PLAN ====================== -->
+      <section class="block" id="plan">
+        <div class="eyebrow">Two weeks</div>
+        <h2>A study plan</h2>
+        <p class="prose">One or two problems a day, plus one problem that is not in the handbook. Tick a problem in its header only when you can write it from a blank file without peeking.</p>
+        <div class="tablewrap"><table class="plain" id="plan-table"><tr><th>Day</th><th>Learn</th><th>Then try on your own</th></tr></table></div>
+        <h3 class="sub">After this</h3>
+        <ul class="prose">
+          <li><b>3D DP:</b> add a third number to the state (LC 1463, 188, 474, 2435). The DP card stays the same. The state line just gets longer.</li>
+          <li><b>DP on trees:</b> <code>dp(node, state)</code>, for example LC 337 House Robber III.</li>
+          <li><b>Bitmask DP:</b> <code>dp(mask, i)</code> for small sets, for example LC 847.</li>
+          <li><b>Digit DP:</b> counting numbers with some property, digit by digit.</li>
+        </ul>
+        <footer>All code on this page was run in Node.js against the LeetCode examples and extra edge cases, and every stepper table is checked against the same solutions. If you remember one thing: say what <code>dp</code> means in plain words, list the choices, combine them with <code>+</code>, <code>min</code>, <code>max</code> or <code>||</code>, and stop at the base case.</footer>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+/*@@CONTENT@@*/
+/*@@VIZ@@*/
+/*@@DIAGRAMS@@*/
+/*@@CODE@@*/
+</script>
+<script>
+/*@@MAIN@@*/
+</script>
+</body>
+</html>
