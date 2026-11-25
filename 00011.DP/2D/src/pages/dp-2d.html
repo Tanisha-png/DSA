@@ -1,0 +1,206 @@
+<div class="scrim" id="scrim" hidden></div>
+<div class="layout">
+  <aside class="rail" id="rail" aria-label="Questions">
+    <div class="rail-head">
+      <button class="menu-toggle" id="menu-btn" type="button" aria-controls="rail-body" aria-expanded="true" aria-label="Hide question list"><span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span></button>
+      <span class="rail-title">Questions</span>
+    </div>
+    <div class="rail-body" id="rail-body">
+      <div class="progress"><span id="prog-text">0 of 22 solved</span><div class="bar"><span id="prog-bar"></span></div></div>
+      <input class="search" id="nav-search" type="search" placeholder="Filter (name or LC number)" aria-label="Filter problems">
+      <ul class="nav" id="nav"></ul>
+      <div class="rail-foot"><button class="btn" id="reset-progress">Reset ticks</button></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="col">
+      <header class="hero" id="top">
+        <h1>2D Dynamic Programming</h1>
+        <p class="lead">Six families. Each problem has a DP card, a table you can step through, and tested code.</p>
+        <div class="legend">
+          <span><i class="sw sw-cur"></i>cell being filled</span>
+          <span><i class="sw sw-dep"></i>cells it reads</span>
+          <span><i class="sw sw-path"></i>answer</span>
+          <span><i class="sw sw-pad"></i>padding / base case</span>
+        </div>
+      </header>
+
+      <!-- ====================== BASICS ====================== -->
+      <section class="block" id="start">
+        <div class="eyebrow">Basics</div>
+        <h2>How every solution is built</h2>
+        <ul class="pts">
+          <li>DP = a series of choices, the same sub-question shows up on different routes, and the best answer is built from best sub-answers.</li>
+          <li>2D = you need two numbers to say where you are.</li>
+          <li>Test: what is the least I need to know about where I am to finish the problem? If that is two numbers, it is 2D.</li>
+        </ul>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>State</th><th>The two numbers</th><th>Family</th></tr>
+          <tr><td><code>dp(i, j)</code></td><td>row i, column j</td><td>Grid paths, squares</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>first i letters of a, first j letters of b</td><td>Two strings</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>slice from i to j</td><td>Intervals</td></tr>
+          <tr><td><code>dp(i, c)</code></td><td>first i items, budget c</td><td>Knapsack</td></tr>
+          <tr><td><code>dp(i, s)</code></td><td>day i, mode s</td><td>Index + state</td></tr>
+        </table></div>
+
+        <h3 class="sub">The DP card</h3>
+        <p class="prose">Fill it in before writing code.</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Question</th><th>Unique Paths</th></tr>
+          <tr><td><b>State</b>: what does <code>dp(i, j)</code> mean?</td><td>Ways to reach <code>(i, j)</code> from the start</td></tr>
+          <tr><td><b>Choices</b>: how did I get here?</td><td>From above or from the left</td></tr>
+          <tr><td><b>Recurrence</b>: how do they combine?</td><td><code>dp(i-1, j) + dp(i, j-1)</code></td></tr>
+          <tr><td><b>Base cases</b>: where does it stop?</td><td>Off the grid → 0. Start → 1</td></tr>
+          <tr><td><b>Answer</b>: which state?</td><td><code>dp(m-1, n-1)</code></td></tr>
+          <tr><td><b>Fill order</b>: what must be ready first?</td><td>Top-left → bottom-right</td></tr>
+        </table></div>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>The question asks for</th><th>Combine with</th><th>Impossible move returns</th></tr>
+          <tr><td>Number of ways</td><td><code>+</code></td><td><code>0</code></td></tr>
+          <tr><td>Smallest cost</td><td><code>Math.min</code></td><td><code>Infinity</code></td></tr>
+          <tr><td>Largest value</td><td><code>Math.max</code></td><td><code>-Infinity</code> (or <code>0</code> if doing nothing is allowed)</td></tr>
+          <tr><td>Is it possible?</td><td><code>||</code></td><td><code>false</code></td></tr>
+        </table></div>
+
+        <h3 class="sub">Four versions of one solution</h3>
+        <div class="ladder">
+          <div class="step"><span class="lv">1</span><b>Recursion</b><small>Correct, slow. Get the logic right.</small></div>
+          <div class="step"><span class="lv">2</span><b>Memo</b><small>Same code + a cache. Two extra lines.</small></div>
+          <div class="step"><span class="lv">3</span><b>Table</b><small>Loops instead of recursion. No stack limit.</small></div>
+          <div class="step"><span class="lv">4</span><b>One row</b><small>Keep only the rows still needed.</small></div>
+        </div>
+        <ul class="pts">
+          <li>In the code boxes, memo lines have a yellow bar.</li>
+          <li>The <b>Recursion</b> tab is the same code with those lines removed.</li>
+        </ul>
+
+        <h3 class="sub">Why the memo matters</h3>
+        <p class="prose">Plain recursion on a 3 × 3 grid. The orange part is computed twice: two routes lead to (1,1).</p>
+        <figure class="figure" id="fig-tree"></figure>
+        <div class="figure counter">
+          <label for="calls-n">Grid size: <b id="calls-label">10 × 10</b><input type="range" id="calls-n" min="2" max="16" value="10"></label>
+          <div class="crow"><span>Recursion</span><div class="cbar"><span class="slow" id="calls-bar-slow"></span></div><span class="num" id="calls-slow"></span></div>
+          <div class="crow"><span>Memo</span><div class="cbar"><span class="fast" id="calls-bar-fast"></span></div><span class="num" id="calls-fast"></span></div>
+          <figcaption>Function calls. Log scale.</figcaption>
+        </div>
+
+        <h3 class="sub">Fill direction</h3>
+        <ul class="pts">
+          <li><b>Follow the question.</b> If it walks start → end (robot, strings, items, days), fill start → end. <code>dp</code> = answer for what is done so far.</li>
+          <li><b>Go in reverse</b> only when it helps:
+            <ul>
+              <li>the start depends on what lies ahead (A6 Dungeon), or</li>
+              <li>reverse puts the answer in one cell (A4 Triangle).</li>
+            </ul>
+          </li>
+          <li><b>Intervals</b> (D): short ranges first, then longer.</li>
+          <li>Loop rule: reads <code>i − 1</code> → loop <code>i</code> up. Reads <code>i + 1</code> → loop <code>i</code> down.</li>
+          <li>Every DP card has a <b>Fill order</b> row, and the stepper starts there.</li>
+        </ul>
+        <figure class="figure" id="fig-dirs"></figure>
+
+        <h3 class="sub">Padding is the base case</h3>
+        <ul class="pts">
+          <li>Add one extra row and column holding the base value.</li>
+          <li>The loops then need no "am I outside?" checks.</li>
+          <li>In the steppers, padding cells are dashed and filled before step 1.</li>
+        </ul>
+
+        <h3 class="sub">Common mistakes</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Mistake</th><th>Symptom</th><th>Fix</th></tr>
+          <tr><td>Memo checked before bounds</td><td><code>Cannot read properties of undefined</code></td><td>Bounds first</td></tr>
+          <tr><td><code>Array(m).fill(Array(n))</code></td><td>All rows change together</td><td><code>Array.from({ length: m }, () =&gt; Array(n))</code></td></tr>
+          <tr><td><code>0</code> as "not computed"</td><td>Time Limit Exceeded</td><td>Use <code>undefined</code></td></tr>
+          <tr><td><code>0</code> for a bad move in a min problem</td><td>Answer too small</td><td>Return <code>Infinity</code></td></tr>
+          <tr><td><code>"1"</code> vs <code>1</code></td><td>Every cell looks the same</td><td>Check the input type</td></tr>
+          <tr><td>Wrong loop direction</td><td>Reads empty cells</td><td>Follow the recurrence arrows</td></tr>
+          <tr><td>Very deep recursion</td><td><code>Maximum call stack size exceeded</code></td><td>Use the table</td></tr>
+        </table></div>
+      </section>
+
+      <div id="families"></div>
+
+      <!-- ====================== QUIZ ====================== -->
+      <section class="block" id="quiz">
+        <div class="eyebrow">Practice</div>
+        <h2>Which family is it?</h2>
+        <p class="prose">Not in this page. Pick the family before thinking about code.</p>
+        <div class="quiz-score" id="quiz-score"></div>
+        <div id="quiz-list"></div>
+        <button class="btn" id="quiz-reset">Reset quiz</button>
+      </section>
+
+      <!-- ====================== CHEAT SHEET ====================== -->
+      <section class="block" id="cheat">
+        <div class="eyebrow">Summary</div>
+        <h2>All 22 side by side</h2>
+        <div class="tablewrap"><table class="plain" id="cheat-table">
+          <tr><th>#</th><th>Problem</th><th>dp means</th><th>Combine</th><th>Base</th><th>Answer</th><th>Fill</th></tr>
+          <tr><td>A1</td><td>Unique Paths</td><td>ways to reach cell</td><td><code>+</code></td><td>off → 0, start → 1</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A2</td><td>Unique Paths II</td><td>ways to reach cell</td><td><code>+</code></td><td>+ rock → 0</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A3</td><td>Min Path Sum</td><td>cheapest to reach cell</td><td><code>min</code></td><td>off → ∞</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A4</td><td>Triangle</td><td>cheapest from cell down</td><td><code>min</code></td><td>bottom row</td><td>dp(0,0)</td><td>reverse</td></tr>
+          <tr><td>A5</td><td>Min Falling Path</td><td>cheapest fall to cell</td><td><code>min</code> of 3</td><td>top row, col off → ∞</td><td>min of last row</td><td>forward</td></tr>
+          <tr><td>A6</td><td>Dungeon Game</td><td>health needed on entry</td><td><code>max(1, min − d)</code></td><td>off → ∞</td><td>dp(0,0)</td><td>reverse</td></tr>
+          <tr><td>B1</td><td>Maximal Square</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>max²</td><td>forward</td></tr>
+          <tr><td>B2</td><td>Count Squares</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>sum</td><td>forward</td></tr>
+          <tr><td>C1</td><td>LCS</td><td>LCS of prefixes</td><td>match +1, else <code>max</code></td><td>empty → 0</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C2</td><td>Delete Operation</td><td>deletions</td><td>match, else <code>1 + min</code></td><td>empty → other length</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C3</td><td>Edit Distance</td><td>operations</td><td>match, else <code>1 + min</code> of 3</td><td>empty → other length</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C4</td><td>Distinct Subsequences</td><td>ways</td><td>skip + use</td><td>empty t → 1</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C5</td><td>Wildcard Matching</td><td>matches?</td><td><code>||</code></td><td>both empty → true</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>D1</td><td>Longest Pal. Subsequence</td><td>LPS in [i..j]</td><td>match +2, else <code>max</code></td><td>i = j → 1</td><td>dp(0, n−1)</td><td>short → long</td></tr>
+          <tr><td>D2</td><td>Palindromic Substrings</td><td>is palindrome?</td><td><code>&amp;&amp;</code></td><td>length ≤ 2</td><td>count true</td><td>short → long</td></tr>
+          <tr><td>D3</td><td>Burst Balloons</td><td>coins between l and r</td><td><code>max</code> over last k</td><td>nothing between → 0</td><td>dp(0, n+1)</td><td>short → long</td></tr>
+          <tr><td>E1</td><td>Partition Equal Subset</td><td>can make t?</td><td><code>||</code></td><td>t = 0 → true</td><td>dp(n, sum/2)</td><td>forward</td></tr>
+          <tr><td>E2</td><td>Target Sum</td><td>ways</td><td><code>+</code></td><td>no items, s = 0 → 1</td><td>dp(n, P)</td><td>forward</td></tr>
+          <tr><td>E3</td><td>Coin Change II</td><td>ways</td><td><code>+</code></td><td>amount 0 → 1</td><td>dp(n, amount)</td><td>forward</td></tr>
+          <tr><td>E4</td><td>Coin Change</td><td>fewest coins</td><td><code>min</code></td><td>amount 0 → 0</td><td>dp(n, amount)</td><td>forward</td></tr>
+          <tr><td>F1</td><td>Stock with Cooldown</td><td>profit at end of day</td><td><code>max</code></td><td>before day 0</td><td>free(n−1)</td><td>forward</td></tr>
+          <tr><td>F2</td><td>Stock with Fee</td><td>profit at end of day</td><td><code>max</code></td><td>before day 0</td><td>free(n−1)</td><td>forward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Knapsack variants</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th></th><th>Each item once (0/1)</th><th>Reuse allowed</th></tr>
+          <tr><td>Possible? (<code>||</code>)</td><td>E1 Partition</td><td>Word Break style</td></tr>
+          <tr><td>Count (<code>+</code>)</td><td>E2 Target Sum</td><td>E3 Coin Change II</td></tr>
+          <tr><td>Min / max</td><td>0/1 Knapsack, LC 474</td><td>E4 Coin Change</td></tr>
+          <tr><td>Take reads</td><td><code>(i−1, c − w)</code></td><td><code>(i, c − w)</code></td></tr>
+          <tr><td>One-row loop</td><td>downward</td><td>upward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Explaining it in an interview</h3>
+        <ol class="script">
+          <li><code>dp(i, j)</code> means …</li>
+          <li>To get here I could …, so <code>dp(i, j) =</code> …</li>
+          <li>It stops when …</li>
+          <li>The answer is …</li>
+          <li>States × work per state = time.</li>
+          <li>Top-down first, then a table, then keep one or two rows.</li>
+        </ol>
+      </section>
+
+      <!-- ====================== PLAN ====================== -->
+      <section class="block" id="plan">
+        <div class="eyebrow">Two weeks</div>
+        <h2>Study plan</h2>
+        <ul class="pts">
+          <li>One or two problems a day, plus one problem not on this page.</li>
+          <li>Tick a problem only when you can write it from a blank file.</li>
+        </ul>
+        <div class="tablewrap"><table class="plain" id="plan-table"><tr><th>Day</th><th>Learn</th><th>Then try</th></tr></table></div>
+        <h3 class="sub">Next</h3>
+        <ul class="pts">
+          <li><b>3D DP</b>: add a third number to the state (LC 1463, 188, 474, 2435).</li>
+          <li><b>Trees</b>: <code>dp(node, state)</code>, e.g. LC 337.</li>
+          <li><b>Bitmask</b>: <code>dp(mask, i)</code> for small sets, e.g. LC 847.</li>
+          <li><b>Digit DP</b>: count numbers with a property, digit by digit.</li>
+        </ul>
+        <footer>All code is run against the LeetCode examples, and every stepper is checked against the same code.</footer>
+      </section>
+    </div>
+  </main>
+</div>

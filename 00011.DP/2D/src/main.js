@@ -7,16 +7,7 @@
     set(k, v) { try { localStorage.setItem('dp2d:' + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
   };
 
-  // ---------------- theme ----------------
-  const root = document.documentElement;
-  const savedTheme = store.get('theme', null);
-  if (savedTheme) root.setAttribute('data-theme', savedTheme);
-  $$('.theme-btn').forEach(b => b.addEventListener('click', () => {
-    const dark = root.getAttribute('data-theme') ? root.getAttribute('data-theme') === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    const next = dark ? 'light' : 'dark';
-    root.setAttribute('data-theme', next); store.set('theme', next);
-    requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows()));
-  }));
+  addEventListener('themechange', () => requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows())));
 
   // ---------------- code highlighting ----------------
   const KW = /\b(var|const|let|function|return|if|else|for|of|while|new|true|false|undefined|Infinity|null|break|continue)\b/;
@@ -31,24 +22,25 @@
     }
     return out + esc(line.slice(last));
   }
-  const MEMO_MARK = '// 🧠';
-  const stripMark = (l) => l.replace(/\s*\/\/ 🧠\s*$/, '');
+  const MEMO_MARK = '// memo';
+  const isMemo = (l) => l.trimEnd().endsWith(MEMO_MARK);
+  const stripMark = (l) => l.replace(/\s*\/\/ memo\s*$/, '');
   function toRecursion(code) {
-    return code.split('\n').filter(l => !l.includes(MEMO_MARK)).join('\n').replace(/memo(\[[^\]]+\])+ = /g, '');
+    return code.split('\n').filter(l => !isMemo(l)).join('\n').replace(/memo(\[[^\]]+\])+ = /g, '');
   }
   function renderCode(code, showMemo) {
     return code.replace(/\n+$/, '').split('\n').map(l => {
-      const memo = l.includes(MEMO_MARK);
+      const memo = isMemo(l);
       return `<span class="ln${memo && showMemo ? ' memo' : ''}">${hl(stripMark(l)) || ' '}</span>`;
     }).join('');
   }
   function codeBox(pid) {
-    const blocks = CODE[pid] || [];
+    const blocks = SOLUTIONS[pid] || [];
     const tabs = [];
     blocks.forEach((b, k) => {
       if (k === 0 && b.code.includes(MEMO_MARK)) {
-        tabs.push({ label: 'Recursion', code: toRecursion(b.code), note: 'Plain recursion: correct, but it repeats work. Fine for learning, too slow for big inputs.' });
-        tabs.push({ label: 'Memo', code: b.code, memo: true, note: 'The highlighted lines are all that memoization adds.' });
+        tabs.push({ label: 'Recursion', code: toRecursion(b.code), note: 'Correct but repeats work. Too slow for large inputs.' });
+        tabs.push({ label: 'Memo', code: b.code, memo: true, note: b.note || 'Highlighted lines are all that memoization adds.' });
       } else tabs.push({ label: b.label, code: b.code, note: b.note || '' });
     });
     const id = 'code-' + pid;
@@ -79,13 +71,13 @@
   const VIZES = [];
   const fmt = VIZ.fmt;
   class Stepper {
-    constructor(host, key) {
+    constructor(host, key, order) {
       this.spec = VIZ.B[key]; this.key = key; this.host = host; this.k = 0; this.timer = null;
       const uid = host.dataset.pid;
       host.className = 'viz';
       host.innerHTML = `
         <div class="viz-top">
-          <div class="viz-title">Step through it<small>Change the input and press Load to try your own case.</small></div>
+          <div class="viz-title">Step through it<small>Fill order: ${order}. Edit the input and press Load.</small></div>
           <form class="viz-in">${this.spec.inputs.map(inp => `<label for="${uid}-${inp.k}">${esc(inp.label)}<input id="${uid}-${inp.k}" name="${inp.k}" value="${esc(inp.v)}" class="${inp.v.length > 12 ? 'wide' : ''}" spellcheck="false" autocomplete="off"></label>`).join('')}<button class="btn" type="submit">Load</button></form>
         </div>
         <div class="viz-scroll"><div class="viz-stage"><table class="dpt"></table><svg class="viz-arrows"></svg></div></div>
@@ -159,7 +151,7 @@
       const note = $('.viz-note', this.host);
       if (end) { note.className = 'viz-note final'; note.textContent = 'Done. ' + (r.resultNote || ''); }
       else if (cur) { note.className = 'viz-note'; note.textContent = cur.note; }
-      else { note.className = 'viz-note'; note.textContent = 'Grey dashed cells are the base cases, filled before we start. Press Next to fill the first cell.'; }
+      else { note.className = 'viz-note'; note.textContent = 'Dashed cells are base cases, set before step 1. Press Next.'; }
       $('.count', this.host).textContent = `step ${k} / ${r.steps.length}`;
       $('[data-a="play"]', this.host).textContent = this.timer ? 'Pause' : 'Play';
       this.cur = end ? null : cur;
@@ -193,11 +185,14 @@
 
   // ---------------- render families & problems ----------------
   const famHost = $('#families');
-  const MOVE_TEXT = { rd: 'From the yellow cell you may step to the blue ones.', fall: 'Three cells below are allowed.', tld: 'The yellow cell reads from these three neighbours.' };
+  const MOVE_TEXT = { ul: 'Reads from above and from the left.', rd: 'Reads from the right and from below.', up3: 'Reads the three cells above.', tld: 'Reads top, left and diagonal.' };
+  const pts = (arr) => `<ul class="pts">${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  const plain = (h) => h.replace(/<[^>]+>/g, '');
   FAMILIES.forEach(F => {
-    const sec = document.createElement('section'); sec.className = 'fam'; sec.id = 'fam-' + F.id;
-    sec.innerHTML = `<div class="fam-head"><div class="fam-letter">${F.id}</div><div><div class="eyebrow">Family ${F.id}</div><h2>${F.name}</h2><p>${F.lead}</p></div></div>
-      <div class="statebox">${F.state}</div>
+    const sec = document.createElement('section'); sec.className = 'fam'; sec.id = 'fam-' + F.id; sec.dataset.f = F.id;
+    const count = PROBLEMS.filter(p => p.fam === F.id).length;
+    sec.innerHTML = `<div class="fam-head"><div class="fam-letter">${F.id}</div><div><div class="eyebrow">Family ${F.id} · ${count} problem${count > 1 ? 's' : ''}</div><h2>${F.name}</h2>${pts(F.points)}</div></div>
+      <div class="statebox"><span class="lbl">State</span>${F.state}</div>
       <figure class="figure">${DG[F.diagram]()}</figure>`;
     PROBLEMS.filter(p => p.fam === F.id).forEach(P => sec.appendChild(renderProblem(P)));
     famHost.appendChild(sec);
@@ -205,35 +200,35 @@
 
   function renderProblem(P) {
     const a = document.createElement('article'); a.className = 'prob'; a.id = P.id;
-    const labels = ['State', 'Choices', 'Recurrence', 'Base cases', 'Answer'];
+    const labels = ['State', 'Choices', 'Recurrence', 'Base cases', 'Answer', 'Fill order'];
     a.innerHTML = `
       <div class="prob-head">
         <span class="pid">${P.id}</span><h3>${esc(P.title)}</h3>
         <a class="chip" href="${P.url}" target="_blank" rel="noopener">LeetCode ${P.lc}</a>
         <span class="chip diff-${P.diff}">${P.diff}</span>
-        ${P.isNew ? '<span class="chip chip-new">new in this edition</span>' : ''}
+        <span class="chip chip-dir">${plain(P.card[5])}</span>
         <label class="done-toggle" for="done-${P.id}"><input type="checkbox" id="done-${P.id}" data-pid="${P.id}"> I can solve this</label>
       </div>
       <div class="prob-grid">
-        <div><p>${P.statement}</p><pre class="example">${esc(P.example)}</pre></div>
+        <div class="prob-q"><div class="lbl">Problem</div><p class="stmt">${P.statement}</p><div class="lbl">Example</div><pre class="example">${esc(P.example)}</pre></div>
         <div class="card"><div class="card-title"><span>DP card</span></div>
           <dl>${P.card.map((c, i) => `<dt>${labels[i]}</dt><dd>${c}</dd>`).join('')}</dl>
           ${P.moves ? `<div class="moves">${DG.moves(P.moves)}<span>${MOVE_TEXT[P.moves]}</span></div>` : ''}
         </div>
       </div>
       ${P.diagram ? `<figure class="figure">${DG[P.diagram]()}</figure>` : ''}
-      <div class="notes">${P.notes}</div>
+      <div class="notes"><div class="lbl">Key points</div>${pts(P.notes)}</div>
       <div class="viz-host" data-pid="${P.id}"></div>
       <div class="code-host"></div>
-      ${P.tries.length ? `<div class="tries">${P.tries.map(t => `<details class="try"><summary>${t.q}</summary><div class="ans">${t.a}</div></details>`).join('')}</div>` : ''}
-      <p class="cx"><b>Complexity.</b> ${P.cx}</p>`;
+      ${P.tries.length ? `<div class="tries"><div class="lbl">Check yourself</div>${P.tries.map(t => `<details class="try"><summary>${t.q}</summary><div class="ans">${t.a}</div></details>`).join('')}</div>` : ''}
+      <div class="cx"><span class="lbl">Complexity</span><span>${P.cx}</span></div>`;
     $('.code-host', a).replaceWith(codeBox(P.id));
     return a;
   }
-  $$('.viz-host').forEach(h => { const P = PROBLEMS.find(p => p.id === h.dataset.pid); VIZES.push(new Stepper(h, P.viz)); });
+  $$('.viz-host').forEach(h => { const P = PROBLEMS.find(p => p.id === h.dataset.pid); VIZES.push(new Stepper(h, P.viz, plain(P.card[5]).toLowerCase())); });
 
   // ---------------- start-here figures ----------------
-  $('#fig-tree').innerHTML = DG.tree() + '<figcaption>Every orange box is a repeat. The memo stores dp(1,1) the first time, so the second visit returns straight away.</figcaption>';
+  $('#fig-tree').innerHTML = DG.tree() + '<figcaption>Orange = repeated work. With a memo, the second dp(1,1) returns at once.</figcaption>';
   $('#fig-dirs').innerHTML = DG.directions();
   function callCounts(n) {
     const m = n, cnt = new Map();
@@ -256,14 +251,14 @@
 
   // ---------------- nav, progress, search ----------------
   const nav = $('#nav');
-  let navHtml = `<li><a href="#start"><span class="nid">·</span>Start here</a></li>`;
+  let navHtml = `<li><a href="#start"><span class="nid">·</span>Basics</a></li>`;
   FAMILIES.forEach(F => {
-    navHtml += `<li class="grp"><a href="#fam-${F.id}" style="padding:0;color:inherit">${F.id} · ${F.name}</a></li>`;
+    navHtml += `<li class="grp" data-f="${F.id}"><a href="#fam-${F.id}" style="padding:0;color:inherit">${F.id} · ${F.name}</a></li>`;
     PROBLEMS.filter(p => p.fam === F.id).forEach(P => {
-      navHtml += `<li data-search="${esc((P.id + ' ' + P.title + ' ' + P.lc).toLowerCase())}"><a href="#${P.id}" data-pid="${P.id}"><span class="nid">${P.id}</span>${esc(P.title)}<span class="tick">✓</span></a></li>`;
+      navHtml += `<li data-search="${esc((P.id + ' ' + P.title + ' ' + P.lc).toLowerCase())}"><a href="#${P.id}" data-pid="${P.id}"><span class="nid">${P.id}</span><span class="nt">${esc(P.title)}</span><i class="dd dd-${P.diff}" title="${P.diff}"></i><span class="tick">✓</span></a></li>`;
     });
   });
-  navHtml += `<li class="grp">Practice</li><li><a href="#quiz"><span class="nid">?</span>Which family is it?</a></li><li><a href="#cheat"><span class="nid">≡</span>All 22 side by side</a></li><li><a href="#plan"><span class="nid">14</span>Two-week plan</a></li>`;
+  navHtml += `<li class="grp">Practice</li><li><a href="#quiz"><span class="nid">?</span>Which family is it?</a></li><li><a href="#cheat"><span class="nid">≡</span>All 22 side by side</a></li><li><a href="#plan"><span class="nid">14</span>Study plan</a></li>`;
   nav.innerHTML = navHtml;
 
   let done = store.get('done', {});
@@ -290,9 +285,32 @@
     $$('li[data-search]', nav).forEach(li => (li.hidden = q && !li.dataset.search.includes(q)));
   });
 
-  const rail = $('#rail'), menuBtn = $('#menu-btn');
-  menuBtn.addEventListener('click', () => { const o = rail.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', String(o)); });
-  nav.addEventListener('click', (e) => { if (e.target.closest('a')) { rail.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); } });
+  // ---------------- hamburger: show / hide the question list ----------------
+  // Wide screens: the list is a column that can be hidden (remembered).
+  // Narrow screens: the list slides over the page and closes after a pick.
+  const rail = $('#rail'), layout = $('.layout'), menuBtn = $('#menu-btn'), scrim = $('#scrim');
+  const narrow = matchMedia('(max-width: 980px)');
+  let wideOpen = store.get('railOpen', true);
+  const isOpen = () => (narrow.matches ? rail.classList.contains('open') : wideOpen);
+  const paintMenu = () => {
+    layout.classList.toggle('rail-hidden', !narrow.matches && !wideOpen);
+    if (!narrow.matches) rail.classList.remove('open');
+    scrim.hidden = !(narrow.matches && rail.classList.contains('open'));
+    menuBtn.setAttribute('aria-expanded', String(isOpen()));
+    menuBtn.setAttribute('aria-label', isOpen() ? 'Hide question list' : 'Show question list');
+    requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows()));
+  };
+  menuBtn.addEventListener('click', () => {
+    if (narrow.matches) rail.classList.toggle('open');
+    else { wideOpen = !wideOpen; store.set('railOpen', wideOpen); }
+    paintMenu();
+  });
+  const closeNarrow = () => { if (narrow.matches) { rail.classList.remove('open'); paintMenu(); } };
+  scrim.addEventListener('click', closeNarrow);
+  nav.addEventListener('click', (e) => { if (e.target.closest('a')) closeNarrow(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNarrow(); });
+  narrow.addEventListener('change', paintMenu);
+  paintMenu();
 
   if ('IntersectionObserver' in window) {
     const links = new Map($$('a[href^="#"]', nav).map(a => [a.getAttribute('href').slice(1), a]));

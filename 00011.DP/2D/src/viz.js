@@ -12,54 +12,57 @@ const VIZ = (() => {
   const B = {};
 
   // ---------- Part A: grids ----------
+  // Forward grids: row 0 and column 0 are padding, grid cell (r, c) is table cell (r + 1, c + 1).
+  function fwdGrid(m, n, padV) {
+    const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, padV);
+    for (let i = 0; i <= m; i++) cells[i][0] = { v: padV, kind: 'pad' };
+    for (let j = 0; j <= n; j++) cells[0][j] = { v: padV, kind: 'pad' };
+    return { cells, dp, rows: ['pad', ...nums(m)], cols: ['pad', ...nums(n)] };
+  }
+  const at = (i, j) => `(${i - 1},${j - 1})`;
+
   B.uniquePaths = {
     inputs: [{ k: 'm', label: 'rows (m)', v: '3' }, { k: 'n', label: 'cols (n)', v: '3' }],
     build(p) {
-      const m = clamp(+p.m, 1, 7), n = clamp(+p.n, 1, 7);
-      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
-      for (let i = 0; i <= m; i++) cells[i][n] = { v: 0, kind: 'pad' };
-      for (let j = 0; j <= n; j++) cells[m][j] = { v: 0, kind: 'pad' };
-      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
-        if (i === m - 1 && j === n - 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'This is the target. From here there is exactly 1 way: stay put.' }); continue; }
-        dp[i][j] = dp[i + 1][j] + dp[i][j + 1];
-        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = below (${dp[i + 1][j]}) + right (${dp[i][j + 1]}) = ${dp[i][j]}` });
+      const m = clamp(+p.m, 1, 7), n = clamp(+p.n, 1, 7), G = fwdGrid(m, n, 0), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        if (i === 1 && j === 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Start (0,0): 1 way to be here.' }); continue; }
+        dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = above ${dp[i - 1][j]} + left ${dp[i][j - 1]} = ${dp[i][j]}` });
       }
-      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} different paths from the top-left corner.` };
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `${dp[m][n]} paths reach the bottom-right corner.` };
     }
   };
 
   B.uniquePathsWithObstacles = {
     inputs: [{ k: 'g', label: 'grid (1 = rock)', v: '[[0,0,0],[0,1,0],[0,0,0]]' }],
     build(p) {
-      const g = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)); const m = g.length, n = g[0].length;
-      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
-      for (let i = 0; i <= m; i++) cells[i][n] = { v: 0, kind: 'pad' };
-      for (let j = 0; j <= n; j++) cells[m][j] = { v: 0, kind: 'pad' };
-      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) if (g[i][j] === 1) cells[i][j].kind = 'block';
-      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
-        if (g[i][j] === 1) { dp[i][j] = 0; steps.push({ i, j, v: 0, deps: [], note: `(${i},${j}) is a rock. Nothing can pass through it, so 0 ways.` }); continue; }
-        if (i === m - 1 && j === n - 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Target cell: 1 way.' }); continue; }
-        dp[i][j] = dp[i + 1][j] + dp[i][j + 1];
-        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = below (${dp[i + 1][j]}) + right (${dp[i][j + 1]}) = ${dp[i][j]}` });
+      const g = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)), m = g.length, n = g[0].length;
+      const G = fwdGrid(m, n, 0), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) if (g[i - 1][j - 1] === 1) G.cells[i][j].kind = 'block';
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        if (g[i - 1][j - 1] === 1) { dp[i][j] = 0; steps.push({ i, j, v: 0, deps: [], note: `${at(i, j)} is a rock: 0 ways.` }); continue; }
+        if (i === 1 && j === 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Start (0,0): 1 way.' }); continue; }
+        dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = above ${dp[i - 1][j]} + left ${dp[i][j - 1]} = ${dp[i][j]}` });
       }
-      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} paths avoid every rock.` };
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `${dp[m][n]} paths avoid every rock.` };
     }
   };
 
   B.minPathSum = {
     inputs: [{ k: 'g', label: 'grid', v: '[[1,3,1],[1,5,1],[4,2,1]]' }],
     build(p) {
-      const g = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)); const m = g.length, n = g[0].length;
-      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, Infinity), steps = [];
-      for (let i = 0; i <= m; i++) cells[i][n] = { v: Infinity, kind: 'pad' };
-      for (let j = 0; j <= n; j++) cells[m][j] = { v: Infinity, kind: 'pad' };
-      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) cells[i][j].tag = g[i][j];
-      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
-        if (i === m - 1 && j === n - 1) { dp[i][j] = g[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Target: you still pay for this cell, so dp = ${g[i][j]}.` }); continue; }
-        dp[i][j] = g[i][j] + Math.min(dp[i + 1][j], dp[i][j + 1]);
-        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `dp[${i}][${j}] = cell ${g[i][j]} + min(below ${f(dp[i + 1][j])}, right ${f(dp[i][j + 1])}) = ${dp[i][j]}` });
+      const g = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)), m = g.length, n = g[0].length;
+      const G = fwdGrid(m, n, Infinity), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) G.cells[i][j].tag = g[i - 1][j - 1];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        const c = g[i - 1][j - 1];
+        if (i === 1 && j === 1) { dp[i][j] = c; steps.push({ i, j, v: c, deps: [], note: `Start (0,0): cost ${c}.` }); continue; }
+        dp[i][j] = c + Math.min(dp[i - 1][j], dp[i][j - 1]);
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = ${c} + min(above ${f(dp[i - 1][j])}, left ${f(dp[i][j - 1])}) = ${dp[i][j]}` });
       }
-      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Cheapest path costs ${dp[0][0]}. Small grey numbers are the grid values.` };
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `Cheapest path costs ${dp[m][n]}. Small grey numbers are the grid values.` };
     }
   };
 
@@ -81,18 +84,17 @@ const VIZ = (() => {
   B.minFallingPathSum = {
     inputs: [{ k: 'g', label: 'matrix', v: '[[2,1,3],[6,5,4],[7,8,9]]' }],
     build(p) {
-      const a = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)); const n = a.length;
+      const a = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)), n = a.length;
       const cells = blank(n, n), dp = table(n, n, 0), steps = [];
       for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) cells[i][j].tag = a[i][j];
-      for (let i = n - 1; i >= 0; i--) for (let j = 0; j < n; j++) {
-        if (i === n - 1) { dp[i][j] = a[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Last row: dp = ${a[i][j]}.` }); continue; }
-        const deps = [[i + 1, j - 1], [i + 1, j], [i + 1, j + 1]].filter(([, c]) => c >= 0 && c < n);
-        const best = Math.min(...deps.map(([r, c]) => dp[r][c]));
-        dp[i][j] = a[i][j] + best;
-        steps.push({ i, j, v: dp[i][j], deps, note: `dp[${i}][${j}] = ${a[i][j]} + min(${deps.map(([r, c]) => dp[r][c]).join(', ')}) = ${dp[i][j]}` });
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        if (i === 0) { dp[i][j] = a[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Top row: the fall can start here. dp = ${a[i][j]}.` }); continue; }
+        const deps = [[i - 1, j - 1], [i - 1, j], [i - 1, j + 1]].filter(([, c]) => c >= 0 && c < n);
+        dp[i][j] = a[i][j] + Math.min(...deps.map(([r, c]) => dp[r][c]));
+        steps.push({ i, j, v: dp[i][j], deps, note: `(${i},${j}) = ${a[i][j]} + min(${deps.map(([r, c]) => dp[r][c]).join(', ')}) = ${dp[i][j]}` });
       }
-      let bj = 0; for (let j = 1; j < n; j++) if (dp[0][j] < dp[0][bj]) bj = j;
-      return { rows: nums(n), cols: nums(n), cells, steps, answer: [0, bj], result: dp[0][bj], resultNote: `You may start in any column, so take the smallest value in row 0: ${dp[0][bj]}.` };
+      let bj = 0; for (let j = 1; j < n; j++) if (dp[n - 1][j] < dp[n - 1][bj]) bj = j;
+      return { rows: nums(n), cols: nums(n), cells, steps, answer: [n - 1, bj], result: dp[n - 1][bj], resultNote: `The fall can end in any column: smallest value in the last row is ${dp[n - 1][bj]}.` };
     }
   };
 
@@ -149,10 +151,11 @@ const VIZ = (() => {
   };
 
   // ---------- Part C: two strings ----------
+  // Prefix tables: row i = first i letters of a, column j = first j letters of b. Row 0 / column 0 = empty string.
   function strTable(a, b, baseFn) {
     const n = a.length, m = b.length, cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, 0);
-    for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) if (i === n || j === m) { const v = baseFn(i, j); dp[i][j] = v; cells[i][j] = { v, kind: 'base' }; }
-    return { n, m, cells, dp, rows: [...a, '∅'], cols: [...b, '∅'] };
+    for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) if (i === 0 || j === 0) { const v = baseFn(i, j); dp[i][j] = v; cells[i][j] = { v, kind: 'base' }; }
+    return { n, m, cells, dp, rows: ['∅', ...a], cols: ['∅', ...b] };
   }
   const word = (s, d) => String(s ?? d).slice(0, 9);
 
@@ -160,52 +163,53 @@ const VIZ = (() => {
     inputs: [{ k: 'a', label: 'text1', v: 'abcde' }, { k: 'b', label: 'text2', v: 'ace' }],
     build(p) {
       const a = word(p.a), b = word(p.b), T = strTable(a, b, () => 0), { dp } = T, steps = [];
-      for (let i = T.n - 1; i >= 0; i--) for (let j = T.m - 1; j >= 0; j--) {
-        if (a[i] === b[j]) { dp[i][j] = 1 + dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': match! 1 + diagonal ${dp[i + 1][j + 1]} = ${dp[i][j]}` }); }
-        else { dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': max(skip '${a[i]}' → ${dp[i + 1][j]}, skip '${b[j]}' → ${dp[i][j + 1]}) = ${dp[i][j]}` }); }
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = 1 + dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': 1 + diagonal ${dp[i - 1][j - 1]} = ${dp[i][j]}` }); }
+        else { dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `'${x}' ≠ '${y}': max(drop '${x}' → ${dp[i - 1][j]}, drop '${y}' → ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
       }
-      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `The LCS has length ${dp[0][0]}. Grey row and column: one string is empty, so 0.` };
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `LCS length is ${dp[T.n][T.m]}.` };
     }
   };
 
   B.deleteOp = {
     inputs: [{ k: 'a', label: 'word1', v: 'sea' }, { k: 'b', label: 'word2', v: 'eat' }],
     build(p) {
-      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
-      const T = strTable(a, b, (i, j) => (i === n ? m - j : n - i)), { dp } = T, steps = [];
-      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
-        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': keep both, cost stays ${dp[i][j]}` }); }
-        else { dp[i][j] = 1 + Math.min(dp[i + 1][j], dp[i][j + 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': 1 + min(delete '${a[i]}' → ${dp[i + 1][j]}, delete '${b[j]}' → ${dp[i][j + 1]}) = ${dp[i][j]}` }); }
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => i + j), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': keep both, copy diagonal ${dp[i][j]}` }); }
+        else { dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `'${x}' ≠ '${y}': 1 + min(delete '${x}' → ${dp[i - 1][j]}, delete '${y}' → ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
       }
-      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} deletions. Grey edge: when one word is used up, delete what is left of the other.` };
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} deletions.` };
     }
   };
 
   B.editDistance = {
     inputs: [{ k: 'a', label: 'word1', v: 'horse' }, { k: 'b', label: 'word2', v: 'ros' }],
     build(p) {
-      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
-      const T = strTable(a, b, (i, j) => (i === n ? m - j : n - i)), { dp } = T, steps = [];
-      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
-        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': free, copy the diagonal ${dp[i][j]}` }); continue; }
-        const ins = dp[i][j + 1], del = dp[i + 1][j], rep = dp[i + 1][j + 1];
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => i + j), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': free, copy diagonal ${dp[i][j]}` }); continue; }
+        const ins = dp[i][j - 1], del = dp[i - 1][j], rep = dp[i - 1][j - 1];
         dp[i][j] = 1 + Math.min(ins, del, rep);
-        steps.push({ i, j, v: dp[i][j], deps: [[i, j + 1], [i + 1, j], [i + 1, j + 1]], note: `'${a[i]}' ≠ '${b[j]}': 1 + min(insert ${ins}, delete ${del}, replace ${rep}) = ${dp[i][j]}` });
+        steps.push({ i, j, v: dp[i][j], deps: [[i, j - 1], [i - 1, j], [i - 1, j - 1]], note: `'${x}' ≠ '${y}': 1 + min(insert ${ins}, delete ${del}, replace ${rep}) = ${dp[i][j]}` });
       }
-      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} operations turn "${a}" into "${b}".` };
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} operations turn "${a}" into "${b}".` };
     }
   };
 
   B.numDistinct = {
     inputs: [{ k: 'a', label: 's', v: 'rabbbit' }, { k: 'b', label: 't', v: 'rabbit' }],
     build(p) {
-      const a = word(p.a), b = word(p.b), n = a.length, m = b.length;
-      const T = strTable(a, b, (i, j) => (j === m ? 1 : 0)), { dp } = T, steps = [];
-      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
-        if (a[i] === b[j]) { dp[i][j] = dp[i + 1][j] + dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i + 1, j + 1]], note: `'${a[i]}' = '${b[j]}': skip it (${dp[i + 1][j]}) + use it (${dp[i + 1][j + 1]}) = ${dp[i][j]}` }); }
-        else { dp[i][j] = dp[i + 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j]], note: `'${a[i]}' ≠ '${b[j]}': can only skip it, ${dp[i][j]}` }); }
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => (j === 0 ? 1 : 0)), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j] + dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i - 1, j - 1]], note: `'${x}' = '${y}': skip it ${dp[i - 1][j]} + use it ${dp[i - 1][j - 1]} = ${dp[i][j]}` }); }
+        else { dp[i][j] = dp[i - 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j]], note: `'${x}' ≠ '${y}': can only skip it → ${dp[i][j]}` }); }
       }
-      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `${dp[0][0]} ways. Last column is 1: an empty t can always be made one way.` };
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} ways. Column ∅ is 1: an empty t can always be made.` };
     }
   };
 
@@ -214,15 +218,16 @@ const VIZ = (() => {
     build(p) {
       const s = word(p.a, ''), pt = word(p.b, ''), n = s.length, m = pt.length;
       const cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, false), steps = [];
-      dp[n][m] = true; cells[n][m] = { v: true, kind: 'base' };
-      for (let i = 0; i < n; i++) cells[i][m] = { v: false, kind: 'base' };
-      for (let j = m - 1; j >= 0; j--) { dp[n][j] = pt[j] === '*' && dp[n][j + 1]; cells[n][j] = { v: dp[n][j], kind: 'base' }; }
-      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
-        if (pt[j] === '*') { dp[i][j] = dp[i][j + 1] || dp[i + 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i, j + 1], [i + 1, j]], note: `'*': match nothing (${f(dp[i][j + 1])}) or eat '${s[i]}' (${f(dp[i + 1][j])}) → ${f(dp[i][j])}` }); }
-        else if (pt[j] === '?' || pt[j] === s[i]) { dp[i][j] = dp[i + 1][j + 1]; steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j + 1]], note: `'${pt[j]}' matches '${s[i]}': copy diagonal → ${f(dp[i][j])}` }); }
-        else { dp[i][j] = false; steps.push({ i, j, v: false, deps: [], note: `'${pt[j]}' cannot match '${s[i]}' → F` }); }
+      dp[0][0] = true; cells[0][0] = { v: true, kind: 'base' };
+      for (let i = 1; i <= n; i++) cells[i][0] = { v: false, kind: 'base' };
+      for (let j = 1; j <= m; j++) { dp[0][j] = pt[j - 1] === '*' && dp[0][j - 1]; cells[0][j] = { v: dp[0][j], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+        const c = pt[j - 1], x = s[i - 1];
+        if (c === '*') { dp[i][j] = dp[i][j - 1] || dp[i - 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i, j - 1], [i - 1, j]], note: `'*': match nothing ${f(dp[i][j - 1])} or eat '${x}' ${f(dp[i - 1][j])} → ${f(dp[i][j])}` }); }
+        else if (c === '?' || c === x) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${c}' matches '${x}': copy diagonal → ${f(dp[i][j])}` }); }
+        else steps.push({ i, j, v: false, deps: [], note: `'${c}' cannot match '${x}' → F` });
       }
-      return { rows: [...s, '∅'], cols: [...pt, '∅'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: dp[0][0] ? 'The pattern matches the whole string.' : 'No match.' };
+      return { rows: ['∅', ...s], cols: ['∅', ...pt], cells, steps, answer: [n, m], result: dp[n][m], resultNote: dp[n][m] ? 'The pattern matches the whole string.' : 'No match.' };
     }
   };
 
@@ -276,19 +281,22 @@ const VIZ = (() => {
   };
 
   // ---------- Part E: knapsack ----------
+  // Row i = "using the first i items". Row 0 (∅) = no items yet.
+  const itemRows = (xs, name) => ['∅', ...xs.map(x => name + ' ' + x)];
+
   B.canPartition = {
     inputs: [{ k: 'a', label: 'nums', v: '[1,5,11,5]' }],
     build(p) {
       const xs = json(p.a, [1, 1]).slice(0, 6), total = xs.reduce((s, x) => s + x, 0);
       if (total % 2 || total / 2 > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: false, resultNote: total % 2 ? `Total is ${total}, which is odd. Answer: false, no table needed.` : 'Keep the total at 60 or less so the table fits.' };
       const T = total / 2, n = xs.length, cells = blank(n + 1, T + 1), dp = table(n + 1, T + 1, false), steps = [];
-      for (let t = 0; t <= T; t++) { dp[n][t] = t === 0; cells[n][t] = { v: dp[n][t], kind: 'base' }; }
-      for (let i = n - 1; i >= 0; i--) for (let t = 0; t <= T; t++) {
-        const skip = dp[i + 1][t], take = t >= xs[i] ? dp[i + 1][t - xs[i]] : false;
+      for (let t = 0; t <= T; t++) { dp[0][t] = t === 0; cells[0][t] = { v: dp[0][t], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let t = 0; t <= T; t++) {
+        const x = xs[i - 1], skip = dp[i - 1][t], take = t >= x ? dp[i - 1][t - x] : false;
         dp[i][t] = skip || take;
-        steps.push({ i, j: t, v: dp[i][t], deps: t >= xs[i] ? [[i + 1, t], [i + 1, t - xs[i]]] : [[i + 1, t]], note: `sum ${t} with item ${xs[i]}: skip → ${f(skip)}` + (t >= xs[i] ? `, take → need ${t - xs[i]} from the rest → ${f(take)}` : `, too big to take`) });
+        steps.push({ i, j: t, v: dp[i][t], deps: t >= x ? [[i - 1, t], [i - 1, t - x]] : [[i - 1, t]], note: `sum ${t} with ${x}: skip → ${f(skip)}` + (t >= x ? `, take → need ${t - x} from above → ${f(take)}` : `, ${x} is too big to take`) });
       }
-      return { rows: [...xs.map((x, i) => 'i' + i + '=' + x), '∅'], cols: nums(T + 1), cells, steps, answer: [0, T], result: dp[0][T], resultNote: `Target is ${total} / 2 = ${T}. Reachable: ${dp[0][T]}.` };
+      return { rows: itemRows(xs, '+'), cols: nums(T + 1), cells, steps, answer: [n, T], result: dp[n][T], resultNote: `Target is ${total} / 2 = ${T}. Reachable: ${dp[n][T]}.` };
     }
   };
 
@@ -300,13 +308,13 @@ const VIZ = (() => {
       const P = (total + tg) / 2;
       if (P > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: null, resultNote: 'Keep (total + target) / 2 at 30 or less so the table fits.' };
       const n = xs.length, cells = blank(n + 1, P + 1), dp = table(n + 1, P + 1, 0), steps = [];
-      for (let s = 0; s <= P; s++) { dp[n][s] = s === 0 ? 1 : 0; cells[n][s] = { v: dp[n][s], kind: 'base' }; }
-      for (let i = n - 1; i >= 0; i--) for (let s = 0; s <= P; s++) {
-        const skip = dp[i + 1][s], take = s >= xs[i] ? dp[i + 1][s - xs[i]] : 0;
+      for (let s = 0; s <= P; s++) { dp[0][s] = s === 0 ? 1 : 0; cells[0][s] = { v: dp[0][s], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let s = 0; s <= P; s++) {
+        const x = xs[i - 1], skip = dp[i - 1][s], take = s >= x ? dp[i - 1][s - x] : 0;
         dp[i][s] = skip + take;
-        steps.push({ i, j: s, v: dp[i][s], deps: s >= xs[i] ? [[i + 1, s], [i + 1, s - xs[i]]] : [[i + 1, s]], note: `ways to make ${s}: leave ${xs[i]} out (${skip}) + put it in (${take}) = ${dp[i][s]}` });
+        steps.push({ i, j: s, v: dp[i][s], deps: s >= x ? [[i - 1, s], [i - 1, s - x]] : [[i - 1, s]], note: `make ${s}: leave ${x} out ${skip} + put it in ${take} = ${dp[i][s]}` });
       }
-      return { rows: [...xs.map((x, i) => 'i' + i + '=' + x), '∅'], cols: nums(P + 1), cells, steps, answer: [0, P], result: dp[0][P], resultNote: `P = (${total} + ${tg}) / 2 = ${P}. There are ${dp[0][P]} ways.` };
+      return { rows: itemRows(xs, '+'), cols: nums(P + 1), cells, steps, answer: [n, P], result: dp[n][P], resultNote: `P = (${total} + ${tg}) / 2 = ${P}. ${dp[n][P]} ways.` };
     }
   };
 
@@ -315,13 +323,13 @@ const VIZ = (() => {
     build(p) {
       const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
       const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, 0), steps = [];
-      for (let a = 0; a <= A; a++) { dp[n][a] = a === 0 ? 1 : 0; cells[n][a] = { v: dp[n][a], kind: 'base' }; }
-      for (let i = n - 1; i >= 0; i--) for (let a = 0; a <= A; a++) {
-        const skip = dp[i + 1][a], use = a >= cs[i] ? dp[i][a - cs[i]] : 0;
+      for (let a = 0; a <= A; a++) { dp[0][a] = a === 0 ? 1 : 0; cells[0][a] = { v: dp[0][a], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let a = 0; a <= A; a++) {
+        const c = cs[i - 1], skip = dp[i - 1][a], use = a >= c ? dp[i][a - c] : 0;
         dp[i][a] = skip + use;
-        steps.push({ i, j: a, v: dp[i][a], deps: a >= cs[i] ? [[i + 1, a], [i, a - cs[i]]] : [[i + 1, a]], note: `amount ${a}, coin ${cs[i]}: never use it (${skip}) + use it and stay on this row (${use}) = ${dp[i][a]}` });
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= c ? [[i - 1, a], [i, a - c]] : [[i - 1, a]], note: `amount ${a}, coin ${c}: without it ${skip} + use it (same row) ${use} = ${dp[i][a]}` });
       }
-      return { rows: [...cs.map(c => 'coin ' + c), '∅'], cols: nums(A + 1), cells, steps, answer: [0, A], result: dp[0][A], resultNote: `${dp[0][A]} combinations. Notice the "use it" arrow stays on the same row: coins can be reused.` };
+      return { rows: itemRows(cs, 'coin'), cols: nums(A + 1), cells, steps, answer: [n, A], result: dp[n][A], resultNote: `${dp[n][A]} combinations. The "use it" arrow stays on the same row: coins can be reused.` };
     }
   };
 
@@ -330,30 +338,34 @@ const VIZ = (() => {
     build(p) {
       const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
       const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, Infinity), steps = [];
-      for (let a = 0; a <= A; a++) { dp[n][a] = a === 0 ? 0 : Infinity; cells[n][a] = { v: dp[n][a], kind: 'base' }; }
-      for (let i = n - 1; i >= 0; i--) for (let a = 0; a <= A; a++) {
-        const skip = dp[i + 1][a], use = a >= cs[i] ? 1 + dp[i][a - cs[i]] : Infinity;
+      for (let a = 0; a <= A; a++) { dp[0][a] = a === 0 ? 0 : Infinity; cells[0][a] = { v: dp[0][a], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let a = 0; a <= A; a++) {
+        const c = cs[i - 1], skip = dp[i - 1][a], use = a >= c ? 1 + dp[i][a - c] : Infinity;
         dp[i][a] = Math.min(skip, use);
-        steps.push({ i, j: a, v: dp[i][a], deps: a >= cs[i] ? [[i + 1, a], [i, a - cs[i]]] : [[i + 1, a]], note: `amount ${a}, coin ${cs[i]}: min(skip ${f(skip)}, 1 + use ${f(use)}) = ${f(dp[i][a])}` });
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= c ? [[i - 1, a], [i, a - c]] : [[i - 1, a]], note: `amount ${a}, coin ${c}: min(without ${f(skip)}, 1 + use ${f(use)}) = ${f(dp[i][a])}` });
       }
-      const r = dp[0][A] === Infinity ? -1 : dp[0][A];
-      return { rows: [...cs.map(c => 'coin ' + c), '∅'], cols: nums(A + 1), cells, steps, answer: [0, A], result: r, resultNote: r === -1 ? 'Impossible, so return -1.' : `Fewest coins: ${r}.` };
+      const r = dp[n][A] === Infinity ? -1 : dp[n][A];
+      return { rows: itemRows(cs, 'coin'), cols: nums(A + 1), cells, steps, answer: [n, A], result: r, resultNote: r === -1 ? 'Impossible, so return -1.' : `Fewest coins: ${r}.` };
     }
   };
 
   // ---------- Part F: index + state ----------
+  // Row = day, going forward. Columns: free (0), holding (1). Top rows are "before day 0".
+  const dayRows = (pr) => pr.map((x, i) => 'day ' + i + ' ($' + x + ')');
+
   B.stockCooldown = {
     inputs: [{ k: 'a', label: 'prices', v: '[1,2,3,0,2]' }],
     build(p) {
       const pr = json(p.a, [1]).slice(0, 9), n = pr.length, cells = blank(n + 2, 2), dp = table(n + 2, 2, 0), steps = [];
-      cells[n] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }]; cells[n + 1] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }];
-      for (let i = n - 1; i >= 0; i--) {
-        dp[i][1] = Math.max(dp[i + 1][1], pr[i] + dp[i + 2][0]);
-        steps.push({ i, j: 1, v: dp[i][1], deps: [[i + 1, 1], [i + 2, 0]], note: `Day ${i}, holding: keep holding (${dp[i + 1][1]}) or sell at ${pr[i]} and skip a day (${pr[i]} + ${dp[i + 2][0]})` });
-        dp[i][0] = Math.max(dp[i + 1][0], -pr[i] + dp[i + 1][1]);
-        steps.push({ i, j: 0, v: dp[i][0], deps: [[i + 1, 0], [i + 1, 1]], note: `Day ${i}, free: wait (${dp[i + 1][0]}) or buy at ${pr[i]} (−${pr[i]} + ${dp[i + 1][1]})` });
+      for (const r of [0, 1]) { dp[r] = [0, -Infinity]; cells[r] = [{ v: 0, kind: 'base' }, { v: -Infinity, kind: 'base' }]; }
+      for (let d = 0; d < n; d++) {
+        const i = d + 2, x = pr[d];
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 2][0] - x);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i - 1, 1], [i - 2, 0]], note: `Day ${d}, holding: keep ${f(dp[i - 1][1])} or buy at ${x} using free from 2 rows up (${dp[i - 2][0]} − ${x})` });
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + x);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i - 1, 0], [i - 1, 1]], note: `Day ${d}, free: rest ${dp[i - 1][0]} or sell at ${x} (${f(dp[i - 1][1])} + ${x})` });
       }
-      return { rows: [...pr.map((x, i) => 'day ' + i + ' ($' + x + ')'), 'end', 'end+1'], cols: ['free', 'holding'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Best profit: ${dp[0][0]}. You start the first day free.` };
+      return { rows: ['before', 'before', ...dayRows(pr)], cols: ['free', 'holding'], cells, steps, answer: [n + 1, 0], result: dp[n + 1][0], resultNote: `Best profit: ${dp[n + 1][0]}. End the last day free.` };
     }
   };
 
@@ -361,14 +373,15 @@ const VIZ = (() => {
     inputs: [{ k: 'a', label: 'prices', v: '[1,3,2,8,4,9]' }, { k: 'f', label: 'fee', v: '2' }],
     build(p) {
       const pr = json(p.a, [1]).slice(0, 9), fee = +p.f || 0, n = pr.length, cells = blank(n + 1, 2), dp = table(n + 1, 2, 0), steps = [];
-      cells[n] = [{ v: 0, kind: 'base' }, { v: 0, kind: 'base' }];
-      for (let i = n - 1; i >= 0; i--) {
-        dp[i][1] = Math.max(dp[i + 1][1], pr[i] - fee + dp[i + 1][0]);
-        steps.push({ i, j: 1, v: dp[i][1], deps: [[i + 1, 1], [i + 1, 0]], note: `Day ${i}, holding: keep (${dp[i + 1][1]}) or sell (${pr[i]} − ${fee} + ${dp[i + 1][0]})` });
-        dp[i][0] = Math.max(dp[i + 1][0], -pr[i] + dp[i + 1][1]);
-        steps.push({ i, j: 0, v: dp[i][0], deps: [[i + 1, 0], [i + 1, 1]], note: `Day ${i}, free: wait (${dp[i + 1][0]}) or buy (−${pr[i]} + ${dp[i + 1][1]})` });
+      dp[0] = [0, -Infinity]; cells[0] = [{ v: 0, kind: 'base' }, { v: -Infinity, kind: 'base' }];
+      for (let d = 0; d < n; d++) {
+        const i = d + 1, x = pr[d];
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - x);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i - 1, 1], [i - 1, 0]], note: `Day ${d}, holding: keep ${f(dp[i - 1][1])} or buy (${dp[i - 1][0]} − ${x})` });
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + x - fee);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i - 1, 0], [i - 1, 1]], note: `Day ${d}, free: rest ${dp[i - 1][0]} or sell (${f(dp[i - 1][1])} + ${x} − ${fee})` });
       }
-      return { rows: [...pr.map((x, i) => 'day ' + i + ' ($' + x + ')'), 'end'], cols: ['free', 'holding'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Best profit: ${dp[0][0]}.` };
+      return { rows: ['before', ...dayRows(pr)], cols: ['free', 'holding'], cells, steps, answer: [n, 0], result: dp[n][0], resultNote: `Best profit: ${dp[n][0]}.` };
     }
   };
 

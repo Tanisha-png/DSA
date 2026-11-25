@@ -1,0 +1,3236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2D DP</title>
+<meta name="description" content="22 two-dimensional DP problems in JavaScript with step-through tables.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap">
+
+<style>
+/* Layout: sticky contents rail on the left, one reading column on the right. Graph-paper motif from the subject itself. */
+:root {
+  --bg: #f7f8fa; --surface: #ffffff; --surface-2: #f2f3f5; --ink: #262626; --muted: #5c5f66; --line: #e4e6ea; --line-strong: #a7abb3;
+  --brand: #ffa116; --brand-ink: #1a1a1a; --accent: #b35c00; --accent-soft: #fff3e0; --accent-ink: #ffffff;
+  --easy: #00897b; --medium: #b88600; --hard: #e0284d;
+  --cell: #f4f5f7; --cur: #ffd36b; --cur-line: #c98a00; --dep: #d6e6ff; --dep-line: #2f6fdf; --path: #c9f0e6; --path-line: #00897b;
+  --pad: #eceef1; --warn: #ffdde3; --warn-line: #e0284d; --violet: #8a5cd6; --block: #4a4f57;
+  --code-bg: #1e1e1e; --code-ink: #e6e6e6; --code-muted: #8a8f98; --k: #ff9e64; --s: #9ece6a; --n: #e0af68; --f: #7aa2f7; --memo: rgba(255, 161, 22, .14);
+  --sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --mono: 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --grid-dot: rgba(38, 38, 38, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1a1a; --surface: #282828; --surface-2: #303030; --ink: #eff1f6; --muted: #a3a6ad; --line: #3e3e3e; --line-strong: #5f6166;
+    --brand: #ffa116; --brand-ink: #1a1a1a; --accent: #ffa116; --accent-soft: #3a2e17; --accent-ink: #1a1a1a;
+    --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+    --cell: #303030; --cur: #6b4e0f; --cur-line: #ffa116; --dep: #1d3557; --dep-line: #5b9bff; --path: #0f3b35; --path-line: #00b8a3;
+    --pad: #2b2b2b; --warn: #4a1d26; --warn-line: #ff375f; --violet: #b18cff; --block: #8a8d93;
+    --code-bg: #1e1e1e; --memo: rgba(255, 161, 22, .13); --grid-dot: rgba(239, 241, 246, .05);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a1a; --surface: #282828; --surface-2: #303030; --ink: #eff1f6; --muted: #a3a6ad; --line: #3e3e3e; --line-strong: #5f6166;
+  --brand: #ffa116; --brand-ink: #1a1a1a; --accent: #ffa116; --accent-soft: #3a2e17; --accent-ink: #1a1a1a;
+  --easy: #00b8a3; --medium: #ffc01e; --hard: #ff375f;
+  --cell: #303030; --cur: #6b4e0f; --cur-line: #ffa116; --dep: #1d3557; --dep-line: #5b9bff; --path: #0f3b35; --path-line: #00b8a3;
+  --pad: #2b2b2b; --warn: #4a1d26; --warn-line: #ff375f; --violet: #b18cff; --block: #8a8d93;
+  --code-bg: #1e1e1e; --memo: rgba(255, 161, 22, .13); --grid-dot: rgba(239, 241, 246, .05);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--sans); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 .3em; white-space: nowrap; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+p { margin: 0 0 .8em; }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- layout ---------- */
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+.rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); padding: 22px 16px 40px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); }
+main { min-width: 0; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px 40px; }
+.col { max-width: 860px; }
+
+.brand { font-family: var(--display); font-weight: 700; font-size: 19px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.brand-mark { display: grid; grid-template-columns: repeat(3, 7px); gap: 2px; }
+.brand-mark i { width: 7px; height: 7px; border-radius: 2px; background: var(--line); }
+.brand-mark i.a { background: var(--cur); } .brand-mark i.b { background: var(--dep-line); } .brand-mark i.c { background: var(--path-line); }
+.progress { margin: 6px 0 14px; font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-top: 6px; border: 1px solid var(--line); }
+.bar > span { display: block; height: 100%; width: 0; background: var(--path-line); transition: width .3s; }
+.search { width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 14px; }
+.nav { list-style: none; margin: 14px 0 0; padding: 0; font-size: 14px; }
+.nav .grp { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 16px 0 4px; }
+.nav a { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.nav a:hover { background: var(--surface-2); }
+.nav a.on { background: var(--accent-soft); color: var(--accent); }
+.nav .nid { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 22px; }
+.nav .tick { margin-left: auto; color: var(--path-line); font-size: 12px; visibility: hidden; }
+.nav a.done .tick { visibility: visible; }
+.rail-foot { margin-top: 20px; display: flex; gap: 8px; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+.btn:hover { border-color: var(--line-strong); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+/* ---------- hero ---------- */
+.hero { padding: 36px 0 26px; border-bottom: 1px solid var(--line); background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px); background-size: 22px 22px; }
+.hero h1 { font-size: clamp(28px, 4vw, 38px); letter-spacing: -.01em; }
+.hero p.lead { font-size: 16.5px; color: var(--muted); max-width: 620px; margin-top: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; color: var(--muted); margin-top: 18px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid; display: inline-block; }
+.sw-cur { background: var(--cur); border-color: var(--cur-line); }
+.sw-dep { background: var(--dep); border-color: var(--dep-line); }
+.sw-path { background: var(--path); border-color: var(--path-line); }
+.sw-pad { background: var(--pad); border-color: var(--line-strong); border-style: dashed; }
+.stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 26px; }
+.stats div { font-size: 13px; color: var(--muted); }
+.stats b { display: block; font-family: var(--display); font-size: 26px; color: var(--ink); }
+
+/* ---------- sections ---------- */
+section.block { padding: 48px 0 8px; }
+.eyebrow { font-family: var(--display); font-size: 12.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+section.block > h2 { font-size: 32px; margin-bottom: 12px; }
+h3.sub { font-size: 21px; margin: 34px 0 10px; }
+.prose { max-width: 680px; }
+.muted { color: var(--muted); }
+.figure { margin: 18px 0 22px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+.figure figcaption { font-size: 13.5px; color: var(--muted); margin-top: 10px; }
+.dg { width: 100%; height: auto; display: block; overflow: visible; }
+pre.mini { font: 13.5px/1.5 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; overflow-x: auto; }
+
+table.plain { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+.tablewrap { overflow-x: auto; margin: 12px 0 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table.plain th, table.plain td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.plain th { font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--muted); background: var(--surface-2); }
+table.plain tr:last-child td { border-bottom: 0; }
+
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0 8px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; position: relative; }
+.step b { font-family: var(--display); font-size: 15px; display: block; margin-bottom: 4px; }
+.step small { color: var(--muted); font-size: 13px; line-height: 1.45; display: block; }
+.step .lv { font-family: var(--mono); font-size: 11.5px; color: var(--accent); }
+.step:not(:last-child)::after { content: '→'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--line-strong); font-size: 14px; }
+
+.counter { display: grid; gap: 10px; margin-top: 8px; }
+.counter label { font-size: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.counter input[type=range] { flex: 1; min-width: 160px; accent-color: var(--accent); }
+.crow { display: grid; grid-template-columns: 120px minmax(0, 1fr) 130px; align-items: center; gap: 10px; font-size: 14px; }
+.cbar { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.cbar span { display: block; height: 100%; transition: width .25s; }
+.cbar .slow { background: var(--warn-line); } .cbar .fast { background: var(--path-line); }
+.crow .num { font-family: var(--mono); text-align: right; font-size: 13.5px; }
+
+/* ---------- family header ---------- */
+.fam { padding-top: 64px; }
+.fam-head { display: flex; gap: 18px; align-items: flex-start; }
+.fam-letter { font-family: var(--display); font-weight: 700; font-size: 26px; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 12px; background: var(--ink); color: var(--bg); flex: none; }
+.fam-head h2 { font-size: 30px; }
+.fam-head p { color: var(--muted); margin: 6px 0 0; max-width: 640px; }
+.statebox { margin-top: 16px; padding: 12px 16px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; font-size: 15px; }
+
+/* ---------- problem ---------- */
+.prob { margin-top: 40px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.prob-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 14px; }
+.pid { font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+.prob-head h3 { font-size: 23px; }
+.chip { font-size: 12.5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; }
+a.chip:hover { border-color: var(--accent); color: var(--accent); }
+.diff-Medium { color: var(--medium); border-color: currentColor; } .diff-Hard { color: var(--hard); border-color: currentColor; } .diff-Easy { color: var(--easy); border-color: currentColor; }
+.chip-new { background: var(--path); color: var(--ink); border-color: var(--path-line); }
+.done-toggle { margin-left: auto; font-size: 13.5px; display: inline-flex; gap: 7px; align-items: center; cursor: pointer; color: var(--muted); user-select: none; }
+.done-toggle input { width: 17px; height: 17px; accent-color: var(--path-line); }
+.prob-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; }
+pre.example { font: 13.5px/1.55 var(--mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 10px 0 0; overflow-x: auto; white-space: pre-wrap; }
+.card { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-self: start; }
+.card-title { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.card dl { margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); }
+.card dt, .card dd { margin: 0; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.card dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding-top: 9px; }
+.card dl > :nth-last-child(-n+2) { border-bottom: 0; }
+.card code { white-space: normal; }
+.moves { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.moves svg { width: 70px; flex: none; }
+.notes { margin-top: 18px; max-width: 700px; }
+
+/* ---------- stepper ---------- */
+.viz { margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.viz-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.viz-title { font-family: var(--display); font-weight: 600; font-size: 15px; }
+.viz-title small { display: block; font-family: var(--sans); font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.viz-in { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.viz-in label { display: grid; font-size: 11.5px; color: var(--muted); gap: 2px; }
+.viz-in input { font: 13px var(--mono); padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 100%; min-width: 64px; }
+.viz-in input.wide { min-width: min(320px, 70vw); }
+.viz-scroll { overflow-x: auto; padding: 16px 14px 8px; }
+.viz-stage { position: relative; display: inline-block; }
+.viz-arrows { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+table.dpt { border-collapse: separate; border-spacing: 4px; font-family: var(--mono); }
+table.dpt th { font-size: 12px; color: var(--muted); font-weight: 500; padding: 0 4px; white-space: nowrap; }
+table.dpt th.rh { text-align: right; }
+table.dpt td { width: 44px; min-width: 44px; height: 44px; text-align: center; border-radius: 7px; background: var(--cell); border: 1.5px solid var(--line); font-size: 14.5px; font-weight: 500; position: relative; transition: background .15s, border-color .15s; }
+table.dpt td .tg { position: absolute; top: 2px; left: 4px; font-size: 10px; color: var(--muted); font-weight: 400; }
+table.dpt td.pad, table.dpt td.base { background: var(--pad); border-style: dashed; border-color: var(--line-strong); color: var(--muted); }
+table.dpt td.block { background: var(--block); border-color: var(--block); color: var(--bg); }
+table.dpt td.block::after { content: 'rock'; font-size: 10px; }
+table.dpt td.void { background: transparent; border-color: transparent; }
+table.dpt td.filled { background: var(--surface); }
+table.dpt td.dep { background: var(--dep); border-color: var(--dep-line); }
+table.dpt td.cur { background: var(--cur); border-color: var(--cur-line); font-weight: 700; }
+table.dpt td.ans { background: var(--path); border-color: var(--path-line); font-weight: 700; }
+table.dpt td.insq { box-shadow: inset 0 0 0 2px var(--path-line); }
+table.dpt td.vt { color: var(--path-line); font-weight: 700; } table.dpt td.vf { color: var(--muted); }
+.viz-note { min-height: 48px; margin: 4px 14px 0; padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font: 13.5px/1.5 var(--mono); }
+.viz-note.final { border-color: var(--path-line); background: var(--path); font-family: var(--sans); font-weight: 600; }
+.viz-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 14px 14px; }
+.viz-ctl .count { font: 13px var(--mono); color: var(--muted); margin-left: 4px; }
+.viz-ctl label { margin-left: auto; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.viz-ctl input[type=range] { width: 90px; accent-color: var(--accent); }
+.viz-empty { padding: 14px; color: var(--muted); font-size: 14px; }
+
+/* ---------- code ---------- */
+.code { margin-top: 20px; border-radius: 12px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--line); }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 6px 0; background: rgba(255,255,255,.03); border-bottom: 1px solid rgba(255,255,255,.08); }
+.tab { background: none; border: 0; color: var(--code-muted); padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px 6px 0 0; }
+.tab[aria-selected="true"] { color: var(--code-ink); background: var(--code-bg); box-shadow: inset 0 2px 0 var(--cur-line); }
+.copy { margin-left: auto; align-self: center; background: none; border: 1px solid rgba(255,255,255,.15); color: var(--code-muted); border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer; margin-bottom: 6px; }
+.copy:hover { color: var(--code-ink); }
+.code pre { margin: 0; padding: 14px 0; overflow-x: auto; font: 13.5px/1.6 var(--mono); color: var(--code-ink); }
+.code pre .ln { display: block; padding: 0 16px; min-height: 1.6em; white-space: pre; }
+.code pre .ln.memo { background: var(--memo); box-shadow: inset 3px 0 0 var(--cur-line); }
+.code pre .ln.memo::after { content: 'memo'; float: right; font-size: 10.5px; color: var(--cur-line); margin-left: 12px; }
+.code .k { color: var(--k); } .code .s { color: var(--s); } .code .n { color: var(--n); } .code .c { color: var(--code-muted); font-style: italic; } .code .f { color: var(--f); }
+.code-note { font-size: 12.5px; color: var(--code-muted); padding: 0 16px 12px; }
+
+/* ---------- try it ---------- */
+.tries { margin-top: 18px; display: grid; gap: 8px; }
+details.try { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+details.try summary { cursor: pointer; padding: 10px 14px; font-weight: 500; list-style: none; display: flex; gap: 10px; }
+details.try summary::-webkit-details-marker { display: none; }
+details.try summary::before { content: 'Try first'; flex: none; font: 600 11px var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 6px; height: fit-content; margin-top: 3px; }
+details.try[open] summary::before { content: 'Answer'; color: var(--path-line); border-color: var(--path-line); }
+details.try .ans { padding: 0 14px 12px 14px; color: var(--ink); }
+.cx { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.cx b { color: var(--ink); }
+
+/* ---------- quiz ---------- */
+.quiz-score { font-family: var(--display); font-size: 15px; margin: 6px 0 16px; }
+.q { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 12px; }
+.q p { font-weight: 500; }
+.q .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.q .opt { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-size: 13.5px; cursor: pointer; }
+.q .opt:hover:not(:disabled) { border-color: var(--accent); }
+.q .opt.right { background: var(--path); border-color: var(--path-line); }
+.q .opt.wrong { background: var(--warn); border-color: var(--warn-line); }
+.q .opt:disabled { cursor: default; }
+.q .why { margin-top: 10px; font-size: 14.5px; color: var(--muted); }
+
+ol.script { padding-left: 22px; } ol.script li { margin-bottom: 6px; }
+footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  main { padding: 0 max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 25; background: var(--bg); }
+  .prob-grid { grid-template-columns: minmax(0, 1fr); }
+  .ladder { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step:nth-child(2)::after { display: none; }
+}
+@media (max-width: 560px) {
+  .prob { padding: 18px 14px; margin-left: -4px; margin-right: -4px; }
+  .crow { grid-template-columns: 90px minmax(0, 1fr) 96px; }
+  .ladder { grid-template-columns: minmax(0, 1fr); }
+  .step::after { display: none; }
+  .done-toggle { margin-left: 0; }
+}
+
+/* ---------- diagrams ---------- */
+.dg .c { stroke: var(--line-strong); stroke-width: 1.2; fill: var(--cell); }
+.dg .c-cur { fill: var(--cur); stroke: var(--cur-line); }
+.dg .c-dep { fill: var(--dep); stroke: var(--dep-line); }
+.dg .c-path { fill: var(--path); stroke: var(--path-line); }
+.dg .c-path-soft { fill: var(--path); stroke: var(--line-strong); }
+.dg .c-pad { fill: var(--pad); stroke-dasharray: 4 3; }
+.dg .c-warn { fill: var(--warn); stroke: var(--warn-line); }
+.dg .c-len1 { fill: var(--dep); fill-opacity: .25; } .dg .c-len2 { fill: var(--dep); fill-opacity: .4; } .dg .c-len3 { fill: var(--dep); fill-opacity: .55; } .dg .c-len4 { fill: var(--dep); fill-opacity: .7; }
+.dg .t { fill: var(--ink); font: 500 13px var(--mono); }
+.dg .t-sm { font-size: 11.5px; }
+.dg .t-b { font-weight: 700; }
+.dg .t-s { fill: var(--muted); font: 12.5px var(--sans); }
+.dg .t-strong { fill: var(--ink); font-weight: 600; }
+.dg .t-lab { fill: var(--ink); font: 600 13.5px var(--display); }
+.dg .edge { stroke: var(--line-strong); stroke-width: 1.5; fill: none; }
+.dg .edge-dup { stroke: var(--cur-line); stroke-width: 2; }
+.ar { stroke-width: 2; fill: none; }
+.ar-ink { stroke: var(--muted); } .ar-dep { stroke: var(--dep-line); } .ar-path { stroke: var(--path-line); } .ar-cur { stroke: var(--cur-line); } .ar-warn { stroke: var(--warn-line); }
+.dg .sq { fill: none; stroke-width: 2.5; } .dg .sq-a { stroke: var(--path-line); } .dg .sq-b { stroke: var(--dep-line); } .dg .sq-c { stroke: var(--violet); }
+
+/* ---------- simple pages (home, 1D) ---------- */
+.page { max-width: 960px; margin: 0 auto; padding: 32px max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px)); }
+.page h1 { font-size: clamp(26px, 4vw, 34px); margin-bottom: 6px; }
+.page .lead { color: var(--muted); margin: 0 0 24px; }
+.topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+.topics li > * { display: block; height: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; color: var(--ink); }
+.topics a:hover { border-color: var(--accent); }
+.topics b { display: block; font-family: var(--display); font-weight: 600; font-size: 15.5px; }
+.topics small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.topics .off { color: var(--muted); background: transparent; border-style: dashed; }
+.topics .off b { color: var(--muted); font-weight: 500; }
+
+/* ---------- bullet text ---------- */
+
+/* =====================================================================
+   Design layer
+   ===================================================================== */
+:root {
+  --fa: #3355d1; --fb: #0e8a84; --fc: #7a4fd6; --fd: #c2650f; --fe: #1f8f52; --ff: #c23d78;
+  --shadow: 0 1px 2px rgba(24, 32, 44, .05), 0 6px 24px -8px rgba(24, 32, 44, .12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --fa: #8aa2ff; --fb: #4fd1c5; --fc: #b79bff; --fd: #f5a54a; --fe: #5fd394; --ff: #f07cad; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -10px rgba(0,0,0,.6); }
+}
+:root[data-theme="dark"] { --fa: #8aa2ff; --fb: #4fd1c5; --fc: #b79bff; --fd: #f5a54a; --fe: #5fd394; --ff: #f07cad; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px -10px rgba(0,0,0,.6); }
+[data-f="A"] { --fam: var(--fa); } [data-f="B"] { --fam: var(--fb); } [data-f="C"] { --fam: var(--fc); }
+[data-f="D"] { --fam: var(--fd); } [data-f="E"] { --fam: var(--fe); } [data-f="F"] { --fam: var(--ff); }
+.soft { background: color-mix(in srgb, var(--fam, var(--accent)) 9%, var(--surface)); }
+
+html { scroll-padding-top: calc(var(--top-h, 0px) + 16px); }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* ---------- header: row 1 logo + theme, row 2 breadcrumb ---------- */
+.topbar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--surface) 90%, transparent); -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
+.hrow { display: flex; align-items: center; gap: 14px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.hrow--top { min-height: 56px; }
+.hrow--crumbs { min-height: 44px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+.logo { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+.logo b { font-weight: 500; color: var(--muted); margin-left: 4px; }
+.logo__mark { width: 30px; height: 30px; transition: transform .35s cubic-bezier(.3, .7, .4, 1.5); }
+.logo:hover .logo__mark { transform: rotate(90deg); }
+.lm-a { fill: var(--brand); } .lm-b { fill: var(--line-strong); opacity: .55; } .lm-c { fill: var(--ink); }
+
+.theme-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 13.5px var(--sans); cursor: pointer; transition: border-color .2s, background .2s; }
+.theme-btn:hover { border-color: var(--brand); }
+.theme-btn svg { transition: transform .4s; } .theme-btn:hover svg { transform: rotate(180deg); }
+
+/* breadcrumb: chevron chain, current page as a filled pill */
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 0; padding: 6px 0; list-style: none; font-size: 13.5px; }
+.crumbs li { display: inline-flex; align-items: center; }
+.crumbs li + li::before { content: ''; width: 7px; height: 7px; margin: 0 10px 0 6px; border: solid var(--line-strong); border-width: 1.5px 1.5px 0 0; transform: rotate(45deg); }
+.crumbs a, .crumbs span { padding: 4px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-weight: 500; transition: background .2s, color .2s; }
+.crumbs a:hover { background: var(--surface); color: var(--ink); }
+.crumbs .root a, .crumbs .root span { font-weight: 800; letter-spacing: .04em; color: var(--ink); }
+.crumbs [aria-current] { background: var(--accent-soft); color: var(--accent); font-weight: 700; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent); }
+
+.tabbar { margin-left: auto; display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tabbar a { padding: 4px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: none; }
+.tabbar a:hover { color: var(--ink); }
+.tabbar a[aria-current="page"] { background: var(--brand); color: var(--brand-ink); }
+
+/* ---------- question list: flush left, collapses to a slim strip ---------- */
+.layout { --rail-w: 300px; max-width: none; margin: 0; grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+.layout.rail-hidden { --rail-w: 56px; }
+.rail { position: sticky; top: var(--top-h, 0px); height: calc(100vh - var(--top-h, 0px)); margin: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--line); }
+.rail-head { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--line); flex: none; }
+.rail-title { font-weight: 700; font-size: 14px; }
+.rail-body { flex: 1; overflow-y: auto; padding: 14px 12px 40px; }
+.menu-toggle { width: 36px; height: 36px; flex: none; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); cursor: pointer; transition: border-color .2s, background .2s; }
+.menu-toggle:hover { border-color: var(--brand); }
+.hamburger { display: grid; gap: 4px; }
+.hamburger span { display: block; width: 16px; height: 2px; border-radius: 2px; background: var(--ink); transition: transform .25s, opacity .2s; }
+[aria-expanded="true"] > .hamburger span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+[aria-expanded="true"] > .hamburger span:nth-child(2) { opacity: 0; }
+[aria-expanded="true"] > .hamburger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.layout.rail-hidden .rail-title, .layout.rail-hidden .rail-body { display: none; }
+.layout.rail-hidden .rail-head { border-bottom: 0; }
+
+main { padding: 0 max(20px, env(safe-area-inset-right, 0px)) 80px 40px; }
+.col { max-width: 980px; margin: 0 auto; }
+.layout.rail-hidden main { padding: 0 0 80px; }
+.layout.rail-hidden .col { width: 90%; max-width: none; }   /* list closed: content takes 90% of the width */
+.scrim { position: fixed; inset: var(--top-h, 0px) 0 0 0; z-index: 25; background: rgba(0, 0, 0, .45); }
+
+/* list items */
+.progress { margin: 0 4px 12px; }
+.progress .bar > span { background: var(--brand); }
+.search { border-radius: 10px; padding: 8px 12px; background: var(--surface-2); }
+.search:focus { outline: 2px solid var(--brand); outline-offset: 0; border-color: transparent; }
+.nav { margin-top: 10px; }
+.nav .grp { display: flex; align-items: center; gap: 8px; margin: 18px 4px 6px; font-size: 11px; letter-spacing: .08em; }
+.nav .grp::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--fam, var(--line-strong)); flex: none; }
+.nav a { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-left: 2px solid transparent; border-radius: 0 8px 8px 0; font-size: 13.5px; transition: background .15s; }
+.nav a:hover { background: var(--surface-2); }
+.nav a.on { background: var(--accent-soft); color: var(--accent); border-left-color: var(--brand); font-weight: 600; }
+.nav .nid { font-size: 11px; min-width: 22px; }
+.nav .nt { flex: 1; min-width: 0; }
+.nav .dd { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.dd-Easy { background: var(--easy); } .dd-Medium { background: var(--medium); } .dd-Hard { background: var(--hard); }
+.nav .tick { margin-left: 0; }
+
+@media (max-width: 980px) {
+  /* the strip always stays; open = the full list slides over the page */
+  .layout, .layout.rail-hidden { grid-template-columns: 52px minmax(0, 1fr); }
+  .rail { position: sticky; inset: auto; width: auto; transform: none; box-shadow: none; padding-top: 0; transition: none; }
+  .rail:not(.open) .rail-title, .rail:not(.open) .rail-body { display: none; }
+  .rail:not(.open) .rail-head { border-bottom: 0; padding: 8px; }
+  .rail.open { position: fixed; z-index: 30; top: var(--top-h, 0px); left: 0; bottom: 0; height: auto; width: min(320px, 86vw); box-shadow: 0 0 40px rgba(0, 0, 0, .35); }
+  main, .layout.rail-hidden main { padding: 0 max(14px, env(safe-area-inset-right, 0px)) 80px 14px; }
+  .col, .layout.rail-hidden .col { width: auto; }
+}
+@media (max-width: 560px) {
+  .logo b { display: none; }
+  .tabbar a { padding: 4px 10px; }
+}
+
+/* ---------- labels and bullets ---------- */
+.lbl { display: block; font: 700 11px/1 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--fam, var(--accent)); margin: 0 0 10px; }
+ul.pts { list-style: none; margin: 0 0 1em; padding: 0; max-width: 700px; }
+ul.pts > li { position: relative; padding-left: 20px; margin-bottom: 7px; }
+ul.pts > li::before { content: ''; position: absolute; left: 3px; top: .62em; width: 7px; height: 7px; border-radius: 2px; background: var(--fam, var(--accent)); opacity: .85; }
+ul.pts ul { list-style: none; padding-left: 4px; margin: 6px 0 0; }
+ul.pts ul li { position: relative; padding-left: 18px; margin-bottom: 4px; color: var(--muted); }
+ul.pts ul li::before { content: ''; position: absolute; left: 2px; top: .72em; width: 8px; height: 1.5px; background: var(--line-strong); }
+
+/* ---------- hero and section heads ---------- */
+.hero { position: relative; border-bottom: 0; background: none; padding: 40px 0 28px; }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background:
+  radial-gradient(600px 220px at 15% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+  radial-gradient(500px 200px at 85% 20%, color-mix(in srgb, var(--fc) 12%, transparent), transparent 70%); }
+.hero h1 { font-size: clamp(30px, 4.4vw, 44px); letter-spacing: -.02em; }
+.legend { gap: 8px; }
+.legend span { padding: 4px 10px 4px 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 12.5px; }
+section.block { padding-top: 56px; }
+section.block > h2 { font-size: 30px; letter-spacing: -.01em; }
+h3.sub { display: flex; align-items: center; gap: 10px; }
+h3.sub::before { content: ''; width: 4px; height: 20px; border-radius: 2px; background: var(--accent); }
+.tablewrap { border-radius: 12px; box-shadow: var(--shadow); }
+table.plain th { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; }
+table.plain tr:hover td { background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.step { border-radius: 12px; box-shadow: var(--shadow); border-top: 3px solid var(--accent); }
+.figure { border-radius: 14px; box-shadow: var(--shadow); }
+
+/* ---------- family header ---------- */
+.fam { padding-top: 80px; }
+.fam-head { align-items: center; }
+.fam-letter { width: 60px; height: 60px; border-radius: 16px; font-size: 28px; background: var(--fam); color: #fff; box-shadow: 0 8px 20px -8px var(--fam); }
+.fam-head .eyebrow { color: var(--fam); }
+.fam-head h2 { font-size: 32px; letter-spacing: -.01em; }
+.fam-head ul.pts { color: var(--muted); margin: 8px 0 0; }
+.statebox { margin-top: 20px; padding: 14px 18px; border: 1px solid color-mix(in srgb, var(--fam) 30%, var(--line)); border-left: 4px solid var(--fam); border-radius: 10px; background: color-mix(in srgb, var(--fam) 8%, var(--surface)); }
+.statebox .lbl { margin-bottom: 6px; }
+
+/* ---------- problem card ---------- */
+.prob { position: relative; margin-top: 36px; padding: 30px 32px; border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.prob::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--fam), color-mix(in srgb, var(--fam) 30%, transparent)); }
+.prob-head { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.pid { background: var(--fam); border-color: var(--fam); color: #fff; padding: 3px 9px; }
+.prob-head h3 { font-size: 25px; letter-spacing: -.01em; }
+.chip { font-weight: 500; }
+.chip-dir { background: color-mix(in srgb, var(--fam) 12%, var(--surface)); color: var(--fam); border-color: transparent; }
+.prob-grid { gap: 24px; }
+.prob-q .stmt { font-size: 16.5px; line-height: 1.6; margin-bottom: 18px; }
+pre.example { margin: 0; padding: 12px 16px; border: 1px solid var(--line); border-left: 3px solid var(--fam); border-radius: 0 10px 10px 0; background: var(--surface-2); font-size: 13.5px; }
+
+.card { border-radius: 12px; box-shadow: var(--shadow); background: var(--surface); }
+.card-title { background: color-mix(in srgb, var(--fam) 10%, var(--surface)); color: var(--fam); font-size: 11.5px; letter-spacing: .09em; }
+.card dl { grid-template-columns: 104px minmax(0, 1fr); }
+.card dt { color: var(--fam); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; padding-top: 10px; }
+.card dd { line-height: 1.5; }
+.card dl > dt:nth-last-of-type(1), .card dl > dd:nth-last-of-type(1) { background: color-mix(in srgb, var(--fam) 5%, transparent); }
+
+.notes { margin-top: 26px; padding: 18px 20px 8px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); max-width: none; }
+
+/* ---------- stepper ---------- */
+.viz { margin-top: 26px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+.viz-top { background: var(--surface-2); }
+.viz-title { font-size: 15.5px; }
+table.dpt td { border-radius: 9px; }
+table.dpt td.cur { box-shadow: 0 0 0 3px color-mix(in srgb, var(--cur-line) 35%, transparent); }
+.viz-note { border-radius: 10px; border-left: 3px solid var(--dep-line); background: var(--surface-2); }
+.viz-note.final { border-left-color: var(--path-line); }
+
+/* ---------- code ---------- */
+.code { margin-top: 26px; border-radius: 14px; border: 1px solid rgba(255,255,255,.06); box-shadow: 0 12px 32px -14px rgba(0,0,0,.45); }
+.tabs { gap: 4px; padding: 8px 8px; background: rgba(255,255,255,.035); align-items: center; }
+.tab { border-radius: 7px; padding: 6px 12px; font-weight: 500; }
+.tab:hover { color: var(--code-ink); }
+.tab[aria-selected="true"] { background: rgba(255,255,255,.1); box-shadow: none; color: #fff; }
+.copy { margin-bottom: 0; border-radius: 7px; }
+.code pre { counter-reset: ln; padding: 16px 0; font-size: 13.5px; line-height: 1.65; }
+.code pre .ln { padding: 0 18px 0 0; }
+.code pre .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 3em; padding-right: 16px; text-align: right; color: var(--code-muted); opacity: .45; user-select: none; }
+.code-note { padding: 10px 18px 14px; border-top: 1px solid rgba(255,255,255,.06); }
+.code-note:empty { display: none; }
+
+/* ---------- check yourself, complexity ---------- */
+.tries { margin-top: 26px; gap: 10px; }
+.tries .lbl { margin-bottom: 2px; }
+details.try { background: var(--surface); border-radius: 12px; transition: border-color .15s; }
+details.try:hover { border-color: var(--line-strong); }
+details.try[open] { border-color: color-mix(in srgb, var(--path-line) 50%, var(--line)); }
+details.try summary { padding: 12px 16px; }
+details.try .ans { padding: 0 16px 14px; border-top: 1px dashed var(--line); padding-top: 12px; margin: 0 16px; padding-left: 0; padding-right: 0; }
+.cx { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--ink); }
+.cx .lbl { margin: 0; }
+
+/* ---------- quiz ---------- */
+.q { border-radius: 14px; box-shadow: var(--shadow); }
+
+@media (max-width: 980px) {
+
+}
+@media (max-width: 560px) {
+  .prob { padding: 22px 16px; border-radius: 14px; }
+}
+
+/* show code exactly as typed: no === / => ligatures */
+code, pre, .code pre, table.dpt, .viz-note, .viz-in input { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+
+/* =====================================================================
+   UI components page
+   ===================================================================== */
+.home-h2 { font-size: 20px; margin: 36px 0 12px; }
+.ui-page { max-width: 1240px; }
+.ui-hero { position: relative; padding: 18px 0 8px; }
+.ui-hero h1 { font-size: clamp(32px, 5vw, 48px); letter-spacing: -.02em; background: linear-gradient(90deg, var(--ink), var(--accent) 60%, var(--fc)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ui-hero .lead { max-width: 620px; }
+.ui-nav { position: sticky; top: var(--top-h, 0px); z-index: 20; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; margin-bottom: 4px; background: var(--bg); scrollbar-width: none; }
+.ui-nav a { display: inline-flex; align-items: center; gap: 8px; flex: none; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 500; text-decoration: none; transition: border-color .2s, background .2s, color .2s; }
+.ui-nav a span { font: 600 11px var(--mono); color: var(--muted); }
+.ui-nav a:hover { border-color: var(--line-strong); }
+.ui-nav a.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.ui-nav a.on span { color: var(--bg); opacity: .7; }
+.ui-group { padding-top: 44px; }
+.ui-group__head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.ui-group__head h2 { font-size: 28px; letter-spacing: -.01em; }
+.ui-group__head span { color: var(--muted); font-size: 14px; }
+.ui-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 18px; }
+.ui-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); transition: transform .3s, box-shadow .3s; }
+.ui-card:hover { transform: translateY(-3px); box-shadow: var(--shadow), 0 18px 40px -24px rgba(0, 0, 0, .35); }
+.ui-card.is-open { grid-column: 1 / -1; }
+.ui-card.is-open:hover { transform: none; }
+.ui-stage { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; min-height: 250px; padding: 36px 24px; color: #111; color-scheme: light; }
+.ui-meta { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--line); }
+.ui-num { font: 600 12px var(--mono); color: var(--muted); }
+.ui-meta h3 { font-size: 16px; }
+.ui-meta p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+.ui-code-btn { padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ui-code-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ui-code-btn[aria-expanded="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.ui-code.code { margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+.ui-code pre { max-height: 440px; padding: 16px 20px; white-space: pre; overflow: auto; }
+.btn-primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.btn-primary:hover { filter: brightness(1.05); border-color: var(--brand); }
+h3.sub::before { background: var(--brand); }
+.hero::before { display: none; }
+.hrow--crumbs > nav:first-child { flex: 1; min-width: 0; }
+.crumbs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.crumbs a, .crumbs span, .tabbar a { white-space: nowrap; }
+.tabbar { flex: none; }
+@media (max-width: 560px) {
+  .crumbs li:not(.root):not(:last-child) { display: none; }   /* phones: DSA > current page */
+}
+.topics a { border-left: 3px solid var(--brand); transition: transform .2s, box-shadow .2s, border-color .2s; }
+.topics a:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+/* Page links: "Orbit arrow" (UI Components, links #3), using the site theme colours */
+.orbit-links { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 4px 0 8px; }
+.orbit { display: inline-flex; align-items: center; gap: 12px; color: var(--ink); font-weight: 600; font-size: 15px; text-decoration: none; }
+.orbit__dot {
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid currentColor; font-style: normal; font-size: 14px;
+  transition: background .3s, color .3s, border-color .3s, transform .35s cubic-bezier(.3, .7, .4, 1.4);
+}
+.orbit:hover .orbit__dot { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); transform: translateX(6px) rotate(-45deg); }
+.orbit--back .orbit__dot { order: -1; }
+.orbit--back:hover .orbit__dot { transform: translateX(-6px) rotate(45deg); }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="hrow hrow--top">
+    <a class="logo" href="../index.html" aria-label="DSA Notes: all topics"><svg class="logo__mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="12.5" height="12.5" rx="3.5" class="lm-a"/><rect x="17.5" y="2" width="12.5" height="12.5" rx="3.5" class="lm-b"/><rect x="2" y="17.5" width="12.5" height="12.5" rx="3.5" class="lm-b"/><rect x="17.5" y="17.5" width="12.5" height="12.5" rx="3.5" class="lm-c"/></svg><span>DSA<b>Notes</b></span></a>
+    <button class="theme-btn" type="button" aria-label="Switch colour theme"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><span>Theme</span></button>
+  </div>
+  <div class="hrow hrow--crumbs">
+    <nav aria-label="Breadcrumb"><ol class="crumbs"><li class="root"><a href="../index.html">DSA</a></li><li><a href="2d.html">Dynamic Programming</a></li><li><span aria-current="page">2D DP</span></li></ol></nav>
+    <nav class="tabbar" aria-label="Dynamic Programming">
+      <a href="1d.html">1D DP</a>
+      <a href="2d.html" aria-current="page">2D DP</a>
+    </nav>
+  </div>
+</header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+    <marker id="ah-dep" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--dep-line)"/></marker>
+    <marker id="ah-path" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--path-line)"/></marker>
+    <marker id="ah-cur" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--cur-line)"/></marker>
+    <marker id="ah-warn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--warn-line)"/></marker>
+  </defs>
+</svg>
+<div class="scrim" id="scrim" hidden></div>
+<div class="layout">
+  <aside class="rail" id="rail" aria-label="Questions">
+    <div class="rail-head">
+      <button class="menu-toggle" id="menu-btn" type="button" aria-controls="rail-body" aria-expanded="true" aria-label="Hide question list"><span class="hamburger" aria-hidden="true"><span></span><span></span><span></span></span></button>
+      <span class="rail-title">Questions</span>
+    </div>
+    <div class="rail-body" id="rail-body">
+      <div class="progress"><span id="prog-text">0 of 22 solved</span><div class="bar"><span id="prog-bar"></span></div></div>
+      <input class="search" id="nav-search" type="search" placeholder="Filter (name or LC number)" aria-label="Filter problems">
+      <ul class="nav" id="nav"></ul>
+      <div class="rail-foot"><button class="btn" id="reset-progress">Reset ticks</button></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="col">
+      <header class="hero" id="top">
+        <h1>2D Dynamic Programming</h1>
+        <p class="lead">Six families. Each problem has a DP card, a table you can step through, and tested code.</p>
+        <div class="legend">
+          <span><i class="sw sw-cur"></i>cell being filled</span>
+          <span><i class="sw sw-dep"></i>cells it reads</span>
+          <span><i class="sw sw-path"></i>answer</span>
+          <span><i class="sw sw-pad"></i>padding / base case</span>
+        </div>
+      </header>
+
+      <!-- ====================== BASICS ====================== -->
+      <section class="block" id="start">
+        <div class="eyebrow">Basics</div>
+        <h2>How every solution is built</h2>
+        <ul class="pts">
+          <li>DP = a series of choices, the same sub-question shows up on different routes, and the best answer is built from best sub-answers.</li>
+          <li>2D = you need two numbers to say where you are.</li>
+          <li>Test: what is the least I need to know about where I am to finish the problem? If that is two numbers, it is 2D.</li>
+        </ul>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>State</th><th>The two numbers</th><th>Family</th></tr>
+          <tr><td><code>dp(i, j)</code></td><td>row i, column j</td><td>Grid paths, squares</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>first i letters of a, first j letters of b</td><td>Two strings</td></tr>
+          <tr><td><code>dp(i, j)</code></td><td>slice from i to j</td><td>Intervals</td></tr>
+          <tr><td><code>dp(i, c)</code></td><td>first i items, budget c</td><td>Knapsack</td></tr>
+          <tr><td><code>dp(i, s)</code></td><td>day i, mode s</td><td>Index + state</td></tr>
+        </table></div>
+
+        <h3 class="sub">The DP card</h3>
+        <p class="prose">Fill it in before writing code.</p>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Question</th><th>Unique Paths</th></tr>
+          <tr><td><b>State</b>: what does <code>dp(i, j)</code> mean?</td><td>Ways to reach <code>(i, j)</code> from the start</td></tr>
+          <tr><td><b>Choices</b>: how did I get here?</td><td>From above or from the left</td></tr>
+          <tr><td><b>Recurrence</b>: how do they combine?</td><td><code>dp(i-1, j) + dp(i, j-1)</code></td></tr>
+          <tr><td><b>Base cases</b>: where does it stop?</td><td>Off the grid → 0. Start → 1</td></tr>
+          <tr><td><b>Answer</b>: which state?</td><td><code>dp(m-1, n-1)</code></td></tr>
+          <tr><td><b>Fill order</b>: what must be ready first?</td><td>Top-left → bottom-right</td></tr>
+        </table></div>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>The question asks for</th><th>Combine with</th><th>Impossible move returns</th></tr>
+          <tr><td>Number of ways</td><td><code>+</code></td><td><code>0</code></td></tr>
+          <tr><td>Smallest cost</td><td><code>Math.min</code></td><td><code>Infinity</code></td></tr>
+          <tr><td>Largest value</td><td><code>Math.max</code></td><td><code>-Infinity</code> (or <code>0</code> if doing nothing is allowed)</td></tr>
+          <tr><td>Is it possible?</td><td><code>||</code></td><td><code>false</code></td></tr>
+        </table></div>
+
+        <h3 class="sub">Four versions of one solution</h3>
+        <div class="ladder">
+          <div class="step"><span class="lv">1</span><b>Recursion</b><small>Correct, slow. Get the logic right.</small></div>
+          <div class="step"><span class="lv">2</span><b>Memo</b><small>Same code + a cache. Two extra lines.</small></div>
+          <div class="step"><span class="lv">3</span><b>Table</b><small>Loops instead of recursion. No stack limit.</small></div>
+          <div class="step"><span class="lv">4</span><b>One row</b><small>Keep only the rows still needed.</small></div>
+        </div>
+        <ul class="pts">
+          <li>In the code boxes, memo lines have a yellow bar.</li>
+          <li>The <b>Recursion</b> tab is the same code with those lines removed.</li>
+        </ul>
+
+        <h3 class="sub">Why the memo matters</h3>
+        <p class="prose">Plain recursion on a 3 × 3 grid. The orange part is computed twice: two routes lead to (1,1).</p>
+        <figure class="figure" id="fig-tree"></figure>
+        <div class="figure counter">
+          <label for="calls-n">Grid size: <b id="calls-label">10 × 10</b><input type="range" id="calls-n" min="2" max="16" value="10"></label>
+          <div class="crow"><span>Recursion</span><div class="cbar"><span class="slow" id="calls-bar-slow"></span></div><span class="num" id="calls-slow"></span></div>
+          <div class="crow"><span>Memo</span><div class="cbar"><span class="fast" id="calls-bar-fast"></span></div><span class="num" id="calls-fast"></span></div>
+          <figcaption>Function calls. Log scale.</figcaption>
+        </div>
+
+        <h3 class="sub">Fill direction</h3>
+        <ul class="pts">
+          <li><b>Follow the question.</b> If it walks start → end (robot, strings, items, days), fill start → end. <code>dp</code> = answer for what is done so far.</li>
+          <li><b>Go in reverse</b> only when it helps:
+            <ul>
+              <li>the start depends on what lies ahead (A6 Dungeon), or</li>
+              <li>reverse puts the answer in one cell (A4 Triangle).</li>
+            </ul>
+          </li>
+          <li><b>Intervals</b> (D): short ranges first, then longer.</li>
+          <li>Loop rule: reads <code>i − 1</code> → loop <code>i</code> up. Reads <code>i + 1</code> → loop <code>i</code> down.</li>
+          <li>Every DP card has a <b>Fill order</b> row, and the stepper starts there.</li>
+        </ul>
+        <figure class="figure" id="fig-dirs"></figure>
+
+        <h3 class="sub">Padding is the base case</h3>
+        <ul class="pts">
+          <li>Add one extra row and column holding the base value.</li>
+          <li>The loops then need no "am I outside?" checks.</li>
+          <li>In the steppers, padding cells are dashed and filled before step 1.</li>
+        </ul>
+
+        <h3 class="sub">Common mistakes</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th>Mistake</th><th>Symptom</th><th>Fix</th></tr>
+          <tr><td>Memo checked before bounds</td><td><code>Cannot read properties of undefined</code></td><td>Bounds first</td></tr>
+          <tr><td><code>Array(m).fill(Array(n))</code></td><td>All rows change together</td><td><code>Array.from({ length: m }, () =&gt; Array(n))</code></td></tr>
+          <tr><td><code>0</code> as "not computed"</td><td>Time Limit Exceeded</td><td>Use <code>undefined</code></td></tr>
+          <tr><td><code>0</code> for a bad move in a min problem</td><td>Answer too small</td><td>Return <code>Infinity</code></td></tr>
+          <tr><td><code>"1"</code> vs <code>1</code></td><td>Every cell looks the same</td><td>Check the input type</td></tr>
+          <tr><td>Wrong loop direction</td><td>Reads empty cells</td><td>Follow the recurrence arrows</td></tr>
+          <tr><td>Very deep recursion</td><td><code>Maximum call stack size exceeded</code></td><td>Use the table</td></tr>
+        </table></div>
+      </section>
+
+      <div id="families"></div>
+
+      <!-- ====================== QUIZ ====================== -->
+      <section class="block" id="quiz">
+        <div class="eyebrow">Practice</div>
+        <h2>Which family is it?</h2>
+        <p class="prose">Not in this page. Pick the family before thinking about code.</p>
+        <div class="quiz-score" id="quiz-score"></div>
+        <div id="quiz-list"></div>
+        <button class="btn" id="quiz-reset">Reset quiz</button>
+      </section>
+
+      <!-- ====================== CHEAT SHEET ====================== -->
+      <section class="block" id="cheat">
+        <div class="eyebrow">Summary</div>
+        <h2>All 22 side by side</h2>
+        <div class="tablewrap"><table class="plain" id="cheat-table">
+          <tr><th>#</th><th>Problem</th><th>dp means</th><th>Combine</th><th>Base</th><th>Answer</th><th>Fill</th></tr>
+          <tr><td>A1</td><td>Unique Paths</td><td>ways to reach cell</td><td><code>+</code></td><td>off → 0, start → 1</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A2</td><td>Unique Paths II</td><td>ways to reach cell</td><td><code>+</code></td><td>+ rock → 0</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A3</td><td>Min Path Sum</td><td>cheapest to reach cell</td><td><code>min</code></td><td>off → ∞</td><td>dp(m−1,n−1)</td><td>forward</td></tr>
+          <tr><td>A4</td><td>Triangle</td><td>cheapest from cell down</td><td><code>min</code></td><td>bottom row</td><td>dp(0,0)</td><td>reverse</td></tr>
+          <tr><td>A5</td><td>Min Falling Path</td><td>cheapest fall to cell</td><td><code>min</code> of 3</td><td>top row, col off → ∞</td><td>min of last row</td><td>forward</td></tr>
+          <tr><td>A6</td><td>Dungeon Game</td><td>health needed on entry</td><td><code>max(1, min − d)</code></td><td>off → ∞</td><td>dp(0,0)</td><td>reverse</td></tr>
+          <tr><td>B1</td><td>Maximal Square</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>max²</td><td>forward</td></tr>
+          <tr><td>B2</td><td>Count Squares</td><td>side ending at cell</td><td><code>1 + min</code> of 3</td><td>outside → 0</td><td>sum</td><td>forward</td></tr>
+          <tr><td>C1</td><td>LCS</td><td>LCS of prefixes</td><td>match +1, else <code>max</code></td><td>empty → 0</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C2</td><td>Delete Operation</td><td>deletions</td><td>match, else <code>1 + min</code></td><td>empty → other length</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C3</td><td>Edit Distance</td><td>operations</td><td>match, else <code>1 + min</code> of 3</td><td>empty → other length</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C4</td><td>Distinct Subsequences</td><td>ways</td><td>skip + use</td><td>empty t → 1</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>C5</td><td>Wildcard Matching</td><td>matches?</td><td><code>||</code></td><td>both empty → true</td><td>dp(n,m)</td><td>forward</td></tr>
+          <tr><td>D1</td><td>Longest Pal. Subsequence</td><td>LPS in [i..j]</td><td>match +2, else <code>max</code></td><td>i = j → 1</td><td>dp(0, n−1)</td><td>short → long</td></tr>
+          <tr><td>D2</td><td>Palindromic Substrings</td><td>is palindrome?</td><td><code>&amp;&amp;</code></td><td>length ≤ 2</td><td>count true</td><td>short → long</td></tr>
+          <tr><td>D3</td><td>Burst Balloons</td><td>coins between l and r</td><td><code>max</code> over last k</td><td>nothing between → 0</td><td>dp(0, n+1)</td><td>short → long</td></tr>
+          <tr><td>E1</td><td>Partition Equal Subset</td><td>can make t?</td><td><code>||</code></td><td>t = 0 → true</td><td>dp(n, sum/2)</td><td>forward</td></tr>
+          <tr><td>E2</td><td>Target Sum</td><td>ways</td><td><code>+</code></td><td>no items, s = 0 → 1</td><td>dp(n, P)</td><td>forward</td></tr>
+          <tr><td>E3</td><td>Coin Change II</td><td>ways</td><td><code>+</code></td><td>amount 0 → 1</td><td>dp(n, amount)</td><td>forward</td></tr>
+          <tr><td>E4</td><td>Coin Change</td><td>fewest coins</td><td><code>min</code></td><td>amount 0 → 0</td><td>dp(n, amount)</td><td>forward</td></tr>
+          <tr><td>F1</td><td>Stock with Cooldown</td><td>profit at end of day</td><td><code>max</code></td><td>before day 0</td><td>free(n−1)</td><td>forward</td></tr>
+          <tr><td>F2</td><td>Stock with Fee</td><td>profit at end of day</td><td><code>max</code></td><td>before day 0</td><td>free(n−1)</td><td>forward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Knapsack variants</h3>
+        <div class="tablewrap"><table class="plain">
+          <tr><th></th><th>Each item once (0/1)</th><th>Reuse allowed</th></tr>
+          <tr><td>Possible? (<code>||</code>)</td><td>E1 Partition</td><td>Word Break style</td></tr>
+          <tr><td>Count (<code>+</code>)</td><td>E2 Target Sum</td><td>E3 Coin Change II</td></tr>
+          <tr><td>Min / max</td><td>0/1 Knapsack, LC 474</td><td>E4 Coin Change</td></tr>
+          <tr><td>Take reads</td><td><code>(i−1, c − w)</code></td><td><code>(i, c − w)</code></td></tr>
+          <tr><td>One-row loop</td><td>downward</td><td>upward</td></tr>
+        </table></div>
+
+        <h3 class="sub">Explaining it in an interview</h3>
+        <ol class="script">
+          <li><code>dp(i, j)</code> means …</li>
+          <li>To get here I could …, so <code>dp(i, j) =</code> …</li>
+          <li>It stops when …</li>
+          <li>The answer is …</li>
+          <li>States × work per state = time.</li>
+          <li>Top-down first, then a table, then keep one or two rows.</li>
+        </ol>
+      </section>
+
+      <!-- ====================== PLAN ====================== -->
+      <section class="block" id="plan">
+        <div class="eyebrow">Two weeks</div>
+        <h2>Study plan</h2>
+        <ul class="pts">
+          <li>One or two problems a day, plus one problem not on this page.</li>
+          <li>Tick a problem only when you can write it from a blank file.</li>
+        </ul>
+        <div class="tablewrap"><table class="plain" id="plan-table"><tr><th>Day</th><th>Learn</th><th>Then try</th></tr></table></div>
+        <h3 class="sub">Next</h3>
+        <ul class="pts">
+          <li><b>3D DP</b>: add a third number to the state (LC 1463, 188, 474, 2435).</li>
+          <li><b>Trees</b>: <code>dp(node, state)</code>, e.g. LC 337.</li>
+          <li><b>Bitmask</b>: <code>dp(mask, i)</code> for small sets, e.g. LC 847.</li>
+          <li><b>Digit DP</b>: count numbers with a property, digit by digit.</li>
+        </ul>
+        <footer>All code is run against the LeetCode examples, and every stepper is checked against the same code.</footer>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+// Shared by every page: saved theme + theme button.
+(() => {
+  const root = document.documentElement;
+  const bar = document.querySelector('.topbar');
+  const setTop = () => root.style.setProperty('--top-h', (bar ? bar.offsetHeight : 0) + 'px');
+  setTop();
+  if (bar && 'ResizeObserver' in window) new ResizeObserver(setTop).observe(bar);
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem('dp2d:theme')); } catch (e) { /* storage blocked */ }
+  if (saved) root.setAttribute('data-theme', saved);
+  document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => {
+    const cur = root.getAttribute('data-theme');
+    const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    const next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('dp2d:theme', JSON.stringify(next)); } catch (e) { /* storage blocked */ }
+    dispatchEvent(new Event('themechange'));
+  }));
+})();
+
+</script>
+<script>
+// Text for the 2D DP page. Keep it short: bullets, no filler.
+const FAMILIES = [
+  {
+    id: 'A', name: 'Grid paths',
+    points: ['Move through a grid in fixed directions, never back.', 'Count the routes or find the cheapest one.'],
+    state: '<code>dp(i, j)</code> = answer for the trip from the start to <code>(i, j)</code>. Triangle and Dungeon run the other way.',
+    diagram: 'familyGrid'
+  },
+  {
+    id: 'B', name: 'Squares in a grid',
+    points: ['Find or count squares made only of 1s.', 'Describe a square by its bottom-right corner.'],
+    state: '<code>dp(i, j)</code> = side of the biggest all-1 square ending at <code>(i, j)</code>.',
+    diagram: 'squares'
+  },
+  {
+    id: 'C', name: 'Two strings',
+    points: ['One pointer per string.', 'Each step: compare the two current letters, then decide.'],
+    state: '<code>dp(i, j)</code> = answer for the first <code>i</code> letters of <code>a</code> and the first <code>j</code> letters of <code>b</code>.',
+    diagram: 'strings'
+  },
+  {
+    id: 'D', name: 'Intervals',
+    points: ['One string or array.', 'The answer for <code>[i..j]</code> is built from smaller ranges inside it.', 'Fill short ranges first.'],
+    state: '<code>dp(i, j)</code> = answer for the slice from <code>i</code> to <code>j</code>.',
+    diagram: 'interval'
+  },
+  {
+    id: 'E', name: 'Knapsack',
+    points: ['A list of items and a budget (sum, amount).', 'For each item: take it or leave it.'],
+    state: '<code>dp(i, c)</code> = answer using the first <code>i</code> items with budget <code>c</code>.',
+    diagram: 'knap'
+  },
+  {
+    id: 'F', name: 'Index + state',
+    points: ['Walk through the days in order.', 'Carry a small mode: holding a share or not.'],
+    state: '<code>dp(day, mode)</code> = best profit at the end of that day in that mode.',
+    diagram: 'machine'
+  }
+];
+
+// card: [state, choices, recurrence, base cases, answer, fill order]
+const PROBLEMS = [
+  // ===================== A =====================
+  {
+    id: 'A1', fam: 'A', lc: 62, title: 'Unique Paths', diff: 'Medium', url: 'https://leetcode.com/problems/unique-paths/', viz: 'uniquePaths',
+    statement: 'Robot starts top-left of an <code>m × n</code> grid, moves only right or down. Count the routes to bottom-right.',
+    example: 'm = 3, n = 7  →  28\nm = 3, n = 2  →  3',
+    card: ['Ways to reach <code>(i, j)</code> from the start', 'Came from above or from the left', '<code>dp(i-1, j) + dp(i, j-1)</code>', 'Off the grid → <code>0</code>. Start → <code>1</code>', '<code>dp(m-1, n-1)</code>', 'Top-left → bottom-right'],
+    moves: 'ul',
+    notes: [
+      'Every route into a cell arrives from above or from the left. The two groups never overlap, so add them.',
+      'First row and first column are all 1: only one straight line reaches them.',
+      'The padding row and column (dashed) are the "off the grid" zeros, so the loop needs no bounds check.'
+    ],
+    tries: [
+      { q: 'Set m = 1, n = 5. What does the table look like?', a: 'One row of 1s. A corridor has one route.' },
+      { q: 'Is there a formula?', a: 'C(m+n−2, m−1): choose which of the m+n−2 moves are "down". For 3 × 7 that is 28. The next problem breaks the formula, the DP does not.' }
+    ],
+    cx: 'Recursion O(2<sup>m+n</sup>). Memo / table O(m·n). One row: O(n) memory.'
+  },
+  {
+    id: 'A2', fam: 'A', lc: 63, title: 'Unique Paths II', diff: 'Medium', url: 'https://leetcode.com/problems/unique-paths-ii/', viz: 'uniquePathsWithObstacles',
+    statement: 'Same as A1, but some cells hold a rock (<code>1</code>) that the robot cannot enter.',
+    example: '[[0,0,0],\n [0,1,0],\n [0,0,0]]  →  2',
+    card: ['Ways to reach <code>(i, j)</code> avoiding rocks', 'From above or from the left', 'Same as A1', 'Off the grid → <code>0</code>. <b>Rock → <code>0</code></b>. Start → <code>1</code>', '<code>dp(m-1, n-1)</code>', 'Top-left → bottom-right'],
+    moves: 'ul',
+    notes: [
+      'One extra base case: a rock contributes 0 routes.',
+      'Check the rock before the start. A rock on the start means 0 routes, not 1.'
+    ],
+    tries: [
+      { q: 'Put a rock on the start cell. What happens?', a: 'Every cell becomes 0. If the "is this the start?" check ran first, the start would return 1 and the answer would be wrong.' }
+    ],
+    cx: 'Same as A1.'
+  },
+  {
+    id: 'A3', fam: 'A', lc: 64, title: 'Minimum Path Sum', diff: 'Medium', url: 'https://leetcode.com/problems/minimum-path-sum/', viz: 'minPathSum',
+    statement: 'Each cell has a cost. Go from top-left to bottom-right moving right or down. Minimise the total.',
+    example: '[[1,3,1],\n [1,5,1],\n [4,2,1]]  →  7   (1 → 3 → 1 → 1 → 1)',
+    card: ['Cheapest cost to reach <code>(i, j)</code>, including it', 'From above or from the left', '<code>grid[i][j] + min(dp(i-1, j), dp(i, j-1))</code>', 'Off the grid → <code>Infinity</code>. Start → <code>grid[0][0]</code>', '<code>dp(m-1, n-1)</code>', 'Top-left → bottom-right'],
+    moves: 'ul',
+    notes: [
+      'Counting → optimising, so <code>+</code> becomes <code>min</code>.',
+      'Off the grid must be <code>Infinity</code>, not 0. <code>min</code> would happily pick a 0.',
+      'To recover the path, start at the bottom-right and step back to the smaller of above / left.'
+    ],
+    tries: [
+      { q: 'What goes wrong if off the grid returns 0?', a: 'Cells on the top row and left column pick the fake 0 instead of their real neighbour, so the answer comes out too small.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row.'
+  },
+  {
+    id: 'A4', fam: 'A', lc: 120, title: 'Triangle', diff: 'Medium', url: 'https://leetcode.com/problems/triangle/', viz: 'minimumTotal',
+    statement: 'From each number you may step to one of the two numbers directly below. Find the smallest top-to-bottom sum.',
+    example: '      2\n     3 4\n    6 5 7\n   4 1 8 3     →  11   (2 + 3 + 5 + 1)',
+    card: ['Cheapest sum from <code>(i, j)</code> down to the bottom', 'Down <code>(i+1, j)</code> or down-right <code>(i+1, j+1)</code>', '<code>t[i][j] + min(dp(i+1, j), dp(i+1, j+1))</code>', 'Bottom row → <code>t[i][j]</code>', '<code>dp(0, 0)</code>', '<b>Bottom → top</b>'],
+    diagram: 'triangle',
+    notes: [
+      '<b>Why reverse:</b> the top has one cell, the bottom has many. Going bottom-up, the answer lands in one cell, <code>dp(0, 0)</code>, with no edge checks.',
+      'Going top-down also works, but then you take the min over the whole last row.',
+      'Stored left-aligned: "down" is the same column, "down-right" is the next one.'
+    ],
+    tries: [
+      { q: 'The one-row version overwrites dp[j] left to right. Why is that safe?', a: 'Cell j reads only dp[j] and dp[j+1]. dp[j+1] is still the old row, and nothing later needs the old dp[j].' }
+    ],
+    cx: 'Memo / table O(n²). One row: O(n) memory.'
+  },
+  {
+    id: 'A5', fam: 'A', lc: 931, title: 'Minimum Falling Path Sum', diff: 'Medium', url: 'https://leetcode.com/problems/minimum-falling-path-sum/', viz: 'minFallingPathSum',
+    statement: 'Start on any cell of the top row. Each step falls down, down-left or down-right. Minimise the sum.',
+    example: '[[2,1,3],\n [6,5,4],\n [7,8,9]]  →  13   (1 → 5 → 7)',
+    card: ['Cheapest fall that lands on <code>(i, j)</code>', 'Came from up-left, up, or up-right', '<code>a[i][j] + min(of those three)</code>', 'Column off the edge → <code>Infinity</code>. Top row → <code>a[0][j]</code>', '<b>Smallest</b> value in the last row', 'Top row → bottom row'],
+    moves: 'up3',
+    notes: [
+      'Two changes from A3: three choices, and any column can start or end.',
+      'Any start: the whole top row is a base case.',
+      'Any end: take the min over the last row.'
+    ],
+    tries: [
+      { q: 'Why keep two rows instead of updating one array in place?', a: 'Cell j needs the old value at j−1. Updating left to right would already have overwritten it.' }
+    ],
+    cx: 'O(n²) time, O(n) memory.'
+  },
+  {
+    id: 'A6', fam: 'A', lc: 174, title: 'Dungeon Game', diff: 'Hard', url: 'https://leetcode.com/problems/dungeon-game/', viz: 'calculateMinimumHP',
+    statement: 'Knight goes from top-left to the princess at bottom-right, moving right or down. Rooms add or remove health. Health must stay ≥ 1. Find the lowest starting health.',
+    example: '[[-2, -3,  3],\n [-5,-10,  1],\n [10, 30, -5]]  →  7',
+    card: ['Health needed <b>on entering</b> <code>(i, j)</code>', 'Go right or down', '<code>max(1, min(dp(i, j+1), dp(i+1, j)) − d[i][j])</code>', 'Off the grid → <code>Infinity</code>. Princess → <code>max(1, 1 − d)</code>', '<code>dp(0, 0)</code>', '<b>Bottom-right → top-left</b>'],
+    moves: 'rd',
+    diagram: 'dungeon',
+    notes: [
+      '<b>Why reverse:</b> what you need at the start depends on the rooms still ahead.',
+      'Forward, one number per cell is not enough: you would need current health <i>and</i> the lowest point so far (see the picture).',
+      'Backward, one number is enough: "health needed when walking in here".',
+      '<code>max(1, …)</code>: a healing room can push the need to 0 or below, but you must still be alive.'
+    ],
+    tries: [
+      { q: 'The table sets dp[m][n-1] = 1 and dp[m-1][n] = 1. Why?', a: 'Those are the padding cells below and right of the princess. "After the last room you need 1 health." Then the princess uses the same formula as every other room.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row.'
+  },
+
+  // ===================== B =====================
+  {
+    id: 'B1', fam: 'B', lc: 221, title: 'Maximal Square', diff: 'Medium', url: 'https://leetcode.com/problems/maximal-square/', viz: 'maximalSquare',
+    statement: 'Matrix of <b>strings</b> <code>"0"</code> / <code>"1"</code>. Return the area of the largest all-1 square.',
+    example: '[["1","0","1","0","0"],\n ["1","0","1","1","1"],\n ["1","1","1","1","1"],\n ["1","0","0","1","0"]]  →  4',
+    card: ['Side of the biggest square ending at <code>(i, j)</code>', 'Look up, left, and up-left', '<code>"1"</code> → <code>1 + min(top, left, diag)</code>. <code>"0"</code> → <code>0</code>', 'Outside → <code>0</code>', '<code>(largest value)²</code>', 'Top-left → bottom-right'],
+    moves: 'tld',
+    notes: [
+      'The square can end anywhere: fill the whole table, track the max.',
+      'Table version shifts indices by one: <code>dp[i][j]</code> is <code>matrix[i-1][j-1]</code>.',
+      'Input is strings. Compare with <code>"1"</code>, not <code>1</code>.'
+    ],
+    tries: [
+      { q: 'What if you compare with the number 0 instead of "0"?', a: '"0" === 0 is false, so every cell counts as 1. The 4 × 5 example returns 16.' }
+    ],
+    cx: 'O(m·n) time. O(n) memory with one row + a diagonal variable.'
+  },
+  {
+    id: 'B2', fam: 'B', lc: 1277, title: 'Count Square Submatrices with All Ones', diff: 'Medium', url: 'https://leetcode.com/problems/count-square-submatrices-with-all-ones/', viz: 'countSquares',
+    statement: 'Count every all-1 square of any size. The matrix holds numbers.',
+    example: '[[0,1,1,1],\n [1,1,1,1],\n [0,1,1,1]]  →  15',
+    card: ['Same as B1', 'Same as B1', 'Same as B1', 'Same as B1', '<b>Sum</b> of every cell', 'Top-left → bottom-right'],
+    diagram: 'squareCount',
+    notes: [
+      'If the biggest square ending at a cell has side 3, exactly 3 squares end there (1×1, 2×2, 3×3).',
+      'So add up every dp value.'
+    ],
+    tries: [
+      { q: 'Which single line differs from B1?', a: '<code>best = Math.max(best, dp)</code> becomes <code>total += dp</code>.' }
+    ],
+    cx: 'O(m·n) time.'
+  },
+
+  // ===================== C =====================
+  {
+    id: 'C1', fam: 'C', lc: 1143, title: 'Longest Common Subsequence', diff: 'Medium', url: 'https://leetcode.com/problems/longest-common-subsequence/', viz: 'longestCommonSubsequence',
+    statement: 'Length of the longest sequence of letters found in both strings in the same order (gaps allowed).',
+    example: '"abcde", "ace"  →  3   ("ace")',
+    card: ['LCS of <code>a[0..i)</code> and <code>b[0..j)</code>', 'Last letters match → use both. Else drop one', 'Match: <code>1 + dp(i-1, j-1)</code>. Else <code>max(dp(i-1, j), dp(i, j-1))</code>', 'Either prefix empty → <code>0</code>', '<code>dp(n, m)</code>', 'Top-left → bottom-right'],
+    notes: [
+      'Base for the whole family. C2–C5 are the same table with different rules.',
+      'Row/column ∅ = empty prefix.',
+      'Diagonal = use both letters. Up = drop a letter of <code>a</code>. Left = drop a letter of <code>b</code>.'
+    ],
+    tries: [
+      { q: 'When the letters match, why not also try dropping one?', a: 'Pairing them is never worse. Any answer that skips one of them could pair them instead and be just as long.' }
+    ],
+    cx: 'O(n·m) time. O(m) memory with two rows.'
+  },
+  {
+    id: 'C2', fam: 'C', lc: 583, title: 'Delete Operation for Two Strings', diff: 'Medium', url: 'https://leetcode.com/problems/delete-operation-for-two-strings/', viz: 'deleteOp',
+    statement: 'Delete one letter at a time from either string. Fewest deletions to make them equal?',
+    example: '"sea", "eat"  →  2   (delete "s" and "t", both become "ea")',
+    card: ['Fewest deletions to make <code>a[0..i)</code> and <code>b[0..j)</code> equal', 'Match → keep both. Else delete from <code>a</code> or from <code>b</code>', 'Match: <code>dp(i-1, j-1)</code>. Else <code>1 + min(dp(i-1, j), dp(i, j-1))</code>', '<code>i = 0</code> → <code>j</code>. <code>j = 0</code> → <code>i</code>', '<code>dp(n, m)</code>', 'Top-left → bottom-right'],
+    notes: [
+      'Shortcut: <code>n + m − 2·LCS</code>.',
+      'Worth writing directly once: the base case is not zero. An empty prefix means deleting everything in the other.',
+      'Edit Distance uses the same base case.'
+    ],
+    tries: [],
+    cx: 'O(n·m).'
+  },
+  {
+    id: 'C3', fam: 'C', lc: 72, title: 'Edit Distance', diff: 'Medium', url: 'https://leetcode.com/problems/edit-distance/', viz: 'editDistance',
+    statement: 'Turn <code>word1</code> into <code>word2</code> with insert, delete, replace. Fewest operations?',
+    example: '"horse", "ros"  →  3\n  horse → rorse  (replace h with r)\n  rorse → rose   (delete r)\n  rose  → ros    (delete e)',
+    card: ['Fewest operations to turn <code>a[0..i)</code> into <code>b[0..j)</code>', 'Match → free. Else insert, delete or replace', 'Match: <code>dp(i-1, j-1)</code>. Else <code>1 + min(left, up, diag)</code>', '<code>i = 0</code> → <code>j</code> inserts. <code>j = 0</code> → <code>i</code> deletes', '<code>dp(n, m)</code>', 'Top-left → bottom-right'],
+    diagram: 'editOps',
+    notes: [
+      'Same as C2 plus one arrow: replace (diagonal, cost 1).',
+      'Left = insert <code>b[j-1]</code>. Up = delete <code>a[i-1]</code>. Diagonal = replace.'
+    ],
+    tries: [
+      { q: 'Try "intention" → "execution". What do you expect?', a: '5. The shared "tion" at the end costs nothing.' }
+    ],
+    cx: 'O(n·m) time. O(m) memory with two rows.'
+  },
+  {
+    id: 'C4', fam: 'C', lc: 115, title: 'Distinct Subsequences', diff: 'Hard', url: 'https://leetcode.com/problems/distinct-subsequences/', viz: 'numDistinct',
+    statement: 'Count the ways to delete letters from <code>s</code> so that what is left equals <code>t</code>.',
+    example: '"rabbbit", "rabbit"  →  3   (drop any one of the three b\'s)',
+    card: ['Ways <code>s[0..i)</code> can form <code>t[0..j)</code>', 'Always: skip <code>s[i-1]</code>. If it matches <code>t[j-1]</code>: also use it', '<code>dp(i-1, j) + (match ? dp(i-1, j-1) : 0)</code>', '<code>j = 0</code> → <code>1</code> (check first). <code>i = 0</code> → <code>0</code>', '<code>dp(n, m)</code>', 'Top-left → bottom-right'],
+    notes: [
+      'Check <code>j = 0</code> before <code>i = 0</code>: an empty <code>t</code> is one valid way, even when <code>s</code> is empty too.',
+      'Column ∅ is all 1s.'
+    ],
+    tries: [
+      { q: 'Try s = "babgbag", t = "bag".', a: '5.' }
+    ],
+    cx: 'O(n·m).'
+  },
+  {
+    id: 'C5', fam: 'C', lc: 44, title: 'Wildcard Matching', diff: 'Hard', url: 'https://leetcode.com/problems/wildcard-matching/', viz: 'isMatch',
+    statement: '<code>?</code> matches one letter, <code>*</code> matches any run (even empty). Does the pattern match the <b>whole</b> string?',
+    example: '("aa", "a")        →  false\n("aa", "*")        →  true\n("cb", "?a")       →  false\n("adceb", "*a*b")  →  true',
+    card: ['Do <code>s[0..i)</code> and <code>p[0..j)</code> match?', '<code>*</code>: match nothing, or eat one letter and stay on <code>*</code>. <code>?</code> / same letter: step both', 'OR of the choices', '<code>dp(0, 0)</code> = true. Empty pattern, letters left → false. Empty <code>s</code> → true only for a run of <code>*</code>', '<code>dp(n, m)</code>', 'Top-left → bottom-right'],
+    notes: [
+      '<code>*</code> matching nothing = look left. Eating a letter = look up, same column.',
+      'That is why a column of T runs down under a <code>*</code>: one star swallows many letters.'
+    ],
+    tries: [],
+    cx: 'O(n·m).'
+  },
+
+  // ===================== D =====================
+  {
+    id: 'D1', fam: 'D', lc: 516, title: 'Longest Palindromic Subsequence', diff: 'Medium', url: 'https://leetcode.com/problems/longest-palindromic-subsequence/', viz: 'longestPalindromeSubseq',
+    statement: 'Length of the longest subsequence of <code>s</code> that reads the same both ways.',
+    example: '"bbbab"  →  4   ("bbbb")',
+    card: ['Longest palindromic subsequence in <code>s[i..j]</code>', 'Ends match → keep both. Else drop left or right end', 'Match: <code>2 + dp(i+1, j−1)</code>. Else <code>max(dp(i+1, j), dp(i, j−1))</code>', '<code>i > j</code> → <code>0</code>. <code>i = j</code> → <code>1</code>', '<code>dp(0, n−1)</code>', 'Short ranges → long (i from the end, j forward)'],
+    notes: [
+      'Only the upper half is used (<code>i ≤ j</code>).',
+      'Same answer as <code>LCS(s, reverse(s))</code>.'
+    ],
+    tries: [],
+    cx: 'O(n²).'
+  },
+  {
+    id: 'D2', fam: 'D', lc: 647, title: 'Palindromic Substrings', diff: 'Medium', url: 'https://leetcode.com/problems/palindromic-substrings/', viz: 'countSubstrings',
+    statement: 'Count the substrings (no gaps) that are palindromes.',
+    example: '"abc"  →  3\n"aaa"  →  6',
+    card: ['Is <code>s[i..j]</code> a palindrome?', 'None: check the ends and the inside', '<code>s[i] === s[j] && (len ≤ 2 || pal(i+1, j−1))</code>', 'Length 1 or 2 with equal ends → true', 'Count the true cells', 'Short ranges → long'],
+    notes: [
+      'D1 = subsequence (gaps allowed). D2 = substring (no gaps), so no choice and no <code>max</code>.',
+      'Same table answers LC 5 (longest palindromic substring).',
+      'Interview alternative: expand around each centre, O(1) memory.'
+    ],
+    tries: [],
+    cx: 'O(n²).'
+  },
+  {
+    id: 'D3', fam: 'D', lc: 312, title: 'Burst Balloons', diff: 'Hard', url: 'https://leetcode.com/problems/burst-balloons/', viz: 'maxCoins',
+    statement: 'Bursting balloon <code>k</code> earns <code>left × nums[k] × right</code> (current neighbours; missing = 1). Maximise total coins.',
+    example: '[3,1,5,8]  →  167\n  burst 1:  3·1·5 = 15\n  burst 5:  3·5·8 = 120\n  burst 3:  1·3·8 = 24\n  burst 8:  1·8·1 = 8',
+    card: ['Most coins from everything <b>strictly between</b> <code>l</code> and <code>r</code> (array padded with 1s)', 'Which balloon <code>k</code> bursts <b>last</b>', '<code>max over k: a[l]·a[k]·a[r] + dp(l, k) + dp(k, r)</code>', '<code>r − l < 2</code> → <code>0</code>', '<code>dp(0, n+1)</code>', 'Short ranges → long'],
+    diagram: 'balloons',
+    notes: [
+      'Pick the <b>last</b> balloon, not the first.',
+      'First: its neighbours change and the two sides merge, so they depend on each other.',
+      'Last: <code>k</code> sits between the sides the whole time, so they stay independent, and its final neighbours are exactly <code>l</code> and <code>r</code>.'
+    ],
+    tries: [],
+    cx: 'O(n³) time, O(n²) memory.'
+  },
+
+  // ===================== E =====================
+  {
+    id: 'E1', fam: 'E', lc: 416, title: 'Partition Equal Subset Sum', diff: 'Medium', url: 'https://leetcode.com/problems/partition-equal-subset-sum/', viz: 'canPartition',
+    statement: 'Can the array be split into two groups with equal sums?',
+    example: '[1,5,11,5]  →  true   ([1,5,5] and [11])\n[1,2,3,5]   →  false',
+    card: ['Can the first <code>i</code> numbers make exactly <code>t</code>?', 'Skip <code>(i-1, t)</code> or take <code>(i-1, t − x)</code>', '<code>skip || take</code>', '<code>t = 0</code> → true. No items left → false', '<code>dp(n, total / 2)</code>', 'First item → last item'],
+    diagram: 'directionBug',
+    notes: [
+      'Rephrase: find numbers that add up to half the total. Odd total → false.',
+      'Take reads the row above: each number used once.',
+      'One-row version: loop <code>t</code> <b>downward</b>, or a number gets reused (picture).'
+    ],
+    tries: [
+      { q: 'Run the one-row code with an upward loop on [1, 2, 5]. Result?', a: 'true, which is wrong. With x = 1, dp[1], dp[2], dp[3], dp[4] all turn true: the single 1 used four times.' }
+    ],
+    cx: 'O(n · target) time. O(target) memory.'
+  },
+  {
+    id: 'E2', fam: 'E', lc: 494, title: 'Target Sum', diff: 'Medium', url: 'https://leetcode.com/problems/target-sum/', viz: 'findTargetSumWays',
+    statement: 'Put <code>+</code> or <code>−</code> before every number. Count the ways to reach <code>target</code>.',
+    example: '[1,1,1,1,1], target 3  →  5',
+    card: ['Ways the first <code>i</code> numbers make subset sum <code>s</code>', 'Leave out or put in', '<code>skip + take</code>', 'No items: <code>s = 0</code> → 1, else 0', '<code>dp(n, P)</code>, <code>P = (total + target) / 2</code>', 'First item → last item'],
+    notes: [
+      'Memo version tracks the signed sum directly (index shifted by <code>total</code>).',
+      'Table version: plus-numbers <code>P</code>, minus-numbers <code>N</code>. <code>P − N = target</code>, <code>P + N = total</code>, so <code>P = (total + target) / 2</code>.',
+      'Now it is E1 with <code>+</code> instead of <code>||</code>.'
+    ],
+    tries: [
+      { q: 'nums = [0,0,1], target = 1. How many ways?', a: '4. Each 0 can be +0 or −0, and those count separately.' }
+    ],
+    cx: 'O(n · P) time, O(P) memory.'
+  },
+  {
+    id: 'E3', fam: 'E', lc: 518, title: 'Coin Change II', diff: 'Medium', url: 'https://leetcode.com/problems/coin-change-ii/', viz: 'change',
+    statement: 'Unlimited coins of each kind. Count the combinations that make <code>amount</code>.',
+    example: 'amount 5, coins [1,2,5]  →  4\n  5 | 2+2+1 | 2+1+1+1 | 1+1+1+1+1',
+    card: ['Ways to make <code>a</code> with the first <code>i</code> coin types', 'Never use this coin <code>(i-1, a)</code>, or use it once more <code>(i, a − c)</code>', '<code>skip + use</code>', '<code>a = 0</code> → 1. No coins, <code>a > 0</code> → 0', '<code>dp(n, amount)</code>', 'First coin → last coin'],
+    notes: [
+      'Difference from E1: "use" stays on the <b>same row</b>, since a coin can be reused.',
+      'One-row version: loop the amount <b>upward</b>.'
+    ],
+    tries: [
+      { q: 'Swap the loops (amount outside, coins inside). What do you count?', a: 'Orderings: 1+2+2, 2+1+2, 2+2+1 count separately, so 9 instead of 4. That is LC 377.' }
+    ],
+    cx: 'O(n · amount) time. O(amount) memory.'
+  },
+  {
+    id: 'E4', fam: 'E', lc: 322, title: 'Coin Change', diff: 'Medium', url: 'https://leetcode.com/problems/coin-change/', viz: 'coinChange',
+    statement: 'Unlimited coins. Fewest coins to make <code>amount</code>, or <code>-1</code>.',
+    example: 'coins [1,2,5], amount 11  →  3   (5 + 5 + 1)\ncoins [2], amount 3       →  -1',
+    card: ['Fewest coins to make <code>a</code> with the first <code>i</code> coin types', 'Skip, or use and stay', '<code>min(dp(i-1, a), 1 + dp(i, a − c))</code>', '<code>a = 0</code> → 0. No coins, <code>a > 0</code> → Infinity', '<code>dp(n, amount)</code>, or −1', 'First coin → last coin'],
+    notes: [
+      'Same skeleton as E3: <code>+</code> → <code>min</code>, done = 0, impossible = Infinity, take adds 1.',
+      'Use the table: amount up to 10,000 makes the recursion very deep.'
+    ],
+    tries: [],
+    cx: 'O(n · amount).'
+  },
+
+  // ===================== F =====================
+  {
+    id: 'F1', fam: 'F', lc: 309, title: 'Best Time to Buy and Sell Stock with Cooldown', diff: 'Medium', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/', viz: 'stockCooldown',
+    statement: 'Trade as often as you like, one share at a time. After selling, wait one day before buying.',
+    example: '[1,2,3,0,2]  →  3   (buy 1, sell 2, rest, buy 0, sell 2)',
+    card: ['Best profit at the end of day <code>i</code>, free or holding', 'Holding: keep or buy today. Free: rest or sell today', 'Hold: <code>max(hold(i-1), free(i-2) − p)</code>. Free: <code>max(free(i-1), hold(i-1) + p)</code>', 'Before day 0: free = 0, holding = −∞', '<code>free(n-1)</code>', 'Day 0 → last day'],
+    diagram: 'machineCooldown',
+    notes: [
+      'Cooldown = buy reads "free" from <b>two</b> days back.',
+      'Two padding rows at the top so <code>i − 2</code> always exists.',
+      'Holding before day 0 is impossible, so −∞.'
+    ],
+    tries: [],
+    cx: 'O(n) time. O(1) memory with three variables.'
+  },
+  {
+    id: 'F2', fam: 'F', lc: 714, title: 'Best Time to Buy and Sell Stock with Transaction Fee', diff: 'Medium', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/', viz: 'stockFee',
+    statement: 'Trade as often as you like. Each sale costs a fixed fee.',
+    example: '[1,3,2,8,4,9], fee 2  →  8   ((8 − 1 − 2) + (9 − 4 − 2))',
+    card: ['Same as F1', 'Same as F1', 'Hold: <code>max(hold(i-1), free(i-1) − p)</code>. Free: <code>max(free(i-1), hold(i-1) + p − fee)</code>', 'Before day 0: free = 0, holding = −∞', '<code>free(n-1)</code>', 'Day 0 → last day'],
+    notes: [
+      'Two changes from F1: sell earns <code>p − fee</code>, and buy reads yesterday (no cooldown).',
+      'Each day reads only the day before, so two variables are enough.'
+    ],
+    tries: [],
+    cx: 'O(n) time, O(1) memory.'
+  }
+];
+
+const QUIZ = [
+  { q: 'Grid of costs. Start anywhere in the first column, end anywhere in the last. Steps go right, up-right or down-right. Minimise cost.', a: 0, why: 'Grid paths: A5 turned on its side.' },
+  { q: 'Shortest string that has both s1 and s2 as subsequences.', a: 2, why: 'Two strings (LC 1092). Length n + m − LCS; build it by walking back through the LCS table.' },
+  { q: 'Binary strings. Pick the largest group using at most m zeros and n ones.', a: 4, why: 'Knapsack with two budgets (LC 474).' },
+  { q: 'Cut a string so every piece is a palindrome. Fewest cuts.', a: 3, why: 'Intervals (LC 132): palindrome table from D2, then one 1D pass.' },
+  { q: 'Stock prices, at most k transactions.', a: 5, why: 'Index + state with a third number (LC 188): dp(day, holding, transactions left).' },
+  { q: 'Longest unbroken run that appears in two arrays.', a: 2, why: 'Two strings (LC 718). No skipping allowed; take the max over all cells.' },
+  { q: 'Can s3 be formed by interleaving s1 and s2, keeping their orders?', a: 2, why: 'Two strings (LC 97). dp(i, j) = can the first i of s1 and j of s2 form the first i + j of s3?' },
+  { q: 'Merge neighbouring stone piles; each merge costs the two piles\' total. Minimise cost.', a: 3, why: 'Intervals. Try every split point, like D3.' },
+  { q: 'Count right/down grid paths whose sum is divisible by k.', a: 0, why: 'Grid paths with an extra number (LC 2435): dp(i, j, remainder).' },
+  { q: 'Two robots start at the top corners and move down one row at a time collecting cherries.', a: 0, why: 'Grid paths in 3D (LC 1463): dp(row, col1, col2).' }
+];
+const QUIZ_OPTIONS = ['Grid paths', 'Squares', 'Two strings', 'Intervals', 'Knapsack', 'Index + state'];
+
+const PLAN = [
+  ['1', 'Basics, A1, A2', 'LC 1289'],
+  ['2', 'A3, A4', 'LC 2304'],
+  ['3', 'A5, A6', 'LC 741'],
+  ['4', 'B1, B2', 'LC 85'],
+  ['5', 'C1, C2', 'LC 1092, LC 718'],
+  ['6', 'C3', 'LC 712'],
+  ['7', 'C4, C5', 'LC 10, LC 97'],
+  ['8', 'Redo A3, B1, C3 from a blank file', 'Quiz 1–5'],
+  ['9', 'D1, D2', 'LC 5, LC 132'],
+  ['10', 'D3', 'LC 1039, LC 1547'],
+  ['11', 'E1, E2', 'LC 474, LC 1049'],
+  ['12', 'E3, E4', 'LC 377'],
+  ['13', 'F1, F2', 'LC 123, LC 188'],
+  ['14', 'Whole quiz, then D3 and C5 from a blank file', '']
+];
+
+// 1D DP page: planned list (not written yet).
+const DP1D = [
+  ['Climbing Stairs', 70], ['House Robber', 198], ['House Robber II', 213], ['Decode Ways', 91],
+  ['Word Break', 139], ['Longest Increasing Subsequence', 300], ['Maximum Product Subarray', 152], ['Jump Game', 55]
+];
+
+// Home page topics. `href` only for topics that have content.
+const TOPICS = [
+  { name: 'Arrays & Hashing' }, { name: 'Two Pointers' }, { name: 'Sliding Window' }, { name: 'Stack' },
+  { name: 'Binary Search' }, { name: 'Linked List' }, { name: 'Trees' }, { name: 'Tries' },
+  { name: 'Heap / Priority Queue' }, { name: 'Backtracking' }, { name: 'Graphs' },
+  { name: 'Dynamic Programming', href: 'dp/2d.html', sub: '1D DP · 2D DP' },
+  { name: 'Greedy' }, { name: 'Intervals' }, { name: 'Bit Manipulation' }, { name: 'Math & Geometry' }
+];
+
+// JavaScript solutions for every 2D DP problem.
+// Lines ending in "// memo" are the lines memoization adds. The site hides that comment,
+// highlights the line, and builds the plain "Recursion" tab by removing those lines.
+const SOLUTIONS = {
+  // ---------------------------------------------------------------- A1
+  A1: [
+    { label: 'Memo', code: `var uniquePaths = function (m, n) {
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    // dp(i, j) = number of ways to reach (i, j) from the start
+    function dp(i, j) {
+        if (i < 0 || j < 0) return 0;                    // off the grid
+        if (i === 0 && j === 0) return 1;                // the start
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = dp(i - 1, j) + dp(i, j - 1); // from above + from the left
+    }
+
+    return dp(m - 1, n - 1);
+};` },
+    { label: 'Table', note: 'Row 0 and column 0 are padding (0), so cell (i, j) of the grid is dp[i + 1][j + 1].', code: `var uniquePaths = function (m, n) {
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (i === 1 && j === 1) dp[i][j] = 1;          // the start
+            else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];   // from above + from the left
+        }
+    }
+
+    return dp[m][n];
+};` },
+    { label: 'One row', note: 'dp[j] still holds the row above until it is overwritten.', code: `var uniquePaths = function (m, n) {
+    const dp = Array(n).fill(1); // first row: one way to reach every cell
+
+    for (let i = 1; i < m; i++) {
+        for (let j = 1; j < n; j++) {
+            dp[j] = dp[j] + dp[j - 1]; // above (old dp[j]) + left (new dp[j - 1])
+        }
+    }
+
+    return dp[n - 1];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- A2
+  A2: [
+    { label: 'Memo', code: `var uniquePathsWithObstacles = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    function dp(i, j) {
+        if (i < 0 || j < 0) return 0;                    // off the grid
+        if (grid[i][j] === 1) return 0;                  // rock: check before the start
+        if (i === 0 && j === 0) return 1;                // the start
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = dp(i - 1, j) + dp(i, j - 1);
+    }
+
+    return dp(m - 1, n - 1);
+};` },
+    { label: 'Table', note: 'Row 0 and column 0 are padding (0).', code: `var uniquePathsWithObstacles = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (grid[i - 1][j - 1] === 1) dp[i][j] = 0;    // rock
+            else if (i === 1 && j === 1) dp[i][j] = 1;     // the start
+            else dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        }
+    }
+
+    return dp[m][n];
+};` },
+    { label: 'One row', note: 'dp[0] is padding. Setting dp[1] = 1 first gives the start cell its 1.', code: `var uniquePathsWithObstacles = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const dp = Array(n + 1).fill(0);
+    dp[1] = 1;
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            dp[j + 1] = grid[i][j] === 1 ? 0 : dp[j + 1] + dp[j];
+        }
+    }
+
+    return dp[n];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- A3
+  A3: [
+    { label: 'Memo', code: `var minPathSum = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    // dp(i, j) = cheapest cost to reach (i, j), counting this cell
+    function dp(i, j) {
+        if (i < 0 || j < 0) return Infinity;             // off the grid: never pick it
+        if (i === 0 && j === 0) return grid[0][0];       // the start
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = grid[i][j] + Math.min(dp(i - 1, j), dp(i, j - 1));
+    }
+
+    return dp(m - 1, n - 1);
+};` },
+    { label: 'Table', note: 'Row 0 and column 0 are padding (Infinity).', code: `var minPathSum = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(Infinity));
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (i === 1 && j === 1) dp[i][j] = grid[0][0];
+            else dp[i][j] = grid[i - 1][j - 1] + Math.min(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    return dp[m][n];
+};` },
+    { label: 'One row', note: 'dp[0] is padding. Setting dp[1] = 0 first makes the start cell cost grid[0][0].', code: `var minPathSum = function (grid) {
+    const m = grid.length, n = grid[0].length;
+    const dp = Array(n + 1).fill(Infinity);
+    dp[1] = 0;
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            dp[j + 1] = grid[i][j] + Math.min(dp[j + 1], dp[j]); // above, left
+        }
+    }
+
+    return dp[n];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- A4 (reverse)
+  A4: [
+    { label: 'Memo', code: `var minimumTotal = function (triangle) {
+    const n = triangle.length;
+    const memo = Array.from({ length: n }, (_, i) => Array(i + 1)); // memo
+
+    // dp(i, j) = cheapest sum from (i, j) down to the bottom row
+    function dp(i, j) {
+        if (i === n - 1) return triangle[i][j];          // bottom row
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = triangle[i][j] + Math.min(dp(i + 1, j), dp(i + 1, j + 1));
+    }
+
+    return dp(0, 0);
+};` },
+    { label: 'One row', note: 'Start from the bottom row and fold it upward. The answer ends up in dp[0].', code: `var minimumTotal = function (triangle) {
+    const n = triangle.length;
+    const dp = [...triangle[n - 1]]; // bottom row
+
+    for (let i = n - 2; i >= 0; i--) {
+        for (let j = 0; j <= i; j++) {
+            dp[j] = triangle[i][j] + Math.min(dp[j], dp[j + 1]);
+        }
+    }
+
+    return dp[0];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- A5
+  A5: [
+    { label: 'Memo', code: `var minFallingPathSum = function (matrix) {
+    const n = matrix.length;
+    const memo = Array.from({ length: n }, () => Array(n)); // memo
+
+    // dp(i, j) = cheapest fall from the top row that lands on (i, j)
+    function dp(i, j) {
+        if (j < 0 || j >= n) return Infinity;            // column off the edge
+        if (i === 0) return matrix[0][j];                // top row: the fall starts here
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = matrix[i][j] + Math.min(dp(i - 1, j - 1), dp(i - 1, j), dp(i - 1, j + 1));
+    }
+
+    let best = Infinity;
+    for (let j = 0; j < n; j++) best = Math.min(best, dp(n - 1, j)); // can end in any column
+    return best;
+};` },
+    { label: 'Table', code: `var minFallingPathSum = function (matrix) {
+    const n = matrix.length;
+    const dp = Array.from({ length: n }, () => Array(n).fill(0));
+    for (let j = 0; j < n; j++) dp[0][j] = matrix[0][j]; // top row
+
+    for (let i = 1; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            const upLeft  = j > 0     ? dp[i - 1][j - 1] : Infinity;
+            const upRight = j < n - 1 ? dp[i - 1][j + 1] : Infinity;
+            dp[i][j] = matrix[i][j] + Math.min(upLeft, dp[i - 1][j], upRight);
+        }
+    }
+
+    return Math.min(...dp[n - 1]);
+};` },
+    { label: 'Two rows', note: 'Each cell reads both diagonals of the row above, so keep the old row separate.', code: `var minFallingPathSum = function (matrix) {
+    const n = matrix.length;
+    let prev = [...matrix[0]];
+
+    for (let i = 1; i < n; i++) {
+        const cur = Array(n);
+        for (let j = 0; j < n; j++) {
+            const upLeft  = j > 0     ? prev[j - 1] : Infinity;
+            const upRight = j < n - 1 ? prev[j + 1] : Infinity;
+            cur[j] = matrix[i][j] + Math.min(upLeft, prev[j], upRight);
+        }
+        prev = cur;
+    }
+
+    return Math.min(...prev);
+};` }
+  ],
+
+  // ---------------------------------------------------------------- A6 (reverse)
+  A6: [
+    { label: 'Memo', code: `var calculateMinimumHP = function (dungeon) {
+    const m = dungeon.length, n = dungeon[0].length;
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    // dp(i, j) = health needed when walking into (i, j)
+    function dp(i, j) {
+        if (i >= m || j >= n) return Infinity;
+        if (i === m - 1 && j === n - 1) return Math.max(1, 1 - dungeon[i][j]);
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        const need = Math.min(dp(i, j + 1), dp(i + 1, j)) - dungeon[i][j];
+        return memo[i][j] = Math.max(1, need);
+    }
+
+    return dp(0, 0);
+};` },
+    { label: 'Table', note: 'Padding is Infinity, except the two cells next to the princess, which are 1.', code: `var calculateMinimumHP = function (dungeon) {
+    const m = dungeon.length, n = dungeon[0].length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(Infinity));
+    dp[m][n - 1] = 1;
+    dp[m - 1][n] = 1;
+
+    for (let i = m - 1; i >= 0; i--) {
+        for (let j = n - 1; j >= 0; j--) {
+            const need = Math.min(dp[i + 1][j], dp[i][j + 1]) - dungeon[i][j];
+            dp[i][j] = Math.max(1, need);
+        }
+    }
+
+    return dp[0][0];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- B1
+  B1: [
+    { label: 'Memo', code: `var maximalSquare = function (matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    // dp(i, j) = side of the biggest all-1 square with bottom-right corner (i, j)
+    function dp(i, j) {
+        if (i < 0 || j < 0) return 0;
+        if (matrix[i][j] === "0") return 0;              // strings, not numbers
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = 1 + Math.min(dp(i - 1, j), dp(i, j - 1), dp(i - 1, j - 1));
+    }
+
+    let best = 0;
+    for (let i = 0; i < m; i++)
+        for (let j = 0; j < n; j++)
+            best = Math.max(best, dp(i, j));
+
+    return best * best;
+};` },
+    { label: 'Table', note: 'Row 0 and column 0 are padding (0).', code: `var maximalSquare = function (matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    let best = 0;
+
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (matrix[i - 1][j - 1] === "1") {
+                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                best = Math.max(best, dp[i][j]);
+            }
+        }
+    }
+
+    return best * best;
+};` },
+    { label: 'One row', note: 'One row plus a variable for the diagonal.', code: `var maximalSquare = function (matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const dp = Array(n + 1).fill(0);
+    let best = 0;
+
+    for (let i = 1; i <= m; i++) {
+        let diag = 0;                     // dp[i-1][j-1]
+        for (let j = 1; j <= n; j++) {
+            const top = dp[j];            // still the previous row
+            if (matrix[i - 1][j - 1] === "1") {
+                dp[j] = 1 + Math.min(top, dp[j - 1], diag);
+                best = Math.max(best, dp[j]);
+            } else {
+                dp[j] = 0;
+            }
+            diag = top;
+        }
+    }
+
+    return best * best;
+};` }
+  ],
+
+  // ---------------------------------------------------------------- B2
+  B2: [
+    { label: 'Memo', code: `var countSquares = function (matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const memo = Array.from({ length: m }, () => Array(n)); // memo
+
+    function dp(i, j) {
+        if (i < 0 || j < 0) return 0;
+        if (matrix[i][j] === 0) return 0;                // numbers here
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = 1 + Math.min(dp(i - 1, j), dp(i, j - 1), dp(i - 1, j - 1));
+    }
+
+    let total = 0;
+    for (let i = 0; i < m; i++)
+        for (let j = 0; j < n; j++)
+            total += dp(i, j);
+
+    return total;
+};` },
+    { label: 'Table', code: `var countSquares = function (matrix) {
+    const m = matrix.length, n = matrix[0].length;
+    const dp = matrix.map(row => [...row]); // copy, don't change the input
+    let total = 0;
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (dp[i][j] === 1 && i > 0 && j > 0) {
+                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+            }
+            total += dp[i][j];
+        }
+    }
+
+    return total;
+};` }
+  ],
+
+  // ---------------------------------------------------------------- C1
+  C1: [
+    { label: 'Memo', code: `var longestCommonSubsequence = function (text1, text2) {
+    const n = text1.length, m = text2.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(m + 1)); // memo
+
+    // dp(i, j) = LCS of the first i letters of text1 and the first j letters of text2
+    function dp(i, j) {
+        if (i === 0 || j === 0) return 0;                // one side is empty
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        if (text1[i - 1] === text2[j - 1]) return memo[i][j] = 1 + dp(i - 1, j - 1);
+        return memo[i][j] = Math.max(dp(i - 1, j), dp(i, j - 1));
+    }
+
+    return dp(n, m);
+};` },
+    { label: 'Table', note: 'Row 0 and column 0 mean "empty string", so they stay 0.', code: `var longestCommonSubsequence = function (text1, text2) {
+    const n = text1.length, m = text2.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            if (text1[i - 1] === text2[j - 1]) dp[i][j] = 1 + dp[i - 1][j - 1];
+            else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    return dp[n][m];
+};` },
+    { label: 'Two rows', code: `var longestCommonSubsequence = function (text1, text2) {
+    const n = text1.length, m = text2.length;
+    let prev = Array(m + 1).fill(0);
+
+    for (let i = 1; i <= n; i++) {
+        const cur = Array(m + 1).fill(0);
+        for (let j = 1; j <= m; j++) {
+            if (text1[i - 1] === text2[j - 1]) cur[j] = 1 + prev[j - 1];
+            else cur[j] = Math.max(prev[j], cur[j - 1]);
+        }
+        prev = cur;
+    }
+
+    return prev[m];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- C2
+  C2: [
+    { label: 'Memo', code: `var minDistance = function (word1, word2) {
+    const n = word1.length, m = word2.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(m + 1)); // memo
+
+    // dp(i, j) = fewest deletions to make the first i letters of word1
+    //            equal to the first j letters of word2
+    function dp(i, j) {
+        if (i === 0) return j;                           // delete everything in word2's prefix
+        if (j === 0) return i;                           // delete everything in word1's prefix
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        if (word1[i - 1] === word2[j - 1]) return memo[i][j] = dp(i - 1, j - 1);
+        return memo[i][j] = 1 + Math.min(dp(i - 1, j), dp(i, j - 1));
+    }
+
+    return dp(n, m);
+};` },
+    { label: 'Table', code: `var minDistance = function (word1, word2) {
+    const n = word1.length, m = word2.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+    for (let i = 0; i <= n; i++) dp[i][0] = i;
+    for (let j = 0; j <= m; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            if (word1[i - 1] === word2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1]);
+        }
+    }
+
+    return dp[n][m];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- C3
+  C3: [
+    { label: 'Memo', code: `var minDistance = function (word1, word2) {
+    const n = word1.length, m = word2.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(m + 1)); // memo
+
+    // dp(i, j) = fewest operations to turn the first i letters of word1
+    //            into the first j letters of word2
+    function dp(i, j) {
+        if (i === 0) return j;                           // insert j letters
+        if (j === 0) return i;                           // delete i letters
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        if (word1[i - 1] === word2[j - 1]) return memo[i][j] = dp(i - 1, j - 1);
+        return memo[i][j] = 1 + Math.min(
+            dp(i, j - 1),       // insert word2[j-1]
+            dp(i - 1, j),       // delete word1[i-1]
+            dp(i - 1, j - 1)    // replace
+        );
+    }
+
+    return dp(n, m);
+};` },
+    { label: 'Table', code: `var minDistance = function (word1, word2) {
+    const n = word1.length, m = word2.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+    for (let i = 0; i <= n; i++) dp[i][0] = i;
+    for (let j = 0; j <= m; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            if (word1[i - 1] === word2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+            else dp[i][j] = 1 + Math.min(dp[i][j - 1], dp[i - 1][j], dp[i - 1][j - 1]);
+        }
+    }
+
+    return dp[n][m];
+};` },
+    { label: 'Two rows', code: `var minDistance = function (word1, word2) {
+    const n = word1.length, m = word2.length;
+    let prev = Array.from({ length: m + 1 }, (_, j) => j);
+
+    for (let i = 1; i <= n; i++) {
+        const cur = [i];
+        for (let j = 1; j <= m; j++) {
+            if (word1[i - 1] === word2[j - 1]) cur[j] = prev[j - 1];
+            else cur[j] = 1 + Math.min(cur[j - 1], prev[j], prev[j - 1]);
+        }
+        prev = cur;
+    }
+
+    return prev[m];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- C4
+  C4: [
+    { label: 'Memo', code: `var numDistinct = function (s, t) {
+    const n = s.length, m = t.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(m + 1)); // memo
+
+    // dp(i, j) = ways the first i letters of s can form the first j letters of t
+    function dp(i, j) {
+        if (j === 0) return 1;                           // empty t: one way (check first)
+        if (i === 0) return 0;                           // s is empty, t is not
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        let ways = dp(i - 1, j);                         // don't use s[i-1]
+        if (s[i - 1] === t[j - 1]) ways += dp(i - 1, j - 1); // use it
+        return memo[i][j] = ways;
+    }
+
+    return dp(n, m);
+};` },
+    { label: 'Table', code: `var numDistinct = function (s, t) {
+    const n = s.length, m = t.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+    for (let i = 0; i <= n; i++) dp[i][0] = 1;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            dp[i][j] = dp[i - 1][j];
+            if (s[i - 1] === t[j - 1]) dp[i][j] += dp[i - 1][j - 1];
+        }
+    }
+
+    return dp[n][m];
+};` },
+    { label: 'One row', note: 'Loop j from right to left so dp[j - 1] is still the previous row.', code: `var numDistinct = function (s, t) {
+    const n = s.length, m = t.length;
+    const dp = Array(m + 1).fill(0);
+    dp[0] = 1;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = m; j >= 1; j--) {
+            if (s[i - 1] === t[j - 1]) dp[j] += dp[j - 1];
+        }
+    }
+
+    return dp[m];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- C5
+  C5: [
+    { label: 'Memo', code: `var isMatch = function (s, p) {
+    const n = s.length, m = p.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(m + 1)); // memo
+
+    // dp(i, j) = do the first i letters of s match the first j letters of p?
+    function dp(i, j) {
+        if (j === 0) return i === 0;                     // empty pattern matches only empty s
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        const c = p[j - 1];
+        if (c === '*') return memo[i][j] = dp(i, j - 1) || (i > 0 && dp(i - 1, j));
+        if (i === 0) return memo[i][j] = false;
+        if (c === '?' || c === s[i - 1]) return memo[i][j] = dp(i - 1, j - 1);
+        return memo[i][j] = false;
+    }
+
+    return dp(n, m);
+};` },
+    { label: 'Table', code: `var isMatch = function (s, p) {
+    const n = s.length, m = p.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(false));
+    dp[0][0] = true;
+    for (let j = 1; j <= m; j++) dp[0][j] = p[j - 1] === '*' && dp[0][j - 1]; // empty s
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            const c = p[j - 1];
+            if (c === '*') dp[i][j] = dp[i][j - 1] || dp[i - 1][j];  // match nothing | eat s[i-1]
+            else if (c === '?' || c === s[i - 1]) dp[i][j] = dp[i - 1][j - 1];
+        }
+    }
+
+    return dp[n][m];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- D1
+  D1: [
+    { label: 'Memo', code: `var longestPalindromeSubseq = function (s) {
+    const n = s.length;
+    const memo = Array.from({ length: n }, () => Array(n)); // memo
+
+    // dp(i, j) = longest palindromic subsequence inside s[i..j]
+    function dp(i, j) {
+        if (i > j) return 0;
+        if (i === j) return 1;
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        if (s[i] === s[j]) return memo[i][j] = 2 + dp(i + 1, j - 1);
+        return memo[i][j] = Math.max(dp(i + 1, j), dp(i, j - 1));
+    }
+
+    return dp(0, n - 1);
+};` },
+    { label: 'Table', code: `var longestPalindromeSubseq = function (s) {
+    const n = s.length;
+    const dp = Array.from({ length: n }, () => Array(n).fill(0));
+
+    for (let i = n - 1; i >= 0; i--) {       // reads i + 1, so i goes down
+        dp[i][i] = 1;
+        for (let j = i + 1; j < n; j++) {    // reads j - 1, so j goes up
+            if (s[i] === s[j]) dp[i][j] = 2 + dp[i + 1][j - 1];
+            else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+        }
+    }
+
+    return dp[0][n - 1];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- D2
+  D2: [
+    { label: 'Memo', code: `var countSubstrings = function (s) {
+    const n = s.length;
+    const memo = Array.from({ length: n }, () => Array(n)); // memo
+
+    function pal(i, j) {
+        if (i >= j) return true;
+        if (memo[i][j] !== undefined) return memo[i][j]; // memo
+
+        return memo[i][j] = s[i] === s[j] && pal(i + 1, j - 1);
+    }
+
+    let count = 0;
+    for (let i = 0; i < n; i++)
+        for (let j = i; j < n; j++)
+            if (pal(i, j)) count++;
+
+    return count;
+};` },
+    { label: 'Table', code: `var countSubstrings = function (s) {
+    const n = s.length;
+    const dp = Array.from({ length: n }, () => Array(n).fill(false));
+    let count = 0;
+
+    for (let i = n - 1; i >= 0; i--) {
+        for (let j = i; j < n; j++) {
+            dp[i][j] = s[i] === s[j] && (j - i < 2 || dp[i + 1][j - 1]);
+            if (dp[i][j]) count++;
+        }
+    }
+
+    return count;
+};` }
+  ],
+
+  // ---------------------------------------------------------------- D3
+  D3: [
+    { label: 'Memo', code: `var maxCoins = function (nums) {
+    const a = [1, ...nums, 1];
+    const n = a.length;
+    const memo = Array.from({ length: n }, () => Array(n)); // memo
+
+    // dp(l, r) = most coins from bursting everything strictly between l and r
+    function dp(l, r) {
+        if (r - l < 2) return 0;
+        if (memo[l][r] !== undefined) return memo[l][r]; // memo
+
+        let best = 0;
+        for (let k = l + 1; k < r; k++) {                // k is burst last
+            best = Math.max(best, a[l] * a[k] * a[r] + dp(l, k) + dp(k, r));
+        }
+        return memo[l][r] = best;
+    }
+
+    return dp(0, n - 1);
+};` },
+    { label: 'Table', note: 'Short ranges first, then longer ones.', code: `var maxCoins = function (nums) {
+    const a = [1, ...nums, 1];
+    const n = a.length;
+    const dp = Array.from({ length: n }, () => Array(n).fill(0));
+
+    for (let len = 2; len < n; len++) {
+        for (let l = 0; l + len < n; l++) {
+            const r = l + len;
+            for (let k = l + 1; k < r; k++) {
+                dp[l][r] = Math.max(dp[l][r], a[l] * a[k] * a[r] + dp[l][k] + dp[k][r]);
+            }
+        }
+    }
+
+    return dp[0][n - 1];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- E1
+  E1: [
+    { label: 'Memo', code: `var canPartition = function (nums) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (total % 2 === 1) return false;
+    const target = total / 2, n = nums.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(target + 1)); // memo
+
+    // dp(i, t) = can some of the first i numbers add up to exactly t?
+    function dp(i, t) {
+        if (t === 0) return true;
+        if (i === 0 || t < 0) return false;
+        if (memo[i][t] !== undefined) return memo[i][t]; // memo
+
+        return memo[i][t] = dp(i - 1, t) || dp(i - 1, t - nums[i - 1]); // skip || take
+    }
+
+    return dp(n, target);
+};` },
+    { label: 'Table', code: `var canPartition = function (nums) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (total % 2 === 1) return false;
+    const target = total / 2, n = nums.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(target + 1).fill(false));
+    dp[0][0] = true;                         // no numbers: only sum 0
+
+    for (let i = 1; i <= n; i++) {
+        const x = nums[i - 1];
+        for (let t = 0; t <= target; t++) {
+            dp[i][t] = dp[i - 1][t] || (t >= x && dp[i - 1][t - x]);
+        }
+    }
+
+    return dp[n][target];
+};` },
+    { label: 'One row', note: 'Loop t downward so each number is used at most once.', code: `var canPartition = function (nums) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (total % 2 === 1) return false;
+    const target = total / 2;
+    const dp = Array(target + 1).fill(false);
+    dp[0] = true;
+
+    for (const x of nums) {
+        for (let t = target; t >= x; t--) {
+            dp[t] = dp[t] || dp[t - x];
+        }
+    }
+
+    return dp[target];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- E2
+  E2: [
+    { label: 'Memo', note: 'Sums can be negative, so the memo index is shifted by total.', code: `var findTargetSumWays = function (nums, target) {
+    const n = nums.length, total = nums.reduce((a, b) => a + b, 0);
+    const memo = Array.from({ length: n + 1 }, () => Array(2 * total + 1)); // memo
+
+    // dp(i, s) = ways to sign the first i numbers so they add up to s
+    function dp(i, s) {
+        if (i === 0) return s === 0 ? 1 : 0;
+        if (Math.abs(s) > total) return 0;               // too far to reach
+        if (memo[i][s + total] !== undefined) return memo[i][s + total]; // memo
+
+        const x = nums[i - 1];
+        return memo[i][s + total] = dp(i - 1, s - x) + dp(i - 1, s + x); // +x or -x
+    }
+
+    return dp(n, target);
+};` },
+    { label: 'Table', note: 'Count subsets that sum to P = (total + target) / 2.', code: `var findTargetSumWays = function (nums, target) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (Math.abs(target) > total || (total + target) % 2 !== 0) return 0;
+    const P = (total + target) / 2, n = nums.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(P + 1).fill(0));
+    dp[0][0] = 1;
+
+    for (let i = 1; i <= n; i++) {
+        const x = nums[i - 1];
+        for (let s = 0; s <= P; s++) {
+            dp[i][s] = dp[i - 1][s] + (s >= x ? dp[i - 1][s - x] : 0);
+        }
+    }
+
+    return dp[n][P];
+};` },
+    { label: 'One row', code: `var findTargetSumWays = function (nums, target) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (Math.abs(target) > total || (total + target) % 2 !== 0) return 0;
+    const P = (total + target) / 2;
+    const dp = Array(P + 1).fill(0);
+    dp[0] = 1;
+
+    for (const x of nums) {
+        for (let s = P; s >= x; s--) {   // downward: each number once
+            dp[s] += dp[s - x];
+        }
+    }
+
+    return dp[P];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- E3
+  E3: [
+    { label: 'Memo', code: `var change = function (amount, coins) {
+    const n = coins.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(amount + 1)); // memo
+
+    // dp(i, a) = ways to make a using only the first i coins
+    function dp(i, a) {
+        if (a === 0) return 1;
+        if (i === 0 || a < 0) return 0;
+        if (memo[i][a] !== undefined) return memo[i][a]; // memo
+
+        const c = coins[i - 1];
+        return memo[i][a] = dp(i - 1, a) + dp(i, a - c); // never use coin i | use it, stay on i
+    }
+
+    return dp(n, amount);
+};` },
+    { label: 'Table', code: `var change = function (amount, coins) {
+    const n = coins.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(amount + 1).fill(0));
+    dp[0][0] = 1;                            // no coins: only amount 0
+
+    for (let i = 1; i <= n; i++) {
+        const c = coins[i - 1];
+        for (let a = 0; a <= amount; a++) {
+            dp[i][a] = dp[i - 1][a] + (a >= c ? dp[i][a - c] : 0);
+        }
+    }
+
+    return dp[n][amount];
+};` },
+    { label: 'One row', note: 'Loop a upward so a coin can be used again.', code: `var change = function (amount, coins) {
+    const dp = Array(amount + 1).fill(0);
+    dp[0] = 1;
+
+    for (const c of coins) {
+        for (let a = c; a <= amount; a++) {
+            dp[a] += dp[a - c];
+        }
+    }
+
+    return dp[amount];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- E4
+  E4: [
+    { label: 'Memo', note: 'Deep recursion for large amounts. Prefer the table here.', code: `var coinChange = function (coins, amount) {
+    const n = coins.length;
+    const memo = Array.from({ length: n + 1 }, () => Array(amount + 1)); // memo
+
+    // dp(i, a) = fewest coins to make a using only the first i coins
+    function dp(i, a) {
+        if (a === 0) return 0;
+        if (i === 0 || a < 0) return Infinity;
+        if (memo[i][a] !== undefined) return memo[i][a]; // memo
+
+        const c = coins[i - 1];
+        return memo[i][a] = Math.min(dp(i - 1, a), 1 + dp(i, a - c));
+    }
+
+    const best = dp(n, amount);
+    return best === Infinity ? -1 : best;
+};` },
+    { label: 'Table', code: `var coinChange = function (coins, amount) {
+    const n = coins.length;
+    const dp = Array.from({ length: n + 1 }, () => Array(amount + 1).fill(Infinity));
+    dp[0][0] = 0;
+
+    for (let i = 1; i <= n; i++) {
+        const c = coins[i - 1];
+        for (let a = 0; a <= amount; a++) {
+            dp[i][a] = Math.min(dp[i - 1][a], a >= c ? 1 + dp[i][a - c] : Infinity);
+        }
+    }
+
+    return dp[n][amount] === Infinity ? -1 : dp[n][amount];
+};` },
+    { label: 'One row', code: `var coinChange = function (coins, amount) {
+    const dp = Array(amount + 1).fill(Infinity);
+    dp[0] = 0;
+
+    for (const c of coins) {
+        for (let a = c; a <= amount; a++) {   // upward: reuse allowed
+            dp[a] = Math.min(dp[a], 1 + dp[a - c]);
+        }
+    }
+
+    return dp[amount] === Infinity ? -1 : dp[amount];
+};` }
+  ],
+
+  // ---------------------------------------------------------------- F1
+  F1: [
+    { label: 'Memo', code: `var maxProfit = function (prices) {
+    const n = prices.length;
+    const memo = Array.from({ length: n }, () => Array(2)); // memo
+
+    // dp(i, h) = best profit at the end of day i; h = 1 means holding a share
+    function dp(i, h) {
+        if (i < 0) return h ? -Infinity : 0;             // before day 0
+        if (memo[i][h] !== undefined) return memo[i][h]; // memo
+
+        if (h) return memo[i][h] = Math.max(dp(i - 1, 1), dp(i - 2, 0) - prices[i]); // keep | buy (cooldown: i - 2)
+        return memo[i][h] = Math.max(dp(i - 1, 0), dp(i - 1, 1) + prices[i]);        // rest | sell
+    }
+
+    return dp(n - 1, 0);
+};` },
+    { label: 'Table', note: 'Rows 0 and 1 are padding for "before day 0". Day d is row d + 2.', code: `var maxProfit = function (prices) {
+    const n = prices.length;
+    const dp = Array.from({ length: n + 2 }, () => [0, -Infinity]); // [free, holding]
+
+    for (let d = 0; d < n; d++) {
+        const i = d + 2;
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 2][0] - prices[d]); // keep | buy
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[d]); // rest | sell
+    }
+
+    return dp[n + 1][0];
+};` },
+    { label: 'Variables', code: `var maxProfit = function (prices) {
+    let free = 0, hold = -Infinity, freeTwoAgo = 0;
+
+    for (const p of prices) {
+        const newHold = Math.max(hold, freeTwoAgo - p);
+        freeTwoAgo = free;
+        free = Math.max(free, hold + p);
+        hold = newHold;
+    }
+
+    return free;
+};` }
+  ],
+
+  // ---------------------------------------------------------------- F2
+  F2: [
+    { label: 'Memo', code: `var maxProfit = function (prices, fee) {
+    const n = prices.length;
+    const memo = Array.from({ length: n }, () => Array(2)); // memo
+
+    // dp(i, h) = best profit at the end of day i; h = 1 means holding a share
+    function dp(i, h) {
+        if (i < 0) return h ? -Infinity : 0;
+        if (memo[i][h] !== undefined) return memo[i][h]; // memo
+
+        if (h) return memo[i][h] = Math.max(dp(i - 1, 1), dp(i - 1, 0) - prices[i]);       // keep | buy
+        return memo[i][h] = Math.max(dp(i - 1, 0), dp(i - 1, 1) + prices[i] - fee);       // rest | sell
+    }
+
+    return dp(n - 1, 0);
+};` },
+    { label: 'Table', note: 'Row 0 is padding for "before day 0". Day d is row d + 1.', code: `var maxProfit = function (prices, fee) {
+    const n = prices.length;
+    const dp = Array.from({ length: n + 1 }, () => [0, -Infinity]); // [free, holding]
+
+    for (let d = 0; d < n; d++) {
+        const i = d + 1;
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[d]);
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[d] - fee);
+    }
+
+    return dp[n][0];
+};` },
+    { label: 'Variables', code: `var maxProfit = function (prices, fee) {
+    let free = 0, hold = -Infinity;
+
+    for (const p of prices) {
+        const prevFree = free;
+        free = Math.max(free, hold + p - fee);
+        hold = Math.max(hold, prevFree - p);
+    }
+
+    return free;
+};` }
+  ]
+};
+if (typeof module !== 'undefined') module.exports = SOLUTIONS;
+
+// Step-by-step builders for every DP table on the page.
+// Each builder returns { rows, cols, cells, steps, answer, result, resultNote }.
+//   cells[i][j] = { v, kind: 'pad' | 'base' | 'block' | 'void' | '', tag }
+//   steps[k]    = { i, j, v, deps: [[i, j], ...], note }
+const VIZ = (() => {
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, Number.isFinite(x) ? x : lo));
+  const nums = (n) => Array.from({ length: n }, (_, i) => String(i));
+  const blank = (R, C) => Array.from({ length: R }, () => Array.from({ length: C }, () => ({ kind: '' })));
+  const table = (R, C, v) => Array.from({ length: R }, () => Array(C).fill(v));
+  const json = (s, fallback) => { try { return JSON.parse(s); } catch (e) { return fallback; } };
+  const f = (v) => (v === Infinity ? '∞' : v === -Infinity ? '−∞' : v === true ? 'T' : v === false ? 'F' : String(v));
+  const B = {};
+
+  // ---------- Part A: grids ----------
+  // Forward grids: row 0 and column 0 are padding, grid cell (r, c) is table cell (r + 1, c + 1).
+  function fwdGrid(m, n, padV) {
+    const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, padV);
+    for (let i = 0; i <= m; i++) cells[i][0] = { v: padV, kind: 'pad' };
+    for (let j = 0; j <= n; j++) cells[0][j] = { v: padV, kind: 'pad' };
+    return { cells, dp, rows: ['pad', ...nums(m)], cols: ['pad', ...nums(n)] };
+  }
+  const at = (i, j) => `(${i - 1},${j - 1})`;
+
+  B.uniquePaths = {
+    inputs: [{ k: 'm', label: 'rows (m)', v: '3' }, { k: 'n', label: 'cols (n)', v: '3' }],
+    build(p) {
+      const m = clamp(+p.m, 1, 7), n = clamp(+p.n, 1, 7), G = fwdGrid(m, n, 0), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        if (i === 1 && j === 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Start (0,0): 1 way to be here.' }); continue; }
+        dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = above ${dp[i - 1][j]} + left ${dp[i][j - 1]} = ${dp[i][j]}` });
+      }
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `${dp[m][n]} paths reach the bottom-right corner.` };
+    }
+  };
+
+  B.uniquePathsWithObstacles = {
+    inputs: [{ k: 'g', label: 'grid (1 = rock)', v: '[[0,0,0],[0,1,0],[0,0,0]]' }],
+    build(p) {
+      const g = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)), m = g.length, n = g[0].length;
+      const G = fwdGrid(m, n, 0), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) if (g[i - 1][j - 1] === 1) G.cells[i][j].kind = 'block';
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        if (g[i - 1][j - 1] === 1) { dp[i][j] = 0; steps.push({ i, j, v: 0, deps: [], note: `${at(i, j)} is a rock: 0 ways.` }); continue; }
+        if (i === 1 && j === 1) { dp[i][j] = 1; steps.push({ i, j, v: 1, deps: [], note: 'Start (0,0): 1 way.' }); continue; }
+        dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = above ${dp[i - 1][j]} + left ${dp[i][j - 1]} = ${dp[i][j]}` });
+      }
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `${dp[m][n]} paths avoid every rock.` };
+    }
+  };
+
+  B.minPathSum = {
+    inputs: [{ k: 'g', label: 'grid', v: '[[1,3,1],[1,5,1],[4,2,1]]' }],
+    build(p) {
+      const g = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)), m = g.length, n = g[0].length;
+      const G = fwdGrid(m, n, Infinity), { dp } = G, steps = [];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) G.cells[i][j].tag = g[i - 1][j - 1];
+      for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+        const c = g[i - 1][j - 1];
+        if (i === 1 && j === 1) { dp[i][j] = c; steps.push({ i, j, v: c, deps: [], note: `Start (0,0): cost ${c}.` }); continue; }
+        dp[i][j] = c + Math.min(dp[i - 1][j], dp[i][j - 1]);
+        steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `${at(i, j)} = ${c} + min(above ${f(dp[i - 1][j])}, left ${f(dp[i][j - 1])}) = ${dp[i][j]}` });
+      }
+      return { rows: G.rows, cols: G.cols, cells: G.cells, steps, answer: [m, n], result: dp[m][n], resultNote: `Cheapest path costs ${dp[m][n]}. Small grey numbers are the grid values.` };
+    }
+  };
+
+  B.minimumTotal = {
+    inputs: [{ k: 't', label: 'triangle', v: '[[2],[3,4],[6,5,7],[4,1,8,3]]' }],
+    build(p) {
+      const t = json(p.t, [[1]]).slice(0, 7); const n = t.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { if (j > i) cells[i][j].kind = 'void'; else cells[i][j].tag = t[i][j]; }
+      for (let i = n - 1; i >= 0; i--) for (let j = 0; j <= i; j++) {
+        if (i === n - 1) { dp[i][j] = t[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Bottom row: nothing below, so dp = ${t[i][j]}.` }); continue; }
+        dp[i][j] = t[i][j] + Math.min(dp[i + 1][j], dp[i + 1][j + 1]);
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i + 1, j + 1]], note: `dp[${i}][${j}] = ${t[i][j]} + min(down ${dp[i + 1][j]}, down-right ${dp[i + 1][j + 1]}) = ${dp[i][j]}` });
+      }
+      return { rows: nums(n), cols: nums(n), cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `Minimum top-to-bottom sum is ${dp[0][0]}.` };
+    }
+  };
+
+  B.minFallingPathSum = {
+    inputs: [{ k: 'g', label: 'matrix', v: '[[2,1,3],[6,5,4],[7,8,9]]' }],
+    build(p) {
+      const a = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 7)), n = a.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) cells[i][j].tag = a[i][j];
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        if (i === 0) { dp[i][j] = a[i][j]; steps.push({ i, j, v: dp[i][j], deps: [], note: `Top row: the fall can start here. dp = ${a[i][j]}.` }); continue; }
+        const deps = [[i - 1, j - 1], [i - 1, j], [i - 1, j + 1]].filter(([, c]) => c >= 0 && c < n);
+        dp[i][j] = a[i][j] + Math.min(...deps.map(([r, c]) => dp[r][c]));
+        steps.push({ i, j, v: dp[i][j], deps, note: `(${i},${j}) = ${a[i][j]} + min(${deps.map(([r, c]) => dp[r][c]).join(', ')}) = ${dp[i][j]}` });
+      }
+      let bj = 0; for (let j = 1; j < n; j++) if (dp[n - 1][j] < dp[n - 1][bj]) bj = j;
+      return { rows: nums(n), cols: nums(n), cells, steps, answer: [n - 1, bj], result: dp[n - 1][bj], resultNote: `The fall can end in any column: smallest value in the last row is ${dp[n - 1][bj]}.` };
+    }
+  };
+
+  B.calculateMinimumHP = {
+    inputs: [{ k: 'g', label: 'dungeon', v: '[[-2,-3,3],[-5,-10,1],[10,30,-5]]' }],
+    build(p) {
+      const d = json(p.g, [[0]]).slice(0, 7).map(r => r.slice(0, 7)); const m = d.length, n = d[0].length;
+      const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, Infinity), steps = [];
+      for (let i = 0; i <= m; i++) cells[i][n] = { v: Infinity, kind: 'pad' };
+      for (let j = 0; j <= n; j++) cells[m][j] = { v: Infinity, kind: 'pad' };
+      dp[m][n - 1] = 1; dp[m - 1][n] = 1; cells[m][n - 1] = { v: 1, kind: 'base' }; cells[m - 1][n] = { v: 1, kind: 'base' };
+      for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) cells[i][j].tag = d[i][j];
+      for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--) {
+        const nxt = Math.min(dp[i + 1][j], dp[i][j + 1]); const need = nxt - d[i][j];
+        dp[i][j] = Math.max(1, need);
+        steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j + 1]], note: `Need ${nxt} after this room. Room gives ${d[i][j]}. So ${nxt} − (${d[i][j]}) = ${need}` + (need < 1 ? `, but you must be alive, so 1.` : '.') });
+      }
+      return { rows: [...nums(m), 'pad'], cols: [...nums(n), 'pad'], cells, steps, answer: [0, 0], result: dp[0][0], resultNote: `The knight must start with ${dp[0][0]} health.` };
+    }
+  };
+
+  // ---------- Part B: squares ----------
+  function squares(p, asString) {
+    const raw = json(p.g, [[1]]).slice(0, 7).map(r => r.slice(0, 8));
+    const m = raw.length, n = raw[0].length;
+    const isOne = (x) => (asString ? x === '1' : x === 1);
+    const cells = blank(m + 1, n + 1), dp = table(m + 1, n + 1, 0), steps = [];
+    for (let i = 0; i <= m; i++) cells[i][0] = { v: 0, kind: 'pad' };
+    for (let j = 0; j <= n; j++) cells[0][j] = { v: 0, kind: 'pad' };
+    let best = 0, bi = 0, bj = 0, sum = 0;
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+      cells[i][j].tag = raw[i - 1][j - 1];
+      if (!isOne(raw[i - 1][j - 1])) { steps.push({ i, j, v: 0, deps: [], note: `matrix[${i - 1}][${j - 1}] is 0, so no square can end here.` }); continue; }
+      const t = dp[i - 1][j], l = dp[i][j - 1], g = dp[i - 1][j - 1];
+      dp[i][j] = 1 + Math.min(t, l, g); sum += dp[i][j];
+      if (dp[i][j] > best) { best = dp[i][j]; bi = i; bj = j; }
+      steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1], [i - 1, j - 1]], note: `1 + min(top ${t}, left ${l}, diagonal ${g}) = ${dp[i][j]}` + (asString ? `   (best so far: ${best})` : `   (running total: ${sum})`) });
+    }
+    return { m, n, cells, steps, best, bi, bj, sum };
+  }
+  B.maximalSquare = {
+    inputs: [{ k: 'g', label: 'matrix (strings)', v: '[["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]' }],
+    build(p) {
+      const r = squares(p, true);
+      return { rows: ['pad', ...nums(r.m)], cols: ['pad', ...nums(r.n)], cells: r.cells, steps: r.steps, answer: [r.bi, r.bj], result: r.best * r.best, resultNote: `Largest side is ${r.best}, so the area is ${r.best * r.best}.`, square: r.best ? [r.bi, r.bj, r.best] : null };
+    }
+  };
+  B.countSquares = {
+    inputs: [{ k: 'g', label: 'matrix', v: '[[0,1,1,1],[1,1,1,1],[0,1,1,1]]' }],
+    build(p) {
+      const r = squares(p, false);
+      return { rows: ['pad', ...nums(r.m)], cols: ['pad', ...nums(r.n)], cells: r.cells, steps: r.steps, answer: null, result: r.sum, resultNote: `Add up every cell: ${r.sum} squares in total.` };
+    }
+  };
+
+  // ---------- Part C: two strings ----------
+  // Prefix tables: row i = first i letters of a, column j = first j letters of b. Row 0 / column 0 = empty string.
+  function strTable(a, b, baseFn) {
+    const n = a.length, m = b.length, cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, 0);
+    for (let i = 0; i <= n; i++) for (let j = 0; j <= m; j++) if (i === 0 || j === 0) { const v = baseFn(i, j); dp[i][j] = v; cells[i][j] = { v, kind: 'base' }; }
+    return { n, m, cells, dp, rows: ['∅', ...a], cols: ['∅', ...b] };
+  }
+  const word = (s, d) => String(s ?? d).slice(0, 9);
+
+  B.longestCommonSubsequence = {
+    inputs: [{ k: 'a', label: 'text1', v: 'abcde' }, { k: 'b', label: 'text2', v: 'ace' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, () => 0), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = 1 + dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': 1 + diagonal ${dp[i - 1][j - 1]} = ${dp[i][j]}` }); }
+        else { dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `'${x}' ≠ '${y}': max(drop '${x}' → ${dp[i - 1][j]}, drop '${y}' → ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `LCS length is ${dp[T.n][T.m]}.` };
+    }
+  };
+
+  B.deleteOp = {
+    inputs: [{ k: 'a', label: 'word1', v: 'sea' }, { k: 'b', label: 'word2', v: 'eat' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => i + j), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': keep both, copy diagonal ${dp[i][j]}` }); }
+        else { dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i, j - 1]], note: `'${x}' ≠ '${y}': 1 + min(delete '${x}' → ${dp[i - 1][j]}, delete '${y}' → ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} deletions.` };
+    }
+  };
+
+  B.editDistance = {
+    inputs: [{ k: 'a', label: 'word1', v: 'horse' }, { k: 'b', label: 'word2', v: 'ros' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => i + j), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${x}' = '${y}': free, copy diagonal ${dp[i][j]}` }); continue; }
+        const ins = dp[i][j - 1], del = dp[i - 1][j], rep = dp[i - 1][j - 1];
+        dp[i][j] = 1 + Math.min(ins, del, rep);
+        steps.push({ i, j, v: dp[i][j], deps: [[i, j - 1], [i - 1, j], [i - 1, j - 1]], note: `'${x}' ≠ '${y}': 1 + min(insert ${ins}, delete ${del}, replace ${rep}) = ${dp[i][j]}` });
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} operations turn "${a}" into "${b}".` };
+    }
+  };
+
+  B.numDistinct = {
+    inputs: [{ k: 'a', label: 's', v: 'rabbbit' }, { k: 'b', label: 't', v: 'rabbit' }],
+    build(p) {
+      const a = word(p.a), b = word(p.b), T = strTable(a, b, (i, j) => (j === 0 ? 1 : 0)), { dp } = T, steps = [];
+      for (let i = 1; i <= T.n; i++) for (let j = 1; j <= T.m; j++) {
+        const x = a[i - 1], y = b[j - 1];
+        if (x === y) { dp[i][j] = dp[i - 1][j] + dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j], [i - 1, j - 1]], note: `'${x}' = '${y}': skip it ${dp[i - 1][j]} + use it ${dp[i - 1][j - 1]} = ${dp[i][j]}` }); }
+        else { dp[i][j] = dp[i - 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j]], note: `'${x}' ≠ '${y}': can only skip it → ${dp[i][j]}` }); }
+      }
+      return { rows: T.rows, cols: T.cols, cells: T.cells, steps, answer: [T.n, T.m], result: dp[T.n][T.m], resultNote: `${dp[T.n][T.m]} ways. Column ∅ is 1: an empty t can always be made.` };
+    }
+  };
+
+  B.isMatch = {
+    inputs: [{ k: 'a', label: 's', v: 'adceb' }, { k: 'b', label: 'p', v: '*a*b' }],
+    build(p) {
+      const s = word(p.a, ''), pt = word(p.b, ''), n = s.length, m = pt.length;
+      const cells = blank(n + 1, m + 1), dp = table(n + 1, m + 1, false), steps = [];
+      dp[0][0] = true; cells[0][0] = { v: true, kind: 'base' };
+      for (let i = 1; i <= n; i++) cells[i][0] = { v: false, kind: 'base' };
+      for (let j = 1; j <= m; j++) { dp[0][j] = pt[j - 1] === '*' && dp[0][j - 1]; cells[0][j] = { v: dp[0][j], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+        const c = pt[j - 1], x = s[i - 1];
+        if (c === '*') { dp[i][j] = dp[i][j - 1] || dp[i - 1][j]; steps.push({ i, j, v: dp[i][j], deps: [[i, j - 1], [i - 1, j]], note: `'*': match nothing ${f(dp[i][j - 1])} or eat '${x}' ${f(dp[i - 1][j])} → ${f(dp[i][j])}` }); }
+        else if (c === '?' || c === x) { dp[i][j] = dp[i - 1][j - 1]; steps.push({ i, j, v: dp[i][j], deps: [[i - 1, j - 1]], note: `'${c}' matches '${x}': copy diagonal → ${f(dp[i][j])}` }); }
+        else steps.push({ i, j, v: false, deps: [], note: `'${c}' cannot match '${x}' → F` });
+      }
+      return { rows: ['∅', ...s], cols: ['∅', ...pt], cells, steps, answer: [n, m], result: dp[n][m], resultNote: dp[n][m] ? 'The pattern matches the whole string.' : 'No match.' };
+    }
+  };
+
+  // ---------- Part D: intervals ----------
+  B.longestPalindromeSubseq = {
+    inputs: [{ k: 's', label: 's', v: 'bbbab' }],
+    build(p) {
+      const s = word(p.s, 'a'), n = s.length, cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j < i; j++) cells[i][j].kind = 'void';
+      for (let i = n - 1; i >= 0; i--) {
+        dp[i][i] = 1; steps.push({ i, j: i, v: 1, deps: [], note: `A single letter '${s[i]}' is a palindrome of length 1.` });
+        for (let j = i + 1; j < n; j++) {
+          if (s[i] === s[j]) { dp[i][j] = 2 + (i + 1 <= j - 1 ? dp[i + 1][j - 1] : 0); steps.push({ i, j, v: dp[i][j], deps: i + 1 <= j - 1 ? [[i + 1, j - 1]] : [], note: `Ends '${s[i]}' and '${s[j]}' match: 2 + inside ${dp[i][j] - 2} = ${dp[i][j]}` }); }
+          else { dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]); steps.push({ i, j, v: dp[i][j], deps: [[i + 1, j], [i, j - 1]], note: `Ends differ: max(drop left ${dp[i + 1][j]}, drop right ${dp[i][j - 1]}) = ${dp[i][j]}` }); }
+        }
+      }
+      return { rows: [...s].map((c, i) => i + ' ' + c), cols: [...s].map((c, i) => i + ' ' + c), cells, steps, answer: [0, n - 1], result: dp[0][n - 1], resultNote: `Longest palindromic subsequence: ${dp[0][n - 1]}.` };
+    }
+  };
+
+  B.countSubstrings = {
+    inputs: [{ k: 's', label: 's', v: 'abba' }],
+    build(p) {
+      const s = word(p.s, 'a'), n = s.length, cells = blank(n, n), dp = table(n, n, false), steps = []; let c = 0;
+      for (let i = 0; i < n; i++) for (let j = 0; j < i; j++) cells[i][j].kind = 'void';
+      for (let i = n - 1; i >= 0; i--) for (let j = i; j < n; j++) {
+        const inner = j - i < 2 ? true : dp[i + 1][j - 1];
+        dp[i][j] = s[i] === s[j] && inner; if (dp[i][j]) c++;
+        const sub = s.slice(i, j + 1);
+        steps.push({ i, j, v: dp[i][j], deps: j - i >= 2 ? [[i + 1, j - 1]] : [], note: `"${sub}": ` + (s[i] !== s[j] ? `ends differ → F` : j - i < 2 ? `short and ends match → T` : `ends match, inside is ${f(inner)} → ${f(dp[i][j])}`) + `   (count: ${c})` });
+      }
+      return { rows: [...s].map((ch, i) => i + ' ' + ch), cols: [...s].map((ch, i) => i + ' ' + ch), cells, steps, answer: null, result: c, resultNote: `${c} palindromic substrings (count the T cells).` };
+    }
+  };
+
+  B.maxCoins = {
+    inputs: [{ k: 'a', label: 'nums', v: '[3,1,5,8]' }],
+    build(p) {
+      const nums0 = json(p.a, [1]).slice(0, 6), a = [1, ...nums0, 1], n = a.length;
+      const cells = blank(n, n), dp = table(n, n, 0), steps = [];
+      for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) cells[i][j].kind = 'void';
+      for (let i = 0; i + 1 < n; i++) cells[i][i + 1] = { v: 0, kind: 'base' };
+      for (let len = 2; len < n; len++) for (let l = 0; l + len < n; l++) {
+        const r = l + len; let best = -1, bk = -1;
+        for (let k = l + 1; k < r; k++) { const v = a[l] * a[k] * a[r] + dp[l][k] + dp[k][r]; if (v > best) { best = v; bk = k; } }
+        dp[l][r] = best;
+        steps.push({ i: l, j: r, v: best, deps: [[l, bk], [bk, r]], note: `Between walls ${a[l]} and ${a[r]}: best last balloon is ${a[bk]} → ${a[l]}·${a[bk]}·${a[r]} + ${dp[l][bk]} + ${dp[bk][r]} = ${best}` });
+      }
+      return { rows: a.map((v, i) => i + ':' + v), cols: a.map((v, i) => i + ':' + v), cells, steps, answer: [0, n - 1], result: dp[0][n - 1], resultNote: `Maximum coins: ${dp[0][n - 1]}. Row and column labels are index:value of the padded array.` };
+    }
+  };
+
+  // ---------- Part E: knapsack ----------
+  // Row i = "using the first i items". Row 0 (∅) = no items yet.
+  const itemRows = (xs, name) => ['∅', ...xs.map(x => name + ' ' + x)];
+
+  B.canPartition = {
+    inputs: [{ k: 'a', label: 'nums', v: '[1,5,11,5]' }],
+    build(p) {
+      const xs = json(p.a, [1, 1]).slice(0, 6), total = xs.reduce((s, x) => s + x, 0);
+      if (total % 2 || total / 2 > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: false, resultNote: total % 2 ? `Total is ${total}, which is odd. Answer: false, no table needed.` : 'Keep the total at 60 or less so the table fits.' };
+      const T = total / 2, n = xs.length, cells = blank(n + 1, T + 1), dp = table(n + 1, T + 1, false), steps = [];
+      for (let t = 0; t <= T; t++) { dp[0][t] = t === 0; cells[0][t] = { v: dp[0][t], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let t = 0; t <= T; t++) {
+        const x = xs[i - 1], skip = dp[i - 1][t], take = t >= x ? dp[i - 1][t - x] : false;
+        dp[i][t] = skip || take;
+        steps.push({ i, j: t, v: dp[i][t], deps: t >= x ? [[i - 1, t], [i - 1, t - x]] : [[i - 1, t]], note: `sum ${t} with ${x}: skip → ${f(skip)}` + (t >= x ? `, take → need ${t - x} from above → ${f(take)}` : `, ${x} is too big to take`) });
+      }
+      return { rows: itemRows(xs, '+'), cols: nums(T + 1), cells, steps, answer: [n, T], result: dp[n][T], resultNote: `Target is ${total} / 2 = ${T}. Reachable: ${dp[n][T]}.` };
+    }
+  };
+
+  B.findTargetSumWays = {
+    inputs: [{ k: 'a', label: 'nums', v: '[1,1,1,1,1]' }, { k: 't', label: 'target', v: '3' }],
+    build(p) {
+      const xs = json(p.a, [1]).slice(0, 7), tg = +p.t || 0, total = xs.reduce((s, x) => s + x, 0);
+      if (Math.abs(tg) > total || (total + tg) % 2) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: 0, resultNote: 'total + target must be even and |target| ≤ total. Answer: 0.' };
+      const P = (total + tg) / 2;
+      if (P > 30) return { rows: [], cols: [], cells: [], steps: [], answer: null, result: null, resultNote: 'Keep (total + target) / 2 at 30 or less so the table fits.' };
+      const n = xs.length, cells = blank(n + 1, P + 1), dp = table(n + 1, P + 1, 0), steps = [];
+      for (let s = 0; s <= P; s++) { dp[0][s] = s === 0 ? 1 : 0; cells[0][s] = { v: dp[0][s], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let s = 0; s <= P; s++) {
+        const x = xs[i - 1], skip = dp[i - 1][s], take = s >= x ? dp[i - 1][s - x] : 0;
+        dp[i][s] = skip + take;
+        steps.push({ i, j: s, v: dp[i][s], deps: s >= x ? [[i - 1, s], [i - 1, s - x]] : [[i - 1, s]], note: `make ${s}: leave ${x} out ${skip} + put it in ${take} = ${dp[i][s]}` });
+      }
+      return { rows: itemRows(xs, '+'), cols: nums(P + 1), cells, steps, answer: [n, P], result: dp[n][P], resultNote: `P = (${total} + ${tg}) / 2 = ${P}. ${dp[n][P]} ways.` };
+    }
+  };
+
+  B.change = {
+    inputs: [{ k: 'c', label: 'coins', v: '[1,2,5]' }, { k: 'a', label: 'amount', v: '5' }],
+    build(p) {
+      const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
+      const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, 0), steps = [];
+      for (let a = 0; a <= A; a++) { dp[0][a] = a === 0 ? 1 : 0; cells[0][a] = { v: dp[0][a], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let a = 0; a <= A; a++) {
+        const c = cs[i - 1], skip = dp[i - 1][a], use = a >= c ? dp[i][a - c] : 0;
+        dp[i][a] = skip + use;
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= c ? [[i - 1, a], [i, a - c]] : [[i - 1, a]], note: `amount ${a}, coin ${c}: without it ${skip} + use it (same row) ${use} = ${dp[i][a]}` });
+      }
+      return { rows: itemRows(cs, 'coin'), cols: nums(A + 1), cells, steps, answer: [n, A], result: dp[n][A], resultNote: `${dp[n][A]} combinations. The "use it" arrow stays on the same row: coins can be reused.` };
+    }
+  };
+
+  B.coinChange = {
+    inputs: [{ k: 'c', label: 'coins', v: '[1,2,5]' }, { k: 'a', label: 'amount', v: '11' }],
+    build(p) {
+      const cs = json(p.c, [1]).slice(0, 6), A = clamp(+p.a, 0, 20), n = cs.length;
+      const cells = blank(n + 1, A + 1), dp = table(n + 1, A + 1, Infinity), steps = [];
+      for (let a = 0; a <= A; a++) { dp[0][a] = a === 0 ? 0 : Infinity; cells[0][a] = { v: dp[0][a], kind: 'base' }; }
+      for (let i = 1; i <= n; i++) for (let a = 0; a <= A; a++) {
+        const c = cs[i - 1], skip = dp[i - 1][a], use = a >= c ? 1 + dp[i][a - c] : Infinity;
+        dp[i][a] = Math.min(skip, use);
+        steps.push({ i, j: a, v: dp[i][a], deps: a >= c ? [[i - 1, a], [i, a - c]] : [[i - 1, a]], note: `amount ${a}, coin ${c}: min(without ${f(skip)}, 1 + use ${f(use)}) = ${f(dp[i][a])}` });
+      }
+      const r = dp[n][A] === Infinity ? -1 : dp[n][A];
+      return { rows: itemRows(cs, 'coin'), cols: nums(A + 1), cells, steps, answer: [n, A], result: r, resultNote: r === -1 ? 'Impossible, so return -1.' : `Fewest coins: ${r}.` };
+    }
+  };
+
+  // ---------- Part F: index + state ----------
+  // Row = day, going forward. Columns: free (0), holding (1). Top rows are "before day 0".
+  const dayRows = (pr) => pr.map((x, i) => 'day ' + i + ' ($' + x + ')');
+
+  B.stockCooldown = {
+    inputs: [{ k: 'a', label: 'prices', v: '[1,2,3,0,2]' }],
+    build(p) {
+      const pr = json(p.a, [1]).slice(0, 9), n = pr.length, cells = blank(n + 2, 2), dp = table(n + 2, 2, 0), steps = [];
+      for (const r of [0, 1]) { dp[r] = [0, -Infinity]; cells[r] = [{ v: 0, kind: 'base' }, { v: -Infinity, kind: 'base' }]; }
+      for (let d = 0; d < n; d++) {
+        const i = d + 2, x = pr[d];
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 2][0] - x);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i - 1, 1], [i - 2, 0]], note: `Day ${d}, holding: keep ${f(dp[i - 1][1])} or buy at ${x} using free from 2 rows up (${dp[i - 2][0]} − ${x})` });
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + x);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i - 1, 0], [i - 1, 1]], note: `Day ${d}, free: rest ${dp[i - 1][0]} or sell at ${x} (${f(dp[i - 1][1])} + ${x})` });
+      }
+      return { rows: ['before', 'before', ...dayRows(pr)], cols: ['free', 'holding'], cells, steps, answer: [n + 1, 0], result: dp[n + 1][0], resultNote: `Best profit: ${dp[n + 1][0]}. End the last day free.` };
+    }
+  };
+
+  B.stockFee = {
+    inputs: [{ k: 'a', label: 'prices', v: '[1,3,2,8,4,9]' }, { k: 'f', label: 'fee', v: '2' }],
+    build(p) {
+      const pr = json(p.a, [1]).slice(0, 9), fee = +p.f || 0, n = pr.length, cells = blank(n + 1, 2), dp = table(n + 1, 2, 0), steps = [];
+      dp[0] = [0, -Infinity]; cells[0] = [{ v: 0, kind: 'base' }, { v: -Infinity, kind: 'base' }];
+      for (let d = 0; d < n; d++) {
+        const i = d + 1, x = pr[d];
+        dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - x);
+        steps.push({ i, j: 1, v: dp[i][1], deps: [[i - 1, 1], [i - 1, 0]], note: `Day ${d}, holding: keep ${f(dp[i - 1][1])} or buy (${dp[i - 1][0]} − ${x})` });
+        dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + x - fee);
+        steps.push({ i, j: 0, v: dp[i][0], deps: [[i - 1, 0], [i - 1, 1]], note: `Day ${d}, free: rest ${dp[i - 1][0]} or sell (${f(dp[i - 1][1])} + ${x} − ${fee})` });
+      }
+      return { rows: ['before', ...dayRows(pr)], cols: ['free', 'holding'], cells, steps, answer: [n, 0], result: dp[n][0], resultNote: `Best profit: ${dp[n][0]}.` };
+    }
+  };
+
+  return { B, fmt: f };
+})();
+if (typeof module !== 'undefined') module.exports = VIZ;
+
+// Hand-built SVG diagrams. Colours come from CSS classes, so they follow the theme.
+const DG = (() => {
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const svg = (w, h, body, label) => `<svg class="dg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}" style="max-width:${w}px">${body}</svg>`;
+  const rect = (x, y, w, h, cls, rx = 6) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" class="${cls}"/>`;
+  const text = (x, y, t, cls = 't', anchor = 'middle') => `<text x="${x}" y="${y}" class="${cls}" text-anchor="${anchor}" dominant-baseline="central">${esc(t)}</text>`;
+  function arrow(x1, y1, x2, y2, kind = 'ink', s1 = 16, s2 = 18) {
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+    const ax = x1 + dx * s1 / L, ay = y1 + dy * s1 / L, bx = x2 - dx * s2 / L, by = y2 - dy * s2 / L;
+    return `<line x1="${ax.toFixed(1)}" y1="${ay.toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" class="ar ar-${kind}" marker-end="url(#ah-${kind})"/>`;
+  }
+  const path = (d, kind) => `<path d="${d}" class="ar ar-${kind}" fill="none" marker-end="url(#ah-${kind})"/>`;
+  const ctr = (x0, y0, s, i, j) => [x0 + j * s + s / 2, y0 + i * s + s / 2];
+  function grid(x0, y0, R, C, s, fn) {
+    let o = '';
+    for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) {
+      const c = fn(i, j); if (!c) continue;
+      o += rect(x0 + j * s + 2, y0 + i * s + 2, s - 4, s - 4, 'c ' + (c.cls || 'c-cell'), 5);
+      if (c.t !== undefined && c.t !== '') o += text(x0 + j * s + s / 2, y0 + i * s + s / 2, c.t, c.tc || 't');
+    }
+    return o;
+  }
+  const lbl = (x, y, t, anchor = 'middle') => text(x, y, t, 't-lab', anchor);
+
+  const D = {};
+
+  // ----- Start here: recursion tree for 3 x 3 Unique Paths -----
+  D.tree = () => {
+    const T = { l: '2,2', c: [
+      { l: '1,2', c: [{ l: '0,2', c: [{ l: '0,1' }] }, { l: '1,1', d: 1, c: [{ l: '0,1', d: 1 }, { l: '1,0', d: 1 }] }] },
+      { l: '2,1', c: [{ l: '1,1', d: 1, c: [{ l: '0,1', d: 1 }, { l: '1,0', d: 1 }] }, { l: '2,0', c: [{ l: '1,0' }] }] }
+    ] };
+    let leaf = 0; const nodes = [], edges = [];
+    (function place(n, depth) {
+      if (!n.c) { n.x = 40 + leaf * 78; leaf++; }
+      else { n.c.forEach(ch => place(ch, depth + 1)); n.x = (n.c[0].x + n.c[n.c.length - 1].x) / 2; }
+      n.y = 26 + depth * 66; nodes.push(n);
+      if (n.c) n.c.forEach(ch => edges.push([n, ch]));
+    })(T, 0);
+    const W = 40 + leaf * 78 - 38 + 40;
+    let o = edges.map(([a, b]) => `<line x1="${a.x}" y1="${a.y + 14}" x2="${b.x}" y2="${b.y - 14}" class="edge ${b.d ? 'edge-dup' : ''}"/>`).join('');
+    o += nodes.map(n => rect(n.x - 32, n.y - 14, 64, 28, 'c ' + (n.d ? 'c-cur' : 'c-cell'), 14) + text(n.x, n.y, 'dp(' + n.l + ')', 't t-sm')).join('');
+    return svg(W, 26 + 3 * 66 + 24, o, 'Recursion tree for a 3 by 3 grid with the repeated subtree highlighted');
+  };
+
+  // ----- Start here: two directions -----
+  D.directions = () => {
+    const s = 46, R = 4, C = 4;
+    const left = grid(20, 40, R, C, s, (i, j) => (i === 1 && j === 1 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : i === 3 && j === 3 ? { cls: 'c-path', t: 'end' } : {}));
+    const [cx, cy] = ctr(20, 40, s, 1, 1), [rx, ry] = ctr(20, 40, s, 1, 2), [dx, dy] = ctr(20, 40, s, 2, 1);
+    const x2 = 20 + C * s + 70;
+    const right = grid(x2, 40, R, C, s, (i, j) => (i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : i === 0 && j === 0 ? { cls: 'c-path', t: 'start' } : {}));
+    const [c2x, c2y] = ctr(x2, 40, s, 2, 2), [ux, uy] = ctr(x2, 40, s, 1, 2), [lx, ly] = ctr(x2, 40, s, 2, 1);
+    const o = lbl(x2 + C * s / 2, 18, 'Forward: "ending here"') + right + arrow(ux, uy, c2x, c2y, 'dep', 12, 14) + arrow(lx, ly, c2x, c2y, 'dep', 12, 14)
+      + text(x2 + C * s / 2, 40 + R * s + 18, 'reads above and left → loop forward', 't-s')
+      + lbl(20 + C * s / 2, 18, 'Reverse: "from here to the end"') + left + arrow(cx, cy, rx, ry, 'dep', 12, 14) + arrow(cx, cy, dx, dy, 'dep', 12, 14)
+      + text(20 + C * s / 2, 40 + R * s + 18, 'reads right and below → loop backward', 't-s');
+    return svg(x2 + C * s + 20, 40 + R * s + 36, o, 'Forward-looking and backward-looking states');
+  };
+
+  // ----- small move icons -----
+  D.moves = (type) => {
+    const s = 34, x0 = 6, y0 = 6;
+    const deps = { rd: [[1, 2], [2, 1]], ul: [[0, 1], [1, 0]], up3: [[0, 0], [0, 1], [0, 2]], tld: [[0, 1], [1, 0], [0, 0]] }[type];
+    const cur = [1, 1];
+    let o = grid(x0, y0, 3, 3, s, (i, j) => (i === 1 && j === 1 ? { cls: 'c-cur' } : deps.some(([a, b]) => a === i && b === j) ? { cls: 'c-dep' } : {}));
+    const [cx, cy] = ctr(x0, y0, s, ...cur);
+    for (const [a, b] of deps) { const [px, py] = ctr(x0, y0, s, a, b); o += arrow(px, py, cx, cy, 'dep', 8, 10); }
+    return svg(3 * s + 12, 3 * s + 12, o, 'Allowed moves');
+  };
+
+  // ----- A family: grid with a route -----
+  D.familyGrid = () => {
+    const s = 44, R = 4, C = 6, x0 = 16, y0 = 16;
+    const route = [[0, 0], [0, 1], [1, 1], [1, 2], [1, 3], [2, 3], [3, 3], [3, 4], [3, 5]];
+    const on = (i, j) => route.some(([a, b]) => a === i && b === j);
+    let o = grid(x0, y0, R, C, s, (i, j) => (i === 0 && j === 0 ? { cls: 'c-path', t: 'S' } : i === R - 1 && j === C - 1 ? { cls: 'c-path', t: 'F' } : on(i, j) ? { cls: 'c-path-soft' } : {}));
+    for (let k = 0; k + 1 < route.length; k++) { const [a, b] = ctr(x0, y0, s, ...route[k]), [c, d] = ctr(x0, y0, s, ...route[k + 1]); o += arrow(a, b, c, d, 'path', 10, 12); }
+    o += text(x0 + C * s + 14, y0 + 20, 'Only right or down.', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 42, 'No way back to a cell,', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 60, 'so each cell is its own', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 78, 'sub-problem.', 't-s', 'start');
+    return svg(x0 + C * s + 200, y0 + R * s + 16, o, 'A grid with one route from S to F');
+  };
+
+  // ----- A4 triangle -----
+  D.triangle = () => {
+    const t = [[2], [3, 4], [6, 5, 7], [4, 1, 8, 3]], dp = [[11], [9, 10], [7, 6, 10], [4, 1, 8, 3]];
+    const best = [[0, 0], [1, 0], [2, 1], [3, 1]];
+    const isBest = (i, j) => best.some(([a, b]) => a === i && b === j);
+    const draw = (ox, vals, title, valCls) => {
+      let o = lbl(ox, 14, title);
+      const pos = (i, j) => [ox + (j - i / 2) * 58, 48 + i * 56];
+      for (let i = 0; i < 3; i++) for (let j = 0; j <= i; j++) for (const d of [0, 1]) {
+        const [x1, y1] = pos(i, j), [x2, y2] = pos(i + 1, j + d);
+        const hot = isBest(i, j) && isBest(i + 1, j + d);
+        o += hot ? arrow(x1, y1, x2, y2, 'path', 18, 20) : `<line x1="${x1}" y1="${y1 + 18}" x2="${x2}" y2="${y2 - 18}" class="edge"/>`;
+      }
+      for (let i = 0; i < 4; i++) for (let j = 0; j <= i; j++) {
+        const [x, y] = pos(i, j);
+        o += `<circle cx="${x}" cy="${y}" r="18" class="c ${isBest(i, j) ? 'c-path' : 'c-cell'}"/>` + text(x, y, vals[i][j], valCls);
+      }
+      return o;
+    };
+    const o = draw(130, t, 'The numbers', 't') + draw(420, dp, 'dp: cheapest way down from here', 't t-b');
+    return svg(560, 240, o, 'Triangle and its dp values with the best path highlighted');
+  };
+
+  // ----- A6 dungeon: why forward fails -----
+  D.dungeon = () => {
+    const g = [[1, -3, 3], [0, -2, 0], [-3, -3, -3]], s = 46;
+    const A = [[0, 0], [1, 0], [1, 1], [1, 2]], Bp = [[0, 0], [0, 1], [0, 2], [1, 2]];
+    const panel = (x0, P, kind, title, l1, l2) => {
+      let o = lbl(x0 + 3 * s / 2, 14, title);
+      o += grid(x0, 30, 3, 3, s, (i, j) => ({ cls: P.some(([a, b]) => a === i && b === j) ? (kind === 'dep' ? 'c-dep' : 'c-path') : i === 2 ? 'c-warn' : 'c-cell', t: g[i][j] }));
+      for (let k = 0; k + 1 < P.length; k++) { const [a, b] = ctr(x0, 30, s, ...P[k]), [c, d] = ctr(x0, 30, s, ...P[k + 1]); o += arrow(a, b, c, d, kind, 12, 14); }
+      o += text(x0 + 3 * s / 2, 30 + 3 * s + 16, l1, 't-s') + text(x0 + 3 * s / 2, 30 + 3 * s + 34, l2, 't-s');
+      return o;
+    };
+    const o = panel(20, A, 'dep', 'Path A', 'lowest so far −1, now −1', 'then −3 → drops to −4') + panel(230, Bp, 'path', 'Path B', 'lowest so far −2, now +1', 'then −3 → only drops to −2');
+    return svg(410, 30 + 3 * s + 48, o, 'Two paths into the same cell. Forward DP keeps A, but B is better.');
+  };
+
+  // ----- B: why min of three squares -----
+  D.squares = () => {
+    const s = 52, x0 = 20, y0 = 20;
+    let o = grid(x0, y0, 3, 3, s, (i, j) => (i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : {}));
+    const box = (r, c, cls, inset) => `<rect x="${x0 + c * s + inset}" y="${y0 + r * s + inset}" width="${2 * s - 2 * inset}" height="${2 * s - 2 * inset}" rx="6" class="sq ${cls}"/>`;
+    o += box(0, 0, 'sq-a', 5) + box(0, 1, 'sq-b', 9) + box(1, 0, 'sq-c', 13);
+    const lx = x0 + 3 * s + 24;
+    o += `<rect x="${lx}" y="${y0 + 6}" width="22" height="12" rx="3" class="sq sq-a"/>` + text(lx + 32, y0 + 12, 'diagonal: square ending at (i−1, j−1)', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 36}" width="22" height="12" rx="3" class="sq sq-b"/>` + text(lx + 32, y0 + 42, 'top: square ending at (i−1, j)', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 66}" width="22" height="12" rx="3" class="sq sq-c"/>` + text(lx + 32, y0 + 72, 'left: square ending at (i, j−1)', 't-s', 'start');
+    o += text(lx, y0 + 112, 'A 3 × 3 square at (i, j) needs all three', 't-s', 'start');
+    o += text(lx, y0 + 130, 'of these 2 × 2 squares to be full.', 't-s', 'start');
+    o += text(lx, y0 + 148, 'The smallest one limits you, so: 1 + min.', 't-s', 'start');
+    return svg(lx + 290, y0 + 3 * s + 20, o, 'Three overlapping squares that a bigger square needs');
+  };
+
+  D.squareCount = () => {
+    const s = 26; let o = '', x = 20;
+    [1, 2, 3].forEach((k) => {
+      o += grid(x, 20 + (3 - k) * s, k, k, s, (i, j) => ({ cls: i === k - 1 && j === k - 1 ? 'c-cur' : 'c-dep' }));
+      o += text(x + k * s / 2, 20 + 3 * s + 16, k + ' × ' + k, 't-s');
+      x += k * s + 34;
+    });
+    o += text(x, 20 + 1.5 * s, 'dp = 3 means these three', 't-s', 'start') + text(x, 20 + 1.5 * s + 18, 'squares all end at this cell.', 't-s', 'start');
+    return svg(x + 210, 20 + 3 * s + 30, o, 'A dp value of 3 counts three squares');
+  };
+
+  // ----- C: the three arrows -----
+  D.strings = () => {
+    const s = 54, x0 = 70, y0 = 44, R = 4, C = 4;
+    let o = grid(x0, y0, R, C, s, (i, j) => (i === 0 || j === 0 ? { cls: 'c-pad', t: '' } : i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 1) || (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : {}));
+    '∅abc'.split('').forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    '∅xyz'.split('').forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    o += text(x0 - 46, y0 + 2 * s, 'a', 't-lab') + text(x0 + 2 * s, y0 - 34, 'b', 't-lab');
+    const [cx, cy] = ctr(x0, y0, s, 2, 2);
+    o += arrow(...ctr(x0, y0, s, 1, 1), cx, cy, 'path', 14, 16) + arrow(...ctr(x0, y0, s, 1, 2), cx, cy, 'dep', 14, 16) + arrow(...ctr(x0, y0, s, 2, 1), cx, cy, 'cur', 14, 16);
+    const lx = x0 + C * s + 26;
+    o += `<line x1="${lx}" y1="${y0 + 14}" x2="${lx + 28}" y2="${y0 + 14}" class="ar ar-path" marker-end="url(#ah-path)"/>` + text(lx + 38, y0 + 14, 'diagonal (i−1, j−1): use both letters', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 44}" x2="${lx + 28}" y2="${y0 + 44}" class="ar ar-dep" marker-end="url(#ah-dep)"/>` + text(lx + 38, y0 + 44, 'above (i−1, j): drop a letter of a', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 74}" x2="${lx + 28}" y2="${y0 + 74}" class="ar ar-cur" marker-end="url(#ah-cur)"/>` + text(lx + 38, y0 + 74, 'left (i, j−1): drop a letter of b', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 100}" width="28" height="16" rx="3" class="c c-pad"/>` + text(lx + 38, y0 + 108, 'grey edge: empty prefix (base case)', 't-s', 'start');
+    return svg(lx + 290, y0 + R * s + 14, o, 'The three moves in a two-string table');
+  };
+
+  // ----- C3 traceback: computed from the forward table -----
+  D.editOps = () => {
+    const a = 'horse', b = 'ros', n = a.length, m = b.length;
+    const v = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: m + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+    for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) v[i][j] = a[i - 1] === b[j - 1] ? v[i - 1][j - 1] : 1 + Math.min(v[i][j - 1], v[i - 1][j], v[i - 1][j - 1]);
+    const P = [[n, m]], labels = [];
+    for (let i = n, j = m; i > 0 || j > 0;) {
+      if (i > 0 && j > 0 && a[i - 1] === b[j - 1] && v[i][j] === v[i - 1][j - 1]) { labels.unshift(`${a[i - 1]} = ${b[j - 1]}, free`); i--; j--; }
+      else if (i > 0 && j > 0 && v[i][j] === v[i - 1][j - 1] + 1) { labels.unshift(`replace ${a[i - 1]} → ${b[j - 1]}`); i--; j--; }
+      else if (i > 0 && v[i][j] === v[i - 1][j] + 1) { labels.unshift(`delete ${a[i - 1]}`); i--; }
+      else { labels.unshift(`insert ${b[j - 1]}`); j--; }
+      P.unshift([i, j]);
+    }
+    const s = 44, x0 = 40, y0 = 40;
+    let o = grid(x0, y0, n + 1, m + 1, s, (i, j) => ({ cls: P.some(([p, q]) => p === i && q === j) ? 'c-path' : i === 0 || j === 0 ? 'c-pad' : 'c-cell', t: v[i][j] }));
+    ['∅', ...a].forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    ['∅', ...b].forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    for (let k = 0; k + 1 < P.length; k++) {
+      const [p, q] = ctr(x0, y0, s, ...P[k]), [r, t] = ctr(x0, y0, s, ...P[k + 1]);
+      o += arrow(p, q, r, t, 'path', 12, 14);
+      o += text(x0 + (m + 1) * s + 20, y0 + P[k + 1][0] * s + s / 2, (k + 1) + '. ' + labels[k], 't-s', 'start');
+    }
+    return svg(x0 + (m + 1) * s + 190, y0 + (n + 1) * s + 14, o, 'Reading the operations back from the edit distance table');
+  };
+
+  // ----- D: interval fill order -----
+  D.interval = () => {
+    const n = 5, s = 46, x0 = 40, y0 = 36;
+    let o = grid(x0, y0, n, n, s, (i, j) => (j < i ? null : i === 0 && j === 4 ? { cls: 'c-cur', t: '5' } : (i === 1 && j === 4) || (i === 0 && j === 3) || (i === 1 && j === 3) ? { cls: 'c-dep', t: String(j - i + 1) } : { cls: 'c-len' + (j - i + 1), t: String(j - i + 1) }));
+    for (let k = 0; k < n; k++) { o += text(x0 - 14, y0 + k * s + s / 2, 'i=' + k, 't-s'); o += text(x0 + k * s + s / 2, y0 - 12, 'j=' + k, 't-s'); }
+    const [cx, cy] = ctr(x0, y0, s, 0, 4);
+    o += arrow(cx, cy, ...ctr(x0, y0, s, 1, 4), 'dep', 12, 14) + arrow(cx, cy, ...ctr(x0, y0, s, 0, 3), 'dep', 12, 14) + arrow(cx, cy, ...ctr(x0, y0, s, 1, 3), 'dep', 12, 14);
+    const lx = x0 + n * s + 24;
+    o += text(lx, y0 + 16, 'Each number is the length of the range.', 't-s', 'start');
+    o += text(lx, y0 + 38, 'Fill the diagonal of 1s first, then 2s, and so on.', 't-s', 'start');
+    o += text(lx, y0 + 60, 'The full range [0..4] needs shorter ranges:', 't-s', 'start');
+    o += text(lx, y0 + 80, 'drop the left end, drop the right end, or both.', 't-s', 'start');
+    o += text(lx, y0 + 112, 'Bottom-to-top rows with left-to-right columns', 't-s', 'start');
+    o += text(lx, y0 + 132, 'gives the same safe order.', 't-s', 'start');
+    return svg(lx + 330, y0 + n * s + 12, o, 'Interval DP fills ranges from short to long');
+  };
+
+  // ----- D3 balloons -----
+  D.balloons = () => {
+    const items = [['l', 'wall'], ['a', ''], ['b', ''], ['k', 'last'], ['c', ''], ['d', ''], ['r', 'wall']];
+    const gap = 70, y = 70; let o = '';
+    items.forEach(([t, kind], i) => {
+      const x = 50 + i * gap;
+      o += `<circle cx="${x}" cy="${y}" r="24" class="c ${kind === 'wall' ? 'c-pad' : kind === 'last' ? 'c-cur' : 'c-dep'}"/>` + text(x, y, t, 't t-b');
+    });
+    const br = (i1, i2, label) => { const x1 = 50 + i1 * gap - 22, x2 = 50 + i2 * gap + 22; return `<path d="M${x1} ${y + 36} v10 H${x2} v-10" class="edge"/>` + text((x1 + x2) / 2, y + 66, label, 't-s'); };
+    o += br(1, 2, 'left part: dp(l, k)') + br(4, 5, 'right part: dp(k, r)');
+    o += text(50 + 3 * gap, 22, 'k bursts last, so its neighbours are l and r', 't-s');
+    o += text(50 + 3 * gap, y + 100, 'coins = a[l] · a[k] · a[r] + dp(l, k) + dp(k, r)', 't t-b');
+    o += text(50 + 3 * gap, y + 124, 'While k is still there, the two parts never touch each other.', 't-s');
+    return svg(50 + 6 * gap + 50, y + 142, o, 'Burst balloon k last');
+  };
+
+  // ----- E: 0/1 vs unbounded -----
+  D.knap = () => {
+    const s = 50, panel = (x0, unb, title) => {
+      let o = lbl(x0 + 2 * s, 16, title);
+      o += grid(x0, 34, 2, 4, s, (i, j) => (i === 1 && j === 3 ? { cls: 'c-cur', t: 'i, c' } : (i === 0 && j === 3) || (unb ? i === 1 && j === 0 : i === 0 && j === 0) ? { cls: 'c-dep' } : {}));
+      o += text(x0 - 22, 34 + s / 2, 'i−1', 't-s') + text(x0 - 22, 34 + 1.5 * s, 'i', 't-s');
+      o += text(x0 + s / 2, 34 + 2 * s + 14, 'c − w', 't-s') + text(x0 + 3.5 * s, 34 + 2 * s + 14, 'c', 't-s');
+      const [cx, cy] = ctr(x0, 34, s, 1, 3);
+      o += arrow(...ctr(x0, 34, s, 0, 3), cx, cy, 'dep', 14, 16);
+      o += arrow(...(unb ? ctr(x0, 34, s, 1, 0) : ctr(x0, 34, s, 0, 0)), cx, cy, 'path', 14, 16);
+      o += text(x0 + 2 * s, 34 + 2 * s + 38, unb ? 'take: same row i (reuse it)' : 'take: row above (used once)', 't-s');
+      o += text(x0 + 2 * s, 34 + 2 * s + 56, unb ? '1D loop goes upward' : '1D loop goes downward', 't-s t-strong');
+      return o;
+    };
+    return svg(560, 34 + 2 * s + 70, panel(40, false, 'Each item once (0/1)') + panel(320, true, 'Reuse allowed (unbounded)'), 'Take and skip arrows for 0/1 and unbounded knapsack');
+  };
+
+  // ----- E1: why the loop direction matters -----
+  D.directionBug = () => {
+    const s = 44, row = (x0, y0, vals, title, cls, arrows, kind, note) => {
+      let o = lbl(x0 + 2.5 * s, y0 - 18, title);
+      o += grid(x0, y0, 1, 5, s, (i, j) => ({ cls: vals[j] === 'T' ? cls : 'c-cell', t: vals[j] }));
+      for (let j = 0; j < 5; j++) o += text(x0 + j * s + s / 2, y0 + s + 12, 'sum ' + j, 't-s');
+      for (const [a, b] of arrows) { const [x1, y1] = ctr(x0, y0, s, 0, a), [x2] = ctr(x0, y0, s, 0, b); o += path(`M${x1} ${y1 - 18} Q ${(x1 + x2) / 2} ${y1 - 46} ${x2} ${y1 - 20}`, kind); }
+      o += text(x0 + 2.5 * s, y0 + s + 34, note, 't-s');
+      return o;
+    };
+    const o = row(30, 70, ['T', 'T', 'T', 'T', 'T'], 'Upward loop, item 1', 'c-warn', [[0, 1], [1, 2], [2, 3], [3, 4]], 'warn', 'reads values this same item just wrote → uses 1 again and again')
+      + row(330, 70, ['T', 'T', 'F', 'F', 'F'], 'Downward loop, item 1', 'c-path', [[0, 1]], 'path', 'reads values from before this item → uses 1 once');
+    return svg(600, 170, o, 'Upward loop reuses an item, downward loop does not');
+  };
+
+  // ----- F: state machines -----
+  const stateNode = (x, y, t, cls) => `<circle cx="${x}" cy="${y}" r="38" class="c ${cls}"/>` + text(x, y, t, 't t-b');
+  const loop = (x, y, label, up = true) => { const dy = up ? -1 : 1; return path(`M${x - 16} ${y + dy * 34} C ${x - 40} ${y + dy * 90}, ${x + 40} ${y + dy * 90}, ${x + 16} ${y + dy * 36}`, 'ink') + text(x, y + dy * 88, label, 't-s'); };
+  D.machine = () => {
+    let o = stateNode(110, 110, 'FREE', 'c-cell') + stateNode(370, 110, 'HOLDING', 'c-dep');
+    o += path('M146 96 Q 240 50 334 96', 'path') + text(240, 58, 'buy: − price', 't-s');
+    o += path('M334 124 Q 240 170 146 124', 'cur') + text(240, 168, 'sell: + price (− fee)', 't-s');
+    o += loop(110, 110, 'wait', false) + loop(370, 110, 'keep', false);
+    return svg(480, 220, o, 'Two states: free and holding');
+  };
+  D.machineCooldown = () => {
+    let o = stateNode(90, 120, 'FREE', 'c-cell') + stateNode(330, 120, 'HOLDING', 'c-dep') + stateNode(210, 260, 'COOL', 'c-pad');
+    o += path('M128 112 Q 210 80 292 112', 'path') + text(210, 82, 'buy', 't-s');
+    o += path('M312 154 Q 290 220 246 244', 'cur') + text(318, 216, 'sell', 't-s', 'start');
+    o += path('M174 244 Q 128 220 106 156', 'ink') + text(104, 216, 'wait 1 day', 't-s', 'end');
+    o += loop(90, 120, 'wait', true) + loop(330, 120, 'keep', true);
+    return svg(430, 310, o, 'Three states with a cooldown after selling');
+  };
+
+  return D;
+})();
+
+</script>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('dp2d:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('dp2d:' + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
+  };
+
+  addEventListener('themechange', () => requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows())));
+
+  // ---------------- code highlighting ----------------
+  const KW = /\b(var|const|let|function|return|if|else|for|of|while|new|true|false|undefined|Infinity|null|break|continue)\b/;
+  function hl(line) {
+    const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`)|\b(var|const|let|function|return|if|else|for|of|while|new|true|false|undefined|Infinity|null|break|continue)\b|\b(\d+)\b|\b(Math|Array|dp|memo)\b/g;
+    let out = '', last = 0, m;
+    while ((m = re.exec(line))) {
+      out += esc(line.slice(last, m.index));
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'k' : m[4] ? 'n' : 'f';
+      out += `<span class="${cls}">${esc(m[0])}</span>`;
+      last = re.lastIndex;
+    }
+    return out + esc(line.slice(last));
+  }
+  const MEMO_MARK = '// memo';
+  const isMemo = (l) => l.trimEnd().endsWith(MEMO_MARK);
+  const stripMark = (l) => l.replace(/\s*\/\/ memo\s*$/, '');
+  function toRecursion(code) {
+    return code.split('\n').filter(l => !isMemo(l)).join('\n').replace(/memo(\[[^\]]+\])+ = /g, '');
+  }
+  function renderCode(code, showMemo) {
+    return code.replace(/\n+$/, '').split('\n').map(l => {
+      const memo = isMemo(l);
+      return `<span class="ln${memo && showMemo ? ' memo' : ''}">${hl(stripMark(l)) || ' '}</span>`;
+    }).join('');
+  }
+  function codeBox(pid) {
+    const blocks = SOLUTIONS[pid] || [];
+    const tabs = [];
+    blocks.forEach((b, k) => {
+      if (k === 0 && b.code.includes(MEMO_MARK)) {
+        tabs.push({ label: 'Recursion', code: toRecursion(b.code), note: 'Correct but repeats work. Too slow for large inputs.' });
+        tabs.push({ label: 'Memo', code: b.code, memo: true, note: b.note || 'Highlighted lines are all that memoization adds.' });
+      } else tabs.push({ label: b.label, code: b.code, note: b.note || '' });
+    });
+    const id = 'code-' + pid;
+    const el = document.createElement('div'); el.className = 'code';
+    el.innerHTML = `<div class="tabs" role="tablist">${tabs.map((t, i) => `<button class="tab" role="tab" id="${id}-t${i}" aria-selected="${i === 1 ? 'true' : 'false'}" data-i="${i}">${esc(t.label)}</button>`).join('')}<button class="copy" type="button">Copy</button></div><pre></pre><div class="code-note"></div>`;
+    let cur = tabs.length > 1 ? 1 : 0;
+    const show = (i) => {
+      cur = i;
+      $$('.tab', el).forEach(b => b.setAttribute('aria-selected', String(+b.dataset.i === i)));
+      $('pre', el).innerHTML = renderCode(tabs[i].code, !!tabs[i].memo);
+      $('.code-note', el).textContent = tabs[i].note;
+    };
+    el.addEventListener('click', (e) => {
+      const t = e.target.closest('.tab'); if (t) show(+t.dataset.i);
+      const c = e.target.closest('.copy');
+      if (c) {
+        const text = tabs[cur].code.split('\n').map(stripMark).join('\n');
+        const done = () => { c.textContent = 'Copied'; setTimeout(() => (c.textContent = 'Copy'), 1400); };
+        try { navigator.clipboard.writeText(text).then(done, () => selectPre()); } catch (err) { selectPre(); }
+      }
+    });
+    const selectPre = () => { const r = document.createRange(); r.selectNodeContents($('pre', el)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    show(cur);
+    return el;
+  }
+
+  // ---------------- stepper ----------------
+  const VIZES = [];
+  const fmt = VIZ.fmt;
+  class Stepper {
+    constructor(host, key, order) {
+      this.spec = VIZ.B[key]; this.key = key; this.host = host; this.k = 0; this.timer = null;
+      const uid = host.dataset.pid;
+      host.className = 'viz';
+      host.innerHTML = `
+        <div class="viz-top">
+          <div class="viz-title">Step through it<small>Fill order: ${order}. Edit the input and press Load.</small></div>
+          <form class="viz-in">${this.spec.inputs.map(inp => `<label for="${uid}-${inp.k}">${esc(inp.label)}<input id="${uid}-${inp.k}" name="${inp.k}" value="${esc(inp.v)}" class="${inp.v.length > 12 ? 'wide' : ''}" spellcheck="false" autocomplete="off"></label>`).join('')}<button class="btn" type="submit">Load</button></form>
+        </div>
+        <div class="viz-scroll"><div class="viz-stage"><table class="dpt"></table><svg class="viz-arrows"></svg></div></div>
+        <div class="viz-note" aria-live="polite"></div>
+        <div class="viz-ctl">
+          <button class="btn" data-a="reset" type="button" aria-label="Back to the start">Reset</button>
+          <button class="btn" data-a="prev" type="button">Back</button>
+          <button class="btn btn-primary" data-a="next" type="button">Next</button>
+          <button class="btn" data-a="play" type="button">Play</button>
+          <button class="btn" data-a="end" type="button">Show all</button>
+          <span class="count"></span>
+          <label for="${uid}-speed">speed<input type="range" id="${uid}-speed" min="1" max="10" value="5"></label>
+        </div>`;
+      $('form', host).addEventListener('submit', (e) => { e.preventDefault(); this.load(); });
+      $('.viz-ctl', host).addEventListener('click', (e) => {
+        const a = e.target.closest('[data-a]'); if (!a) return;
+        const act = a.dataset.a;
+        if (act !== 'play') this.stop();
+        if (act === 'reset') this.go(0);
+        if (act === 'prev') this.go(this.k - 1);
+        if (act === 'next') this.go(this.k + 1);
+        if (act === 'end') this.go(this.r.steps.length);
+        if (act === 'play') this.timer ? this.stop() : this.play();
+      });
+      $(`#${uid}-speed`, host).addEventListener('input', () => { if (this.timer) { this.stop(); this.play(); } });
+      this.load();
+    }
+    load() {
+      this.stop();
+      const p = {}; $$('input[name]', this.host).forEach(i => (p[i.name] = i.value));
+      try { this.r = this.spec.build(p); } catch (e) { this.r = { rows: [], cols: [], cells: [], steps: [], resultNote: 'That input could not be read. Check the brackets and quotes.' }; }
+      const r = this.r, tbl = $('table', this.host);
+      if (!r.rows.length) { tbl.innerHTML = ''; $('.viz-arrows', this.host).innerHTML = ''; this.k = 0; this.paintEmpty(); return; }
+      let h = '<tr><th></th>' + r.cols.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>';
+      r.rows.forEach((rl, i) => {
+        h += `<tr><th class="rh">${esc(rl)}</th>` + r.cols.map((_, j) => `<td data-i="${i}" data-j="${j}"></td>`).join('') + '</tr>';
+      });
+      tbl.innerHTML = h;
+      this.td = r.rows.map((_, i) => r.cols.map((_, j) => tbl.querySelector(`td[data-i="${i}"][data-j="${j}"]`)));
+      this.go(0);
+    }
+    paintEmpty() {
+      $('.viz-note', this.host).className = 'viz-note final';
+      $('.viz-note', this.host).textContent = this.r.resultNote || '';
+      $('.count', this.host).textContent = '';
+    }
+    go(k) {
+      const r = this.r; if (!r.rows.length) return;
+      k = Math.max(0, Math.min(r.steps.length, k)); this.k = k;
+      const vals = r.cells.map(row => row.map(c => c.v));
+      for (let s = 0; s < k; s++) vals[r.steps[s].i][r.steps[s].j] = r.steps[s].v;
+      const cur = k > 0 ? r.steps[k - 1] : null, end = k === r.steps.length;
+      const depSet = new Set(cur ? cur.deps.map(([a, b]) => a + ',' + b) : []);
+      let sq = null;
+      if (end && r.square) { const [bi, bj, side] = r.square; sq = (i, j) => i > bi - side && i <= bi && j > bj - side && j <= bj; }
+      r.cells.forEach((row, i) => row.forEach((c, j) => {
+        const td = this.td[i][j], v = vals[i][j];
+        const cls = [c.kind || ''];
+        if (c.kind !== 'void' && c.kind !== 'pad' && c.kind !== 'base' && v !== undefined) cls.push('filled');
+        if (v === true) cls.push('vt'); if (v === false) cls.push('vf');
+        if (cur && cur.i === i && cur.j === j && !end) cls.push('cur');
+        if (depSet.has(i + ',' + j) && !end) cls.push('dep');
+        if (end && r.answer && r.answer[0] === i && r.answer[1] === j) cls.push('ans');
+        if (sq && sq(i, j)) cls.push('insq');
+        td.className = cls.join(' ');
+        if (c.kind === 'void') { td.innerHTML = ''; return; }
+        if (c.kind === 'block' && v === undefined) { td.innerHTML = ''; return; }
+        td.innerHTML = (c.tag !== undefined ? `<span class="tg">${esc(c.tag)}</span>` : '') + (v === undefined ? '' : esc(fmt(v)));
+        if (c.kind === 'block') td.innerHTML = '';
+      }));
+      const note = $('.viz-note', this.host);
+      if (end) { note.className = 'viz-note final'; note.textContent = 'Done. ' + (r.resultNote || ''); }
+      else if (cur) { note.className = 'viz-note'; note.textContent = cur.note; }
+      else { note.className = 'viz-note'; note.textContent = 'Dashed cells are base cases, set before step 1. Press Next.'; }
+      $('.count', this.host).textContent = `step ${k} / ${r.steps.length}`;
+      $('[data-a="play"]', this.host).textContent = this.timer ? 'Pause' : 'Play';
+      this.cur = end ? null : cur;
+      this.drawArrows();
+    }
+    drawArrows() {
+      const svg = $('.viz-arrows', this.host); if (!svg) return;
+      const stage = $('.viz-stage', this.host);
+      svg.setAttribute('width', stage.offsetWidth); svg.setAttribute('height', stage.offsetHeight);
+      svg.setAttribute('viewBox', `0 0 ${stage.offsetWidth} ${stage.offsetHeight}`);
+      if (!this.cur || !this.cur.deps.length) { svg.innerHTML = ''; return; }
+      const sr = stage.getBoundingClientRect();
+      const center = (i, j) => { const b = this.td[i][j].getBoundingClientRect(); return [b.left - sr.left + b.width / 2, b.top - sr.top + b.height / 2]; };
+      const [cx, cy] = center(this.cur.i, this.cur.j);
+      svg.innerHTML = this.cur.deps.map(([a, b]) => {
+        const [x, y] = center(a, b), dx = cx - x, dy = cy - y, L = Math.hypot(dx, dy) || 1;
+        const s1 = 13, s2 = 16;
+        return `<line x1="${x + dx * s1 / L}" y1="${y + dy * s1 / L}" x2="${cx - dx * s2 / L}" y2="${cy - dy * s2 / L}" class="ar ar-dep" marker-end="url(#ah-dep)"/>`;
+      }).join('');
+    }
+    play() {
+      if (this.k >= this.r.steps.length) this.go(0);
+      const speed = +$(`#${this.host.dataset.pid}-speed`, this.host).value;
+      const ms = 1500 - speed * 135;
+      this.timer = setInterval(() => { if (this.k >= this.r.steps.length) { this.stop(); return; } this.go(this.k + 1); }, ms);
+      $('[data-a="play"]', this.host).textContent = 'Pause';
+    }
+    stop() { if (this.timer) clearInterval(this.timer); this.timer = null; const b = this.host && $('[data-a="play"]', this.host); if (b) b.textContent = 'Play'; }
+  }
+  addEventListener('resize', () => VIZES.forEach(v => v.drawArrows()));
+
+  // ---------------- render families & problems ----------------
+  const famHost = $('#families');
+  const MOVE_TEXT = { ul: 'Reads from above and from the left.', rd: 'Reads from the right and from below.', up3: 'Reads the three cells above.', tld: 'Reads top, left and diagonal.' };
+  const pts = (arr) => `<ul class="pts">${arr.map(x => `<li>${x}</li>`).join('')}</ul>`;
+  const plain = (h) => h.replace(/<[^>]+>/g, '');
+  FAMILIES.forEach(F => {
+    const sec = document.createElement('section'); sec.className = 'fam'; sec.id = 'fam-' + F.id; sec.dataset.f = F.id;
+    const count = PROBLEMS.filter(p => p.fam === F.id).length;
+    sec.innerHTML = `<div class="fam-head"><div class="fam-letter">${F.id}</div><div><div class="eyebrow">Family ${F.id} · ${count} problem${count > 1 ? 's' : ''}</div><h2>${F.name}</h2>${pts(F.points)}</div></div>
+      <div class="statebox"><span class="lbl">State</span>${F.state}</div>
+      <figure class="figure">${DG[F.diagram]()}</figure>`;
+    PROBLEMS.filter(p => p.fam === F.id).forEach(P => sec.appendChild(renderProblem(P)));
+    famHost.appendChild(sec);
+  });
+
+  function renderProblem(P) {
+    const a = document.createElement('article'); a.className = 'prob'; a.id = P.id;
+    const labels = ['State', 'Choices', 'Recurrence', 'Base cases', 'Answer', 'Fill order'];
+    a.innerHTML = `
+      <div class="prob-head">
+        <span class="pid">${P.id}</span><h3>${esc(P.title)}</h3>
+        <a class="chip" href="${P.url}" target="_blank" rel="noopener">LeetCode ${P.lc}</a>
+        <span class="chip diff-${P.diff}">${P.diff}</span>
+        <span class="chip chip-dir">${plain(P.card[5])}</span>
+        <label class="done-toggle" for="done-${P.id}"><input type="checkbox" id="done-${P.id}" data-pid="${P.id}"> I can solve this</label>
+      </div>
+      <div class="prob-grid">
+        <div class="prob-q"><div class="lbl">Problem</div><p class="stmt">${P.statement}</p><div class="lbl">Example</div><pre class="example">${esc(P.example)}</pre></div>
+        <div class="card"><div class="card-title"><span>DP card</span></div>
+          <dl>${P.card.map((c, i) => `<dt>${labels[i]}</dt><dd>${c}</dd>`).join('')}</dl>
+          ${P.moves ? `<div class="moves">${DG.moves(P.moves)}<span>${MOVE_TEXT[P.moves]}</span></div>` : ''}
+        </div>
+      </div>
+      ${P.diagram ? `<figure class="figure">${DG[P.diagram]()}</figure>` : ''}
+      <div class="notes"><div class="lbl">Key points</div>${pts(P.notes)}</div>
+      <div class="viz-host" data-pid="${P.id}"></div>
+      <div class="code-host"></div>
+      ${P.tries.length ? `<div class="tries"><div class="lbl">Check yourself</div>${P.tries.map(t => `<details class="try"><summary>${t.q}</summary><div class="ans">${t.a}</div></details>`).join('')}</div>` : ''}
+      <div class="cx"><span class="lbl">Complexity</span><span>${P.cx}</span></div>`;
+    $('.code-host', a).replaceWith(codeBox(P.id));
+    return a;
+  }
+  $$('.viz-host').forEach(h => { const P = PROBLEMS.find(p => p.id === h.dataset.pid); VIZES.push(new Stepper(h, P.viz, plain(P.card[5]).toLowerCase())); });
+
+  // ---------------- start-here figures ----------------
+  $('#fig-tree').innerHTML = DG.tree() + '<figcaption>Orange = repeated work. With a memo, the second dp(1,1) returns at once.</figcaption>';
+  $('#fig-dirs').innerHTML = DG.directions();
+  function callCounts(n) {
+    const m = n, cnt = new Map();
+    const brute = (i, j) => { if (i >= m || j >= n || (i === m - 1 && j === n - 1)) return 1; const k = i * 100 + j; if (cnt.has(k)) return cnt.get(k); const v = 1 + brute(i, j + 1) + brute(i + 1, j); cnt.set(k, v); return v; };
+    let calls = 0; const seen = new Set();
+    const memo = (i, j) => { calls++; if (i >= m || j >= n || (i === m - 1 && j === n - 1)) return; const k = i * 100 + j; if (seen.has(k)) return; seen.add(k); memo(i, j + 1); memo(i + 1, j); };
+    memo(0, 0);
+    return [brute(0, 0), calls];
+  }
+  const callsInput = $('#calls-n');
+  const updCalls = () => {
+    const n = +callsInput.value, [slow, fast] = callCounts(n), max = Math.log10(callCounts(16)[0]);
+    $('#calls-label').textContent = `${n} × ${n}`;
+    $('#calls-slow').textContent = slow.toLocaleString('en-US');
+    $('#calls-fast').textContent = fast.toLocaleString('en-US');
+    $('#calls-bar-slow').style.width = (100 * Math.log10(slow) / max) + '%';
+    $('#calls-bar-fast').style.width = (100 * Math.log10(fast) / max) + '%';
+  };
+  callsInput.addEventListener('input', updCalls); updCalls();
+
+  // ---------------- nav, progress, search ----------------
+  const nav = $('#nav');
+  let navHtml = `<li><a href="#start"><span class="nid">·</span>Basics</a></li>`;
+  FAMILIES.forEach(F => {
+    navHtml += `<li class="grp" data-f="${F.id}"><a href="#fam-${F.id}" style="padding:0;color:inherit">${F.id} · ${F.name}</a></li>`;
+    PROBLEMS.filter(p => p.fam === F.id).forEach(P => {
+      navHtml += `<li data-search="${esc((P.id + ' ' + P.title + ' ' + P.lc).toLowerCase())}"><a href="#${P.id}" data-pid="${P.id}"><span class="nid">${P.id}</span><span class="nt">${esc(P.title)}</span><i class="dd dd-${P.diff}" title="${P.diff}"></i><span class="tick">✓</span></a></li>`;
+    });
+  });
+  navHtml += `<li class="grp">Practice</li><li><a href="#quiz"><span class="nid">?</span>Which family is it?</a></li><li><a href="#cheat"><span class="nid">≡</span>All 22 side by side</a></li><li><a href="#plan"><span class="nid">14</span>Study plan</a></li>`;
+  nav.innerHTML = navHtml;
+
+  let done = store.get('done', {});
+  const paintProgress = () => {
+    const n = PROBLEMS.filter(p => done[p.id]).length;
+    $('#prog-text').textContent = `${n} of ${PROBLEMS.length} solved`;
+    $('#prog-bar').style.width = (100 * n / PROBLEMS.length) + '%';
+    $$('a[data-pid]', nav).forEach(a => a.classList.toggle('done', !!done[a.dataset.pid]));
+  };
+  $$('input[data-pid]').forEach(cb => {
+    cb.checked = !!done[cb.dataset.pid];
+    cb.addEventListener('change', () => { done[cb.dataset.pid] = cb.checked; store.set('done', done); paintProgress(); });
+  });
+  $('#reset-progress').addEventListener('click', (e) => {
+    const b = e.currentTarget;
+    if (b.dataset.armed) { done = {}; store.set('done', done); $$('input[data-pid]').forEach(c => (c.checked = false)); paintProgress(); b.textContent = 'Reset ticks'; delete b.dataset.armed; return; }
+    b.dataset.armed = '1'; b.textContent = 'Click again to clear';
+    setTimeout(() => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = 'Reset ticks'; } }, 3000);
+  });
+  paintProgress();
+
+  $('#nav-search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    $$('li[data-search]', nav).forEach(li => (li.hidden = q && !li.dataset.search.includes(q)));
+  });
+
+  // ---------------- hamburger: show / hide the question list ----------------
+  // Wide screens: the list is a column that can be hidden (remembered).
+  // Narrow screens: the list slides over the page and closes after a pick.
+  const rail = $('#rail'), layout = $('.layout'), menuBtn = $('#menu-btn'), scrim = $('#scrim');
+  const narrow = matchMedia('(max-width: 980px)');
+  let wideOpen = store.get('railOpen', true);
+  const isOpen = () => (narrow.matches ? rail.classList.contains('open') : wideOpen);
+  const paintMenu = () => {
+    layout.classList.toggle('rail-hidden', !narrow.matches && !wideOpen);
+    if (!narrow.matches) rail.classList.remove('open');
+    scrim.hidden = !(narrow.matches && rail.classList.contains('open'));
+    menuBtn.setAttribute('aria-expanded', String(isOpen()));
+    menuBtn.setAttribute('aria-label', isOpen() ? 'Hide question list' : 'Show question list');
+    requestAnimationFrame(() => VIZES.forEach(v => v.drawArrows()));
+  };
+  menuBtn.addEventListener('click', () => {
+    if (narrow.matches) rail.classList.toggle('open');
+    else { wideOpen = !wideOpen; store.set('railOpen', wideOpen); }
+    paintMenu();
+  });
+  const closeNarrow = () => { if (narrow.matches) { rail.classList.remove('open'); paintMenu(); } };
+  scrim.addEventListener('click', closeNarrow);
+  nav.addEventListener('click', (e) => { if (e.target.closest('a')) closeNarrow(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNarrow(); });
+  narrow.addEventListener('change', paintMenu);
+  paintMenu();
+
+  if ('IntersectionObserver' in window) {
+    const links = new Map($$('a[href^="#"]', nav).map(a => [a.getAttribute('href').slice(1), a]));
+    const io = new IntersectionObserver((ents) => {
+      ents.forEach(en => {
+        if (!en.isIntersecting) return;
+        $$('a.on', nav).forEach(a => a.classList.remove('on'));
+        const l = links.get(en.target.id); if (l) l.classList.add('on');
+      });
+    }, { rootMargin: '-30% 0px -65% 0px' });
+    ['start', 'quiz', 'cheat', 'plan', ...PROBLEMS.map(p => p.id)].forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
+  }
+
+  // ---------------- quiz ----------------
+  const qHost = $('#quiz-list');
+  let answers = store.get('quiz', {});
+  const paintQuiz = () => {
+    qHost.innerHTML = QUIZ.map((q, i) => {
+      const pick = answers[i];
+      return `<div class="q"><p>${i + 1}. ${esc(q.q)}</p><div class="opts">${QUIZ_OPTIONS.map((o, k) => {
+        let cls = 'opt';
+        if (pick !== undefined && k === q.a) cls += ' right';
+        if (pick === k && k !== q.a) cls += ' wrong';
+        return `<button class="${cls}" type="button" data-q="${i}" data-k="${k}" ${pick !== undefined ? 'disabled' : ''}>${o}</button>`;
+      }).join('')}</div>${pick !== undefined ? `<div class="why">${pick === q.a ? 'Right. ' : 'Not quite. '}${esc(q.why)}</div>` : ''}</div>`;
+    }).join('');
+    const answered = Object.keys(answers).length, right = QUIZ.filter((q, i) => answers[i] === q.a).length;
+    $('#quiz-score').textContent = answered ? `${right} right out of ${answered} answered (${QUIZ.length} questions)` : `${QUIZ.length} questions. Your answers stay in this browser.`;
+  };
+  qHost.addEventListener('click', (e) => {
+    const b = e.target.closest('.opt'); if (!b || b.disabled) return;
+    answers[b.dataset.q] = +b.dataset.k; store.set('quiz', answers); paintQuiz();
+  });
+  $('#quiz-reset').addEventListener('click', () => { answers = {}; store.set('quiz', answers); paintQuiz(); });
+  paintQuiz();
+
+  // ---------------- plan ----------------
+  $('#plan-table').insertAdjacentHTML('beforeend', PLAN.map(r => `<tr><td>${r[0]}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join(''));
+
+  // sections are built by script, so jump to a #link only after they exist
+  const jump = () => { const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' }); };
+  jump();
+
+  // fonts can shift table cells; redraw arrows once they are in
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { VIZES.forEach(v => v.drawArrows()); jump(); });
+})();
+
+</script>
+</body>
+</html>

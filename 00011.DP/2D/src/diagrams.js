@@ -26,9 +26,9 @@ const DG = (() => {
 
   // ----- Start here: recursion tree for 3 x 3 Unique Paths -----
   D.tree = () => {
-    const T = { l: '0,0', c: [
-      { l: '0,1', c: [{ l: '0,2', c: [{ l: '1,2' }] }, { l: '1,1', d: 1, c: [{ l: '1,2', d: 1 }, { l: '2,1', d: 1 }] }] },
-      { l: '1,0', c: [{ l: '1,1', d: 1, c: [{ l: '1,2', d: 1 }, { l: '2,1', d: 1 }] }, { l: '2,0', c: [{ l: '2,1' }] }] }
+    const T = { l: '2,2', c: [
+      { l: '1,2', c: [{ l: '0,2', c: [{ l: '0,1' }] }, { l: '1,1', d: 1, c: [{ l: '0,1', d: 1 }, { l: '1,0', d: 1 }] }] },
+      { l: '2,1', c: [{ l: '1,1', d: 1, c: [{ l: '0,1', d: 1 }, { l: '1,0', d: 1 }] }, { l: '2,0', c: [{ l: '1,0' }] }] }
     ] };
     let leaf = 0; const nodes = [], edges = [];
     (function place(n, depth) {
@@ -51,21 +51,21 @@ const DG = (() => {
     const x2 = 20 + C * s + 70;
     const right = grid(x2, 40, R, C, s, (i, j) => (i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : i === 0 && j === 0 ? { cls: 'c-path', t: 'start' } : {}));
     const [c2x, c2y] = ctr(x2, 40, s, 2, 2), [ux, uy] = ctr(x2, 40, s, 1, 2), [lx, ly] = ctr(x2, 40, s, 2, 1);
-    const o = lbl(20 + C * s / 2, 18, '"From here to the end"') + left + arrow(cx, cy, rx, ry, 'dep', 12, 14) + arrow(cx, cy, dx, dy, 'dep', 12, 14)
-      + text(20 + C * s / 2, 40 + R * s + 18, 'reads right and below → loop i, j downward', 't-s')
-      + lbl(x2 + C * s / 2, 18, '"Ending exactly here"') + right + arrow(ux, uy, c2x, c2y, 'dep', 12, 14) + arrow(lx, ly, c2x, c2y, 'dep', 12, 14)
-      + text(x2 + C * s / 2, 40 + R * s + 18, 'reads above and left → loop i, j upward', 't-s');
+    const o = lbl(x2 + C * s / 2, 18, 'Forward: "ending here"') + right + arrow(ux, uy, c2x, c2y, 'dep', 12, 14) + arrow(lx, ly, c2x, c2y, 'dep', 12, 14)
+      + text(x2 + C * s / 2, 40 + R * s + 18, 'reads above and left → loop forward', 't-s')
+      + lbl(20 + C * s / 2, 18, 'Reverse: "from here to the end"') + left + arrow(cx, cy, rx, ry, 'dep', 12, 14) + arrow(cx, cy, dx, dy, 'dep', 12, 14)
+      + text(20 + C * s / 2, 40 + R * s + 18, 'reads right and below → loop backward', 't-s');
     return svg(x2 + C * s + 20, 40 + R * s + 36, o, 'Forward-looking and backward-looking states');
   };
 
   // ----- small move icons -----
   D.moves = (type) => {
     const s = 34, x0 = 6, y0 = 6;
-    const deps = type === 'rd' ? [[1, 2], [2, 1]] : type === 'fall' ? [[2, 0], [2, 1], [2, 2]] : [[0, 1], [1, 0], [0, 0]];
+    const deps = { rd: [[1, 2], [2, 1]], ul: [[0, 1], [1, 0]], up3: [[0, 0], [0, 1], [0, 2]], tld: [[0, 1], [1, 0], [0, 0]] }[type];
     const cur = [1, 1];
     let o = grid(x0, y0, 3, 3, s, (i, j) => (i === 1 && j === 1 ? { cls: 'c-cur' } : deps.some(([a, b]) => a === i && b === j) ? { cls: 'c-dep' } : {}));
     const [cx, cy] = ctr(x0, y0, s, ...cur);
-    for (const [a, b] of deps) { const [px, py] = ctr(x0, y0, s, a, b); o += type === 'tld' ? arrow(px, py, cx, cy, 'dep', 8, 10) : arrow(cx, cy, px, py, 'dep', 8, 10); }
+    for (const [a, b] of deps) { const [px, py] = ctr(x0, y0, s, a, b); o += arrow(px, py, cx, cy, 'dep', 8, 10); }
     return svg(3 * s + 12, 3 * s + 12, o, 'Allowed moves');
   };
 
@@ -77,9 +77,9 @@ const DG = (() => {
     let o = grid(x0, y0, R, C, s, (i, j) => (i === 0 && j === 0 ? { cls: 'c-path', t: 'S' } : i === R - 1 && j === C - 1 ? { cls: 'c-path', t: 'F' } : on(i, j) ? { cls: 'c-path-soft' } : {}));
     for (let k = 0; k + 1 < route.length; k++) { const [a, b] = ctr(x0, y0, s, ...route[k]), [c, d] = ctr(x0, y0, s, ...route[k + 1]); o += arrow(a, b, c, d, 'path', 10, 12); }
     o += text(x0 + C * s + 14, y0 + 20, 'Only right or down.', 't-s', 'start');
-    o += text(x0 + C * s + 14, y0 + 42, 'You can never come back', 't-s', 'start');
-    o += text(x0 + C * s + 14, y0 + 60, 'to a cell, so each cell is', 't-s', 'start');
-    o += text(x0 + C * s + 14, y0 + 78, 'a clean sub-problem.', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 42, 'No way back to a cell,', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 60, 'so each cell is its own', 't-s', 'start');
+    o += text(x0 + C * s + 14, y0 + 78, 'sub-problem.', 't-s', 'start');
     return svg(x0 + C * s + 200, y0 + R * s + 16, o, 'A grid with one route from S to F');
   };
 
@@ -151,35 +151,43 @@ const DG = (() => {
   // ----- C: the three arrows -----
   D.strings = () => {
     const s = 54, x0 = 70, y0 = 44, R = 4, C = 4;
-    let o = grid(x0, y0, R, C, s, (i, j) => (i === R - 1 || j === C - 1 ? { cls: 'c-pad', t: '' } : i === 1 && j === 1 ? { cls: 'c-cur', t: 'i,j' } : (i === 2 && j === 2) || (i === 2 && j === 1) || (i === 1 && j === 2) ? { cls: 'c-dep' } : {}));
-    'abc∅'.split('').forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
-    'xyz∅'.split('').forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
-    o += text(x0 - 46, y0 + 1.5 * s, 's1', 't-lab') + text(x0 + 1.5 * s, y0 - 34, 's2', 't-lab');
-    const [cx, cy] = ctr(x0, y0, s, 1, 1);
-    o += arrow(cx, cy, ...ctr(x0, y0, s, 2, 2), 'path', 14, 16) + arrow(cx, cy, ...ctr(x0, y0, s, 2, 1), 'dep', 14, 16) + arrow(cx, cy, ...ctr(x0, y0, s, 1, 2), 'cur', 14, 16);
+    let o = grid(x0, y0, R, C, s, (i, j) => (i === 0 || j === 0 ? { cls: 'c-pad', t: '' } : i === 2 && j === 2 ? { cls: 'c-cur', t: 'i,j' } : (i === 1 && j === 1) || (i === 1 && j === 2) || (i === 2 && j === 1) ? { cls: 'c-dep' } : {}));
+    '∅abc'.split('').forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    '∅xyz'.split('').forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    o += text(x0 - 46, y0 + 2 * s, 'a', 't-lab') + text(x0 + 2 * s, y0 - 34, 'b', 't-lab');
+    const [cx, cy] = ctr(x0, y0, s, 2, 2);
+    o += arrow(...ctr(x0, y0, s, 1, 1), cx, cy, 'path', 14, 16) + arrow(...ctr(x0, y0, s, 1, 2), cx, cy, 'dep', 14, 16) + arrow(...ctr(x0, y0, s, 2, 1), cx, cy, 'cur', 14, 16);
     const lx = x0 + C * s + 26;
-    o += `<line x1="${lx}" y1="${y0 + 14}" x2="${lx + 28}" y2="${y0 + 14}" class="ar ar-path" marker-end="url(#ah-path)"/>` + text(lx + 38, y0 + 14, '↘ (i+1, j+1): use both letters (match, replace)', 't-s', 'start');
-    o += `<line x1="${lx}" y1="${y0 + 44}" x2="${lx + 28}" y2="${y0 + 44}" class="ar ar-dep" marker-end="url(#ah-dep)"/>` + text(lx + 38, y0 + 44, '↓ (i+1, j): drop s1[i] (skip, delete)', 't-s', 'start');
-    o += `<line x1="${lx}" y1="${y0 + 74}" x2="${lx + 28}" y2="${y0 + 74}" class="ar ar-cur" marker-end="url(#ah-cur)"/>` + text(lx + 38, y0 + 74, '→ (i, j+1): drop s2[j] (skip, insert)', 't-s', 'start');
-    o += `<rect x="${lx}" y="${y0 + 100}" width="28" height="16" rx="3" class="c c-pad"/>` + text(lx + 38, y0 + 108, 'grey edge: one string is used up (base case)', 't-s', 'start');
-    return svg(lx + 330, y0 + R * s + 14, o, 'The three moves in a two-string table');
+    o += `<line x1="${lx}" y1="${y0 + 14}" x2="${lx + 28}" y2="${y0 + 14}" class="ar ar-path" marker-end="url(#ah-path)"/>` + text(lx + 38, y0 + 14, 'diagonal (i−1, j−1): use both letters', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 44}" x2="${lx + 28}" y2="${y0 + 44}" class="ar ar-dep" marker-end="url(#ah-dep)"/>` + text(lx + 38, y0 + 44, 'above (i−1, j): drop a letter of a', 't-s', 'start');
+    o += `<line x1="${lx}" y1="${y0 + 74}" x2="${lx + 28}" y2="${y0 + 74}" class="ar ar-cur" marker-end="url(#ah-cur)"/>` + text(lx + 38, y0 + 74, 'left (i, j−1): drop a letter of b', 't-s', 'start');
+    o += `<rect x="${lx}" y="${y0 + 100}" width="28" height="16" rx="3" class="c c-pad"/>` + text(lx + 38, y0 + 108, 'grey edge: empty prefix (base case)', 't-s', 'start');
+    return svg(lx + 290, y0 + R * s + 14, o, 'The three moves in a two-string table');
   };
 
-  // ----- C3 traceback -----
+  // ----- C3 traceback: computed from the forward table -----
   D.editOps = () => {
-    const a = 'horse', b = 'ros', v = [[3, 3, 4, 5], [3, 2, 3, 4], [2, 2, 2, 3], [3, 2, 1, 2], [3, 2, 1, 1], [3, 2, 1, 0]];
-    const P = [[0, 0], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3]];
-    const labels = ['replace h → r', 'o = o, free', 'delete r', 's = s, free', 'delete e'];
+    const a = 'horse', b = 'ros', n = a.length, m = b.length;
+    const v = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: m + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
+    for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) v[i][j] = a[i - 1] === b[j - 1] ? v[i - 1][j - 1] : 1 + Math.min(v[i][j - 1], v[i - 1][j], v[i - 1][j - 1]);
+    const P = [[n, m]], labels = [];
+    for (let i = n, j = m; i > 0 || j > 0;) {
+      if (i > 0 && j > 0 && a[i - 1] === b[j - 1] && v[i][j] === v[i - 1][j - 1]) { labels.unshift(`${a[i - 1]} = ${b[j - 1]}, free`); i--; j--; }
+      else if (i > 0 && j > 0 && v[i][j] === v[i - 1][j - 1] + 1) { labels.unshift(`replace ${a[i - 1]} → ${b[j - 1]}`); i--; j--; }
+      else if (i > 0 && v[i][j] === v[i - 1][j] + 1) { labels.unshift(`delete ${a[i - 1]}`); i--; }
+      else { labels.unshift(`insert ${b[j - 1]}`); j--; }
+      P.unshift([i, j]);
+    }
     const s = 44, x0 = 40, y0 = 40;
-    let o = grid(x0, y0, 6, 4, s, (i, j) => ({ cls: P.some(([p, q]) => p === i && q === j) ? 'c-path' : i === 5 || j === 3 ? 'c-pad' : 'c-cell', t: v[i][j] }));
-    [...a, '∅'].forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
-    [...b, '∅'].forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
+    let o = grid(x0, y0, n + 1, m + 1, s, (i, j) => ({ cls: P.some(([p, q]) => p === i && q === j) ? 'c-path' : i === 0 || j === 0 ? 'c-pad' : 'c-cell', t: v[i][j] }));
+    ['∅', ...a].forEach((ch, i) => { o += text(x0 - 14, y0 + i * s + s / 2, ch, 't t-b'); });
+    ['∅', ...b].forEach((ch, j) => { o += text(x0 + j * s + s / 2, y0 - 14, ch, 't t-b'); });
     for (let k = 0; k + 1 < P.length; k++) {
       const [p, q] = ctr(x0, y0, s, ...P[k]), [r, t] = ctr(x0, y0, s, ...P[k + 1]);
       o += arrow(p, q, r, t, 'path', 12, 14);
-      o += text(x0 + 4 * s + 20, y0 + P[k][0] * s + s, (k + 1) + '. ' + labels[k], 't-s', 'start');
+      o += text(x0 + (m + 1) * s + 20, y0 + P[k + 1][0] * s + s / 2, (k + 1) + '. ' + labels[k], 't-s', 'start');
     }
-    return svg(x0 + 4 * s + 190, y0 + 6 * s + 14, o, 'Reading the operations back from the edit distance table');
+    return svg(x0 + (m + 1) * s + 190, y0 + (n + 1) * s + 14, o, 'Reading the operations back from the edit distance table');
   };
 
   // ----- D: interval fill order -----
@@ -219,13 +227,13 @@ const DG = (() => {
   D.knap = () => {
     const s = 50, panel = (x0, unb, title) => {
       let o = lbl(x0 + 2 * s, 16, title);
-      o += grid(x0, 34, 2, 4, s, (i, j) => (i === 0 && j === 3 ? { cls: 'c-cur', t: 'i, c' } : (i === 1 && j === 3) || (unb ? i === 0 && j === 0 : i === 1 && j === 0) ? { cls: 'c-dep' } : {}));
-      o += text(x0 - 22, 34 + s / 2, 'i', 't-s') + text(x0 - 22, 34 + 1.5 * s, 'i+1', 't-s');
+      o += grid(x0, 34, 2, 4, s, (i, j) => (i === 1 && j === 3 ? { cls: 'c-cur', t: 'i, c' } : (i === 0 && j === 3) || (unb ? i === 1 && j === 0 : i === 0 && j === 0) ? { cls: 'c-dep' } : {}));
+      o += text(x0 - 22, 34 + s / 2, 'i−1', 't-s') + text(x0 - 22, 34 + 1.5 * s, 'i', 't-s');
       o += text(x0 + s / 2, 34 + 2 * s + 14, 'c − w', 't-s') + text(x0 + 3.5 * s, 34 + 2 * s + 14, 'c', 't-s');
-      const [cx, cy] = ctr(x0, 34, s, 0, 3);
-      o += arrow(cx, cy, ...ctr(x0, 34, s, 1, 3), 'dep', 14, 16);
-      o += arrow(cx, cy, ...(unb ? ctr(x0, 34, s, 0, 0) : ctr(x0, 34, s, 1, 0)), 'path', 14, 16);
-      o += text(x0 + 2 * s, 34 + 2 * s + 38, unb ? 'take: stay on row i (reuse it)' : 'take: move to row i+1 (used up)', 't-s');
+      const [cx, cy] = ctr(x0, 34, s, 1, 3);
+      o += arrow(...ctr(x0, 34, s, 0, 3), cx, cy, 'dep', 14, 16);
+      o += arrow(...(unb ? ctr(x0, 34, s, 1, 0) : ctr(x0, 34, s, 0, 0)), cx, cy, 'path', 14, 16);
+      o += text(x0 + 2 * s, 34 + 2 * s + 38, unb ? 'take: same row i (reuse it)' : 'take: row above (used once)', 't-s');
       o += text(x0 + 2 * s, 34 + 2 * s + 56, unb ? '1D loop goes upward' : '1D loop goes downward', 't-s t-strong');
       return o;
     };
